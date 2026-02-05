@@ -1,0 +1,1885 @@
+<!DOCTYPE html><html lang="zh-CN"><head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>后端项目源码目录组织方案调研：从理论到多框架实践</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/11.5.0/mermaid.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;1,400&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'serif': ['Crimson Text', 'serif'],
+                        'sans': ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'primary': '#0f766e',
+                        'secondary': '#64748b',
+                        'accent': '#f59e0b',
+                        'neutral': '#374151',
+                        'base': '#f8fafc',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        html { scroll-behavior: smooth; }
+        .prose h2 { color: #0f766e; }
+        .prose h3 { color: #047857; }
+        .prose h4 { color: #065f46; }
+        .citation { color: #0f766e; text-decoration: none; font-weight: 500; }
+        .citation:hover { text-decoration: underline; }
+        .toc-link.active { background-color: #0f766e; color: white; }
+        .section-divider { border-top: 2px solid #e5e7eb; margin: 3rem 0; }
+        
+        /* Mermaid diagram container styles */
+        .mermaid-container {
+            display: flex;
+            justify-content: center;
+            min-height: 300px;
+            max-height: 800px;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 30px;
+            margin: 30px 0;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .mermaid-container .mermaid {
+            width: 100%;
+            max-width: 100%;
+            height: 100%;
+            cursor: grab;
+            transition: transform 0.3s ease;
+            transform-origin: center center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            touch-action: none; /* 防止触摸设备上的默认行为 */
+            -webkit-user-select: none; /* 防止文本选择 */
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        
+        .mermaid-container .mermaid svg {
+            max-width: 100%;
+            height: 100%;
+            display: block;
+            margin: 0 auto;
+        }
+        
+        .mermaid-container .mermaid:active {
+            cursor: grabbing;
+        }
+        
+        .mermaid-container.zoomed .mermaid {
+            height: 100%;
+            width: 100%;
+            cursor: grab;
+        }
+        
+        .mermaid-controls {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            display: flex;
+            gap: 10px;
+            z-index: 20;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 8px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .mermaid-control-btn {
+            background: #ffffff;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #374151;
+            font-size: 14px;
+            min-width: 36px;
+            height: 36px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .mermaid-control-btn:hover {
+            background: #f8fafc;
+            border-color: #3b82f6;
+            color: #3b82f6;
+            transform: translateY(-1px);
+        }
+        
+        .mermaid-control-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Responsive adjustments for mermaid controls */
+        @media (max-width: 1024px) {
+            .mermaid-control-btn:not(.reset-zoom) {
+                display: none;
+            }
+            .mermaid-controls {
+                top: auto;
+                bottom: 15px;
+                right: 15px;
+            }
+        }
+    </style>
+  <base target="_blank">
+</head>
+
+  <body class="bg-base text-neutral leading-relaxed font-sans overflow-x-hidden">
+    <!-- Hamburger menu for mobile -->
+    <button id="toc-toggle" class="fixed top-4 left-4 z-50 p-2 bg-primary text-white rounded-lg shadow-lg md:hidden">
+      <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Fixed Table of Contents -->
+    <nav id="toc-nav" class="fixed left-0 top-0 h-full w-80 bg-white shadow-xl z-50 overflow-y-auto border-r border-gray-200 transform -translate-x-full md:translate-x-0 transition-transform duration-300">
+      <div class="p-6">
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="font-serif text-lg font-semibold text-primary">目录</h3>
+          <button id="toc-close" class="md:hidden p-1 text-gray-500 hover:text-primary">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <ul class="space-y-2 text-sm">
+          <li>
+            <a class="toc-link block py-2 px-3 rounded hover:bg-gray-100 transition-colors" href="#introduction">引言</a>
+          </li>
+          <li>
+            <a class="toc-link block py-2 px-3 rounded hover:bg-gray-100 transition-colors" href="#theory">跨框架通用理论指导原则</a>
+          </li>
+          <li>
+            <a class="toc-link block py-2 px-3 rounded hover:bg-gray-100 transition-colors" href="#java">Java生态项目目录组织</a>
+          </li>
+          <li>
+            <a class="toc-link block py-2 px-3 rounded hover:bg-gray-100 transition-colors" href="#python">Python生态项目目录组织</a>
+          </li>
+          <li>
+            <a class="toc-link block py-2 px-3 rounded hover:bg-gray-100 transition-colors" href="#golang">Go生态项目目录组织</a>
+          </li>
+          <li>
+            <a class="toc-link block py-2 px-3 rounded hover:bg-gray-100 transition-colors" href="#comparison">不同框架最佳实践对比</a>
+          </li>
+          <li>
+            <a class="toc-link block py-2 px-3 rounded hover:bg-gray-100 transition-colors" href="#conclusion">总结与展望</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="md:ml-80">
+      <!-- Hero Section -->
+      <section class="bg-gradient-to-br from-gray-50 to-white py-16 px-4 sm:px-8">
+        <div class="max-w-4xl mx-auto">
+          <!-- Bento Grid Layout -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            <!-- Title Card -->
+            <div class="md:col-span-2 bg-white rounded-xl shadow-lg p-8">
+              <h1 class="font-serif text-3xl sm:text-4xl font-bold text-primary mb-4 leading-tight">
+                <em class="italic">后端项目源码目录组织方案</em>
+              </h1>
+              <p class="text-lg sm:text-xl text-secondary font-light">
+                从理论到多框架实践的深度调研
+              </p>
+            </div>
+
+            <!-- Visual Element -->
+            <div class="bg-primary rounded-xl shadow-lg p-6 flex items-center justify-center">
+              <div class="text-center">
+                <i class="fas fa-project-diagram text-4xl text-white mb-3"></i>
+                <p class="text-white text-sm font-medium">架构之道</p>
+              </div>
+            </div>
+
+            <!-- Key Insight -->
+            <div class="bg-accent rounded-xl shadow-lg p-6 text-white">
+              <h3 class="font-semibold mb-2">核心洞察</h3>
+              <p class="text-sm opacity-90">
+                通过分层和模块化实现关注点分离，确保代码职责清晰
+              </p>
+            </div>
+
+            <!-- Stats -->
+            <div class="bg-gray-100 rounded-xl shadow-lg p-6">
+              <div class="flex justify-between items-center">
+                <div>
+                  <p class="text-3xl font-bold text-primary">3</p>
+                  <p class="text-sm text-secondary">主流生态</p>
+                </div>
+                <div>
+                  <p class="text-3xl font-bold text-primary">4</p>
+                  <p class="text-sm text-secondary">架构模式</p>
+                </div>
+                <div>
+                  <p class="text-3xl font-bold text-primary">15+</p>
+                  <p class="text-sm text-secondary">实践案例</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Framework Icons -->
+            <div class="bg-white rounded-xl shadow-lg p-6 flex items-center justify-around">
+              <i class="fab fa-java text-3xl text-primary"></i>
+              <i class="fab fa-python text-3xl text-primary"></i>
+              <i class="fas fa-code text-3xl text-primary"></i>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Introduction -->
+      <section class="py-12 px-8" id="introduction">
+        <div class="max-w-4xl mx-auto">
+          <div class="prose prose-lg max-w-none">
+            <p class="text-xl leading-relaxed text-secondary mb-8">
+              后端项目的源码目录组织方案是构建可维护、可扩展系统的基石。其核心思想是通过<strong>分层和模块化实现关注点分离</strong>，确保代码职责清晰。经典方案如<strong>三层架构</strong>（表现层、业务逻辑层、数据访问层）被广泛采用。在微服务时代，<strong>按业务能力垂直拆分</strong>成为主流，每个服务内部再遵循水平分层。
+            </p>
+
+            <div class="bg-blue-50 border-l-4 border-primary p-6 my-8">
+              <p class="text-lg font-medium text-primary mb-2">核心观点</p>
+              <p class="text-secondary">
+                不同技术栈如 Java (Spring Boot)、Python (FastAPI/Django) 和 Go (Gin/go-zero) 都有各自的最佳实践，但底层原则共通，都强调<strong>高内聚、低耦合</strong>，并通过标准化的通信协议（如 REST/gRPC）实现服务间协作。
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <!-- Theory Section -->
+      <section class="py-12 px-8" id="theory">
+        <div class="max-w-4xl mx-auto">
+          <h2 class="font-serif text-3xl font-bold mb-8 text-primary">跨框架通用理论指导原则</h2>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div>
+              <h3 class="font-serif text-xl font-semibold mb-4">核心设计原则</h3>
+              <ul class="space-y-3">
+                <li class="flex items-start">
+                  <i class="fas fa-layer-group text-primary mt-1 mr-3"></i>
+                  <div>
+                    <strong>关注点分离</strong>
+                    <p class="text-secondary text-sm">将复杂系统分解为多个独立的部分，每个部分负责特定的功能</p>
+                  </div>
+                </li>
+                <li class="flex items-start">
+                  <i class="fas fa-puzzle-piece text-primary mt-1 mr-3"></i>
+                  <div>
+                    <strong>高内聚与低耦合</strong>
+                    <p class="text-secondary text-sm">模块内部联系紧密，模块间相互依赖程度低</p>
+                  </div>
+                </li>
+                <li class="flex items-start">
+                  <i class="fas fa-expand-arrows-alt text-primary mt-1 mr-3"></i>
+                  <div>
+                    <strong>可维护性与可扩展性</strong>
+                    <p class="text-secondary text-sm">代码易于理解、修改和扩展，适应长期演进</p>
+                  </div>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 class="font-serif text-xl font-semibold mb-4">经典分层架构</h3>
+              <div class="space-y-4">
+                <div class="bg-white rounded-lg shadow-sm p-4 border-l-4 border-blue-500">
+                  <h4 class="font-semibold text-blue-700">表现层</h4>
+                  <p class="text-sm text-secondary">处理HTTP请求，解析参数，返回响应</p>
+                </div>
+                <div class="bg-white rounded-lg shadow-sm p-4 border-l-4 border-green-500">
+                  <h4 class="font-semibold text-green-700">业务逻辑层</h4>
+                  <p class="text-sm text-secondary">封装业务规则，处理核心逻辑</p>
+                </div>
+                <div class="bg-white rounded-lg shadow-sm p-4 border-l-4 border-purple-500">
+                  <h4 class="font-semibold text-purple-700">数据访问层</h4>
+                  <p class="text-sm text-secondary">与数据库交互，执行CRUD操作</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mermaid Diagram: Core Architecture -->
+          <div class="mt-12 bg-white rounded-xl shadow-lg p-8">
+            <h3 class="font-serif text-xl font-semibold mb-6 text-center">分层架构演进</h3>
+            <div class="mermaid-container">
+              <div class="mermaid-controls">
+                <button class="mermaid-control-btn zoom-in" title="放大">
+                  <i class="fas fa-search-plus"></i>
+                </button>
+                <button class="mermaid-control-btn zoom-out" title="缩小">
+                  <i class="fas fa-search-minus"></i>
+                </button>
+                <button class="mermaid-control-btn reset-zoom" title="重置">
+                  <i class="fas fa-expand-arrows-alt"></i>
+                </button>
+                <button class="mermaid-control-btn fullscreen" title="全屏查看">
+                  <i class="fas fa-expand"></i>
+                </button>
+              </div>
+              <div class="mermaid">
+                graph TD
+                A[&#34;传统三层架构&#34;] --&gt; B[&#34;领域驱动设计DDD&#34;]
+                A --&gt; C[&#34;六边形架构&#34;]
+                B --&gt; D[&#34;微服务架构&#34;]
+                C --&gt; D
+
+                style A fill:#e3f2fd
+                style B fill:#f3e5f5
+                style C fill:#e8f5e8
+                style D fill:#fff3e0
+              </div>
+            </div>
+          </div>
+
+          <!-- DDD Section -->
+          <div class="mt-12">
+            <h3 class="font-serif text-xl font-semibold mb-6">领域驱动设计 (DDD) 应用</h3>
+            <div class="bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl p-8">
+              <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="text-center">
+                  <div class="bg-purple-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-user-interface text-purple-600 text-xl"></i>
+                  </div>
+                  <h4 class="font-semibold text-purple-700">用户界面层</h4>
+                  <p class="text-sm text-secondary">展示信息，接收输入</p>
+                </div>
+                <div class="text-center">
+                  <div class="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-cogs text-blue-600 text-xl"></i>
+                  </div>
+                  <h4 class="font-semibold text-blue-700">应用层</h4>
+                  <p class="text-sm text-secondary">协调用例，委托任务</p>
+                </div>
+                <div class="text-center">
+                  <div class="bg-green-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-brain text-green-600 text-xl"></i>
+                  </div>
+                  <h4 class="font-semibold text-green-700">领域层</h4>
+                  <p class="text-sm text-secondary">核心业务逻辑</p>
+                </div>
+                <div class="text-center">
+                  <div class="bg-gray-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-database text-gray-600 text-xl"></i>
+                  </div>
+                  <h4 class="font-semibold text-gray-700">基础设施层</h4>
+                  <p class="text-sm text-secondary">数据持久化，技术支持</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Microservices Section -->
+          <div class="mt-12">
+            <h3 class="font-serif text-xl font-semibold mb-6">微服务架构思想</h3>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div>
+                <h4 class="font-semibold mb-4">按业务能力垂直拆分</h4>
+                <p class="text-secondary mb-4">
+                  每个微服务负责一个完整的业务能力，如用户服务、订单服务、支付服务。这种拆分方式与DDD中的限界上下文概念高度契合。
+                </p>
+                <ul class="space-y-2 text-sm">
+                  <li class="flex items-center">
+                    <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                    独立开发、部署、扩展
+                  </li>
+                  <li class="flex items-center">
+                    <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                    技术多样性支持
+                  </li>
+                  <li class="flex items-center">
+                    <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                    团队自治
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <h4 class="font-semibold mb-4">服务间通信</h4>
+                <div class="space-y-3">
+                  <div class="flex items-center p-3 bg-blue-50 rounded-lg">
+                    <i class="fas fa-sync-alt text-blue-600 mr-3"></i>
+                    <div>
+                      <strong>REST</strong>
+                      <p class="text-xs text-secondary">基于HTTP，JSON格式，简单轻量</p>
+                    </div>
+                  </div>
+                  <div class="flex items-center p-3 bg-green-50 rounded-lg">
+                    <i class="fas fa-rocket text-green-600 mr-3"></i>
+                    <div>
+                      <strong>gRPC</strong>
+                      <p class="text-xs text-secondary">高性能RPC，Protocol Buffers</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <!-- Java Section -->
+      <section class="py-12 px-8" id="java">
+        <div class="max-w-4xl mx-auto">
+          <h2 class="font-serif text-3xl font-bold mb-8 text-primary">Java生态 (Spring 系列) 项目目录组织方案</h2>
+
+          <!-- Spring Boot Structure -->
+          <div class="mb-12">
+            <h3 class="font-serif text-xl font-semibold mb-6">Spring Boot 单体应用目录结构</h3>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div>
+                <h4 class="font-semibold mb-4">标准 Maven/Gradle 布局</h4>
+                <div class="bg-gray-50 rounded-lg p-4">
+                  <div class="font-mono text-sm">
+                    <div class="flex items-center py-1">
+                      <i class="fas fa-folder text-blue-500 mr-2"></i>
+                      <span>src/main/java</span>
+                      <span class="text-secondary ml-2"># 主要Java源代码</span>
+                    </div>
+                    <div class="flex items-center py-1 ml-4">
+                      <i class="fas fa-folder text-blue-500 mr-2"></i>
+                      <span>com/example/myapp/</span>
+                    </div>
+                    <div class="flex items-center py-1 ml-8">
+                      <i class="fas fa-folder text-green-500 mr-2"></i>
+                      <span>controller/</span>
+                    </div>
+                    <div class="flex items-center py-1 ml-8">
+                      <i class="fas fa-folder text-purple-500 mr-2"></i>
+                      <span>service/</span>
+                    </div>
+                    <div class="flex items-center py-1 ml-8">
+                      <i class="fas fa-folder text-orange-500 mr-2"></i>
+                      <span>repository/</span>
+                    </div>
+                    <div class="flex items-center py-1 ml-8">
+                      <i class="fas fa-folder text-red-500 mr-2"></i>
+                      <span>model/</span>
+                    </div>
+                    <div class="flex items-center py-1 ml-4">
+                      <i class="fas fa-folder text-blue-500 mr-2"></i>
+                      <span>src/main/resources</span>
+                      <span class="text-secondary ml-2"># 资源文件</span>
+                    </div>
+                    <div class="flex items-center py-1 ml-4">
+                      <i class="fas fa-file text-gray-500 mr-2"></i>
+                      <span>pom.xml</span>
+                      <span class="text-secondary ml-2"># 构建配置</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h4 class="font-semibold mb-4">核心包结构职责</h4>
+                <div class="space-y-4">
+                  <div class="bg-white border rounded-lg p-4 shadow-sm">
+                    <h5 class="font-semibold text-green-700 mb-2">@RestController</h5>
+                    <p class="text-sm text-secondary">处理HTTP请求，定义API端点，接收请求参数并返回响应</p>
+                  </div>
+                  <div class="bg-white border rounded-lg p-4 shadow-sm">
+                    <h5 class="font-semibold text-blue-700 mb-2">@Service</h5>
+                    <p class="text-sm text-secondary">实现业务逻辑，封装业务规则和处理流程</p>
+                  </div>
+                  <div class="bg-white border rounded-lg p-4 shadow-sm">
+                    <h5 class="font-semibold text-purple-700 mb-2">@Repository</h5>
+                    <p class="text-sm text-secondary">数据访问对象，与数据库交互执行CRUD操作</p>
+                  </div>
+                  <div class="bg-white border rounded-lg p-4 shadow-sm">
+                    <h5 class="font-semibold text-orange-700 mb-2">@Entity</h5>
+                    <p class="text-sm text-secondary">持久化对象，映射数据库表结构</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Enterprise Microservices -->
+          <div class="mb-12">
+            <h3 class="font-serif text-xl font-semibold mb-6">企业级微服务目录组织实践</h3>
+
+            <div class="bg-white rounded-xl shadow-lg p-8">
+              <h4 class="font-semibold mb-6">多模块项目结构</h4>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-blue-50 rounded-lg p-6">
+                  <h5 class="font-semibold text-blue-700 mb-3">
+                    <i class="fas fa-project-diagram mr-2"></i>父项目
+                  </h5>
+                  <p class="text-sm text-secondary mb-3">统一管理依赖版本，集中配置构建插件</p>
+                  <code class="text-xs bg-blue-100 p-2 rounded block">
+                                        &lt;dependencyManagement&gt;
+                                    </code>
+                </div>
+                <div class="bg-green-50 rounded-lg p-6">
+                  <h5 class="font-semibold text-green-700 mb-3">
+                    <i class="fas fa-cube mr-2"></i>公共模块
+                  </h5>
+                  <div class="text-sm space-y-1">
+                    <p><strong>common</strong> - 通用工具类</p>
+                    <p><strong>api</strong> - RPC接口定义</p>
+                    <p><strong>base</strong> - 基础配置</p>
+                  </div>
+                </div>
+                <div class="bg-purple-50 rounded-lg p-6">
+                  <h5 class="font-semibold text-purple-700 mb-3">
+                    <i class="fas fa-cubes mr-2"></i>业务服务
+                  </h5>
+                  <div class="text-sm space-y-1">
+                    <p><strong>user-service</strong> - 用户服务</p>
+                    <p><strong>order-service</strong> - 订单服务</p>
+                    <p><strong>product-service</strong> - 商品服务</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Data Objects -->
+          <div class="mb-12">
+            <h3 class="font-serif text-xl font-semibold mb-6">数据对象模式与最佳实践</h3>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div>
+                <h4 class="font-semibold mb-4">DTO与VO的应用</h4>
+                <div class="space-y-4">
+                  <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-lg">
+                    <h5 class="font-semibold text-yellow-700 mb-2">DTO (Data Transfer Object)</h5>
+                    <p class="text-sm text-secondary mb-2">在不同层之间传输数据，避免暴露完整领域对象</p>
+                    <p class="text-xs text-yellow-600">示例：UserCreateDTO, UserResponseDTO</p>
+                  </div>
+                  <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg">
+                    <h5 class="font-semibold text-blue-700 mb-2">VO (View Object)</h5>
+                    <p class="text-sm text-secondary mb-2">根据UI需求设计的数据对象，用于模板渲染</p>
+                    <p class="text-xs text-blue-600">示例：UserDetailVO, ProductListVO</p>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h4 class="font-semibold mb-4">PO与BO的区分</h4>
+                <div class="space-y-4">
+                  <div class="bg-green-50 border-l-4 border-green-400 p-4 rounded-r-lg">
+                    <h5 class="font-semibold text-green-700 mb-2">PO/Entity (Persistent Object)</h5>
+                    <p class="text-sm text-secondary mb-2">与数据库表一一对应的持久化对象</p>
+                    <p class="text-xs text-green-600">示例：@Entity注解的User类</p>
+                  </div>
+                  <div class="bg-purple-50 border-l-4 border-purple-400 p-4 rounded-r-lg">
+                    <h5 class="font-semibold text-purple-700 mb-2">BO (Business Object)</h5>
+                    <p class="text-sm text-secondary mb-2">封装业务数据和行为的业务对象</p>
+                    <p class="text-xs text-purple-600">示例：OrderBO包含业务逻辑方法</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Service Interface Separation -->
+          <div class="bg-gray-50 rounded-xl p-8">
+            <h4 class="font-semibold mb-4">服务接口与实现分离</h4>
+            <div class="bg-white rounded-lg p-6 shadow-sm">
+              <div class="font-mono text-sm">
+                <div class="mb-4">
+                  <p class="font-semibold text-blue-600">// 服务接口定义</p>
+                  <code class="block bg-gray-100 p-2 rounded">
+                                        package com.example.myapp.service;<br/>
+                                        public interface UserService {<br/>
+                                          User createUser(UserCreateDTO request);<br/>
+                                        }
+                                    </code>
+                </div>
+                <div>
+                  <p class="font-semibold text-green-600">// 服务实现类</p>
+                  <code class="block bg-gray-100 p-2 rounded">
+                                        package com.example.myapp.service.impl;<br/>
+                                        @Service<br/>
+                                        public class UserServiceImpl implements UserService {<br/>
+                                          @Override<br/>
+                                          public User createUser(UserCreateDTO request) {<br/>
+                                            // 业务逻辑实现<br/>
+                                          }<br/>
+                                        }
+                                    </code>
+                </div>
+              </div>
+            </div>
+            <div class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+              <div class="flex items-center">
+                <i class="fas fa-unlink text-blue-500 mr-2"></i>
+                <span>解耦</span>
+              </div>
+              <div class="flex items-center">
+                <i class="fas fa-vial text-green-500 mr-2"></i>
+                <span>可测试性</span>
+              </div>
+              <div class="flex items-center">
+                <i class="fas fa-code-branch text-purple-500 mr-2"></i>
+                <span>多态性</span>
+              </div>
+              <div class="flex items-center">
+                <i class="fas fa-magic text-orange-500 mr-2"></i>
+                <span>AOP支持</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <!-- Python Section -->
+      <section class="py-12 px-8" id="python">
+        <div class="max-w-4xl mx-auto">
+          <h2 class="font-serif text-3xl font-bold mb-8 text-primary">Python生态项目目录组织方案</h2>
+
+          <!-- FastAPI Section -->
+          <div class="mb-12">
+            <h3 class="font-serif text-xl font-semibold mb-6">FastAPI 框架目录结构</h3>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div class="bg-white rounded-lg shadow-md p-6">
+                <h4 class="font-semibold text-blue-700 mb-4">
+                  <i class="fas fa-route mr-2"></i>api (路由)
+                </h4>
+                <p class="text-sm text-secondary mb-3">定义API端点，使用APIRouter组织路由</p>
+                <div class="text-xs space-y-1">
+                  <code class="block bg-blue-50 p-1 rounded">
+                                        @router.get(&#34;/users&#34;)
+                                    </code>
+                  <code class="block bg-blue-50 p-1 rounded">
+                                        @router.post(&#34;/orders&#34;)
+                                    </code>
+                </div>
+              </div>
+
+              <div class="bg-white rounded-lg shadow-md p-6">
+                <h4 class="font-semibold text-green-700 mb-4">
+                  <i class="fas fa-database mr-2"></i>models (ORM)
+                </h4>
+                <p class="text-sm text-secondary mb-3">使用SQLAlchemy定义数据库模型</p>
+                <div class="text-xs space-y-1">
+                  <code class="block bg-green-50 p-1 rounded">
+                                        class User(Base):
+                                    </code>
+                  <code class="block bg-green-50 p-1 rounded">
+                                        class Order(Base):
+                                    </code>
+                </div>
+              </div>
+
+              <div class="bg-white rounded-lg shadow-md p-6">
+                <h4 class="font-semibold text-purple-700 mb-4">
+                  <i class="fas fa-file-contract mr-2"></i>schemas (Pydantic)
+                </h4>
+                <p class="text-sm text-secondary mb-3">数据验证和序列化模型</p>
+                <div class="text-xs space-y-1">
+                  <code class="block bg-purple-50 p-1 rounded">
+                                        class UserCreate(BaseModel)
+                                    </code>
+                  <code class="block bg-purple-50 p-1 rounded">
+                                        class UserResponse(BaseModel)
+                                    </code>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-8 bg-gray-50 rounded-lg p-6">
+              <h4 class="font-semibold mb-4">模块化组织：按功能模块划分</h4>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <div class="bg-white rounded-lg p-4 shadow-sm">
+                    <h5 class="font-semibold text-blue-600 mb-2">user 模块</h5>
+                    <div class="text-sm space-y-1">
+                      <p>• router.py - 用户相关路由</p>
+                      <p>• models.py - 用户数据模型</p>
+                      <p>• schemas.py - 用户数据模式</p>
+                      <p>• service.py - 用户业务逻辑</p>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <div class="bg-white rounded-lg p-4 shadow-sm">
+                    <h5 class="font-semibold text-green-600 mb-2">auth 模块</h5>
+                    <div class="text-sm space-y-1">
+                      <p>• router.py - 认证相关路由</p>
+                      <p>• models.py - 认证数据模型</p>
+                      <p>• schemas.py - 认证数据模式</p>
+                      <p>• service.py - 认证业务逻辑</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Django Section -->
+          <div class="mb-12">
+            <h3 class="font-serif text-xl font-semibold mb-6">Django 框架目录结构</h3>
+
+            <div class="bg-white rounded-xl shadow-lg p-8">
+              <h4 class="font-semibold mb-6">MTV模式与内置应用结构</h4>
+
+              <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="bg-red-50 rounded-lg p-6">
+                  <h5 class="font-semibold text-red-700 mb-3">Model (模型)</h5>
+                  <p class="text-sm text-secondary mb-3">定义数据结构和数据库交互</p>
+                  <code class="block text-xs bg-red-100 p-2 rounded">
+                                    # models.py
+                                    class User(models.Model):
+                                      username = models.CharField()
+                                </code>
+                </div>
+
+                <div class="bg-blue-50 rounded-lg p-6">
+                  <h5 class="font-semibold text-blue-700 mb-3">Template (模板)</h5>
+                  <p class="text-sm text-secondary mb-3">定义用户界面的展示</p>
+                  <code class="block text-xs bg-blue-100 p-2 rounded">
+                                    # templates/user_list.html
+                                    {% for user in users %}
+                                      {{ user.username }}
+                                    {% endfor %}
+                                </code>
+                </div>
+
+                <div class="bg-green-50 rounded-lg p-6">
+                  <h5 class="font-semibold text-green-700 mb-3">View (视图)</h5>
+                  <p class="text-sm text-secondary mb-3">处理业务逻辑和协调</p>
+                  <code class="block text-xs bg-green-100 p-2 rounded">
+                                    # views.py
+                                    def user_list(request):
+                                      users = User.objects.all()
+                                      return render(request, ...)
+                                </code>
+                </div>
+              </div>
+
+              <div class="mt-8 bg-gray-50 rounded-lg p-6">
+                <h5 class="font-semibold mb-4">多应用组织方式</h5>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p class="text-sm font-medium mb-2">项目级配置</p>
+                    <div class="text-xs space-y-1">
+                      <p>• settings.py - 全局配置</p>
+                      <p>• urls.py - 主路由配置</p>
+                      <p>• wsgi.py - WSGI入口</p>
+                    </div>
+                  </div>
+                  <div>
+                    <p class="text-sm font-medium mb-2">应用级结构</p>
+                    <div class="text-xs space-y-1">
+                      <p>• models.py - 数据模型</p>
+                      <p>• views.py - 视图函数</p>
+                      <p>• urls.py - 应用路由</p>
+                      <p>• admin.py - 后台管理</p>
+                      <p>• migrations/ - 数据库迁移</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Flask Section -->
+          <div class="mb-12">
+            <h3 class="font-serif text-xl font-semibold mb-6">Flask 框架目录结构</h3>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div>
+                <h4 class="font-semibold mb-4">应用工厂模式与蓝图</h4>
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                  <code class="block text-sm bg-gray-100 p-3 rounded mb-4">
+                                    # app/__init__.py
+                                    def create_app(config):
+                                      app = Flask(__name__)
+                                      app.config.from_object(config)
+                                      return app
+                                </code>
+                  <code class="block text-sm bg-gray-100 p-3 rounded">
+                                    # app/user/routes.py
+                                    user_bp = Blueprint(&#39;user&#39;, __name__)
+                                    
+                                    @user_bp.route(&#39;/profile&#39;)
+                                    def profile():
+                                      return render_template(&#39;profile.html&#39;)
+                                </code>
+                </div>
+              </div>
+
+              <div>
+                <h4 class="font-semibold mb-4">轻量级项目结构</h4>
+                <div class="space-y-3">
+                  <div class="flex items-center p-3 bg-white rounded-lg shadow-sm">
+                    <i class="fas fa-folder text-blue-500 mr-3"></i>
+                    <div>
+                      <p class="font-medium">app/</p>
+                      <p class="text-xs text-secondary">应用主包</p>
+                    </div>
+                  </div>
+                  <div class="flex items-center p-3 bg-white rounded-lg shadow-sm ml-4">
+                    <i class="fas fa-file-code text-green-500 mr-3"></i>
+                    <div>
+                      <p class="font-medium">routes.py</p>
+                      <p class="text-xs text-secondary">路由定义</p>
+                    </div>
+                  </div>
+                  <div class="flex items-center p-3 bg-white rounded-lg shadow-sm ml-4">
+                    <i class="fas fa-file-code text-purple-500 mr-3"></i>
+                    <div>
+                      <p class="font-medium">models.py</p>
+                      <p class="text-xs text-secondary">数据模型</p>
+                    </div>
+                  </div>
+                  <div class="flex items-center p-3 bg-white rounded-lg shadow-sm">
+                    <i class="fas fa-file text-orange-500 mr-3"></i>
+                    <div>
+                      <p class="font-medium">main.py</p>
+                      <p class="text-xs text-secondary">应用入口</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <!-- Go Section -->
+      <section class="py-12 px-8" id="golang">
+        <div class="max-w-4xl mx-auto">
+          <h2 class="font-serif text-3xl font-bold mb-8 text-primary">Go生态项目目录组织方案</h2>
+
+          <!-- Gin Framework -->
+          <div class="mb-12">
+            <h3 class="font-serif text-xl font-semibold mb-6">Gin 框架目录结构</h3>
+
+            <div class="bg-white rounded-xl shadow-lg p-8">
+              <h4 class="font-semibold mb-6">Standard Go Project Layout</h4>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="bg-blue-50 rounded-lg p-6">
+                  <h5 class="font-semibold text-blue-700 mb-3">
+                    <i class="fas fa-play mr-2"></i>cmd
+                  </h5>
+                  <p class="text-sm text-secondary mb-3">应用程序入口点</p>
+                  <div class="text-xs">
+                    <code class="block bg-blue-100 p-2 rounded">
+                                        cmd/<br/>
+                                          myapp/<br/>
+                                            main.go
+                                    </code>
+                  </div>
+                </div>
+
+                <div class="bg-green-50 rounded-lg p-6">
+                  <h5 class="font-semibold text-green-700 mb-3">
+                    <i class="fas fa-lock mr-2"></i>internal
+                  </h5>
+                  <p class="text-sm text-secondary mb-3">项目私有代码</p>
+                  <div class="text-xs">
+                    <code class="block bg-green-100 p-2 rounded">
+                                        internal/<br/>
+                                          controller/<br/>
+                                          service/<br/>
+                                          model/
+                                    </code>
+                  </div>
+                </div>
+
+                <div class="bg-purple-50 rounded-lg p-6">
+                  <h5 class="font-semibold text-purple-700 mb-3">
+                    <i class="fas fa-box mr-2"></i>pkg
+                  </h5>
+                  <p class="text-sm text-secondary mb-3">公共库代码</p>
+                  <div class="text-xs">
+                    <code class="block bg-purple-100 p-2 rounded">
+                                        pkg/<br/>
+                                          utils/<br/>
+                                          config/<br/>
+                                          logger/
+                                    </code>
+                  </div>
+                </div>
+
+                <div class="bg-orange-50 rounded-lg p-6">
+                  <h5 class="font-semibold text-orange-700 mb-3">
+                    <i class="fas fa-cog mr-2"></i>configs
+                  </h5>
+                  <p class="text-sm text-secondary mb-3">配置文件</p>
+                  <div class="text-xs">
+                    <code class="block bg-orange-100 p-2 rounded">
+                                        configs/<br/>
+                                          config.yaml<br/>
+                                          config.toml
+                                    </code>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mt-8 bg-gray-50 rounded-lg p-6">
+                <h5 class="font-semibold mb-4">分层实践：internal目录下的组织</h5>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div class="text-center">
+                    <div class="bg-blue-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-2">
+                      <span class="text-blue-700 font-bold">C</span>
+                    </div>
+                    <h6 class="font-semibold text-blue-700">controller</h6>
+                    <p class="text-xs text-secondary">HTTP请求处理</p>
+                  </div>
+                  <div class="text-center">
+                    <div class="bg-green-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-2">
+                      <span class="text-green-700 font-bold">S</span>
+                    </div>
+                    <h6 class="font-semibold text-green-700">service</h6>
+                    <p class="text-xs text-secondary">业务逻辑</p>
+                  </div>
+                  <div class="text-center">
+                    <div class="bg-purple-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-2">
+                      <span class="text-purple-700 font-bold">M</span>
+                    </div>
+                    <h6 class="font-semibold text-purple-700">model</h6>
+                    <p class="text-xs text-secondary">数据模型</p>
+                  </div>
+                  <div class="text-center">
+                    <div class="bg-orange-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-2">
+                      <span class="text-orange-700 font-bold">R</span>
+                    </div>
+                    <h6 class="font-semibold text-orange-700">repository</h6>
+                    <p class="text-xs text-secondary">数据访问</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- go-zero Section -->
+          <div class="mb-12">
+            <h3 class="font-serif text-xl font-semibold mb-6">go-zero 微服务框架目录结构</h3>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div>
+                <h4 class="font-semibold mb-4">项目维度目录</h4>
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                  <div class="font-mono text-sm space-y-2">
+                    <div class="flex items-center">
+                      <i class="fas fa-folder text-blue-500 mr-2"></i>
+                      <span>api/</span>
+                      <span class="text-secondary ml-2"># HTTP服务</span>
+                    </div>
+                    <div class="ml-4">
+                      <i class="fas fa-folder text-green-500 mr-2"></i>
+                      <span>user/</span>
+                    </div>
+                    <div class="flex items-center">
+                      <i class="fas fa-folder text-purple-500 mr-2"></i>
+                      <span>service/</span>
+                      <span class="text-secondary ml-2"># gRPC服务</span>
+                    </div>
+                    <div class="ml-4">
+                      <i class="fas fa-folder text-orange-500 mr-2"></i>
+                      <span>user/</span>
+                    </div>
+                    <div class="flex items-center">
+                      <i class="fas fa-folder text-red-500 mr-2"></i>
+                      <span>job/</span>
+                      <span class="text-secondary ml-2"># 定时任务</span>
+                    </div>
+                    <div class="flex items-center">
+                      <i class="fas fa-folder text-gray-500 mr-2"></i>
+                      <span>pkg/</span>
+                      <span class="text-secondary ml-2"># 公共库</span>
+                    </div>
+                    <div class="flex items-center">
+                      <i class="fas fa-folder text-blue-500 mr-2"></i>
+                      <span>internal/</span>
+                      <span class="text-secondary ml-2"># 私有模块</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h4 class="font-semibold mb-4">服务维度目录</h4>
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                  <div class="font-mono text-sm space-y-2">
+                    <div class="flex items-center">
+                      <i class="fas fa-folder text-blue-500 mr-2"></i>
+                      <span>etc/</span>
+                      <span class="text-secondary ml-2"># 配置</span>
+                    </div>
+                    <div class="ml-4">
+                      <i class="fas fa-file text-gray-500 mr-2"></i>
+                      <span>user.yaml</span>
+                    </div>
+                    <div class="flex items-center">
+                      <i class="fas fa-file text-green-500 mr-2"></i>
+                      <span>main.go</span>
+                      <span class="text-secondary ml-2"># 入口</span>
+                    </div>
+                    <div class="flex items-center">
+                      <i class="fas fa-folder text-purple-500 mr-2"></i>
+                      <span>internal/</span>
+                      <span class="text-secondary ml-2"># 私有代码</span>
+                    </div>
+                    <div class="ml-4 space-y-1">
+                      <div><i class="fas fa-folder text-orange-500 mr-2"></i>config/</div>
+                      <div><i class="fas fa-folder text-red-500 mr-2"></i>handler/</div>
+                      <div><i class="fas fa-folder text-blue-500 mr-2"></i>logic/</div>
+                      <div><i class="fas fa-folder text-green-500 mr-2"></i>svc/</div>
+                      <div><i class="fas fa-folder text-purple-500 mr-2"></i>types/</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Enterprise Practice -->
+          <div class="bg-gradient-to-r from-teal-50 to-blue-50 rounded-xl p-8">
+            <h4 class="font-semibold mb-6">企业级实践：服务拆分与多服务目录管理</h4>
+
+            <div class="bg-white rounded-lg p-6 shadow-sm">
+              <div class="font-mono text-sm">
+                <div class="flex items-center mb-2">
+                  <i class="fas fa-folder text-blue-500 mr-2"></i>
+                  <span class="font-semibold">my-project/</span>
+                </div>
+                <div class="ml-4 space-y-2">
+                  <div class="flex items-center">
+                    <i class="fas fa-folder text-green-500 mr-2"></i>
+                    <span>apps/</span>
+                    <span class="text-secondary ml-2"># 业务服务</span>
+                  </div>
+                  <div class="ml-4">
+                    <div>├── api/ (BFF网关)</div>
+                    <div>├── user/ (用户服务)</div>
+                    <div>│ ├── api/ (HTTP接口)</div>
+                    <div>│ └── rpc/ (gRPC服务)</div>
+                    <div>├── product/ (商品服务)</div>
+                    <div>└── order/ (订单服务)</div>
+                  </div>
+                  <div class="flex items-center">
+                    <i class="fas fa-folder text-purple-500 mr-2"></i>
+                    <span>pkg/</span>
+                    <span class="text-secondary ml-2"># 公共库</span>
+                  </div>
+                  <div class="ml-4">
+                    <div>├── auth/ (认证库)</div>
+                    <div>└── logger/ (日志库)</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div class="flex items-center p-3 bg-white rounded-lg shadow-sm">
+                <i class="fas fa-cubes text-blue-500 mr-3"></i>
+                <div>
+                  <p class="font-medium">垂直拆分</p>
+                  <p class="text-xs text-secondary">按业务能力组织</p>
+                </div>
+              </div>
+              <div class="flex items-center p-3 bg-white rounded-lg shadow-sm">
+                <i class="fas fa-layer-group text-green-500 mr-3"></i>
+                <div>
+                  <p class="font-medium">水平分层</p>
+                  <p class="text-xs text-secondary">服务内部分层</p>
+                </div>
+              </div>
+              <div class="flex items-center p-3 bg-white rounded-lg shadow-sm">
+                <i class="fas fa-share-alt text-purple-500 mr-3"></i>
+                <div>
+                  <p class="font-medium">代码复用</p>
+                  <p class="text-xs text-secondary">公共库抽取</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <!-- Comparison Section -->
+      <section class="py-12 px-8" id="comparison">
+        <div class="max-w-4xl mx-auto">
+          <h2 class="font-serif text-3xl font-bold mb-8 text-primary">不同框架下的最佳实践总结与对比</h2>
+
+          <!-- Common Architecture Patterns -->
+          <div class="mb-12">
+            <h3 class="font-serif text-xl font-semibold mb-6">分层架构的共性</h3>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div class="bg-white rounded-lg shadow-md p-6">
+                <h4 class="font-semibold text-blue-700 mb-4">
+                  <i class="fas fa-desktop mr-2"></i>表现层
+                </h4>
+                <div class="space-y-3">
+                  <div class="flex items-center text-sm">
+                    <span class="w-16 font-medium">Java:</span>
+                    <code class="bg-blue-50 px-2 py-1 rounded">@RestController</code>
+                  </div>
+                  <div class="flex items-center text-sm">
+                    <span class="w-16 font-medium">Python:</span>
+                    <code class="bg-green-50 px-2 py-1 rounded">APIRouter</code>
+                  </div>
+                  <div class="flex items-center text-sm">
+                    <span class="w-16 font-medium">Go:</span>
+                    <code class="bg-purple-50 px-2 py-1 rounded">HandlerFunc</code>
+                  </div>
+                </div>
+                <p class="text-xs text-secondary mt-3">统一职责：处理请求、解析参数、返回响应</p>
+              </div>
+
+              <div class="bg-white rounded-lg shadow-md p-6">
+                <h4 class="font-semibold text-green-700 mb-4">
+                  <i class="fas fa-cogs mr-2"></i>业务逻辑层
+                </h4>
+                <div class="space-y-3">
+                  <div class="flex items-center text-sm">
+                    <span class="w-16 font-medium">Java:</span>
+                    <code class="bg-blue-50 px-2 py-1 rounded">@Service</code>
+                  </div>
+                  <div class="flex items-center text-sm">
+                    <span class="w-16 font-medium">Python:</span>
+                    <code class="bg-green-50 px-2 py-1 rounded">services.py</code>
+                  </div>
+                  <div class="flex items-center text-sm">
+                    <span class="w-16 font-medium">Go:</span>
+                    <code class="bg-purple-50 px-2 py-1 rounded">logic/</code>
+                  </div>
+                </div>
+                <p class="text-xs text-secondary mt-3">核心地位：封装业务规则，处理复杂逻辑</p>
+              </div>
+
+              <div class="bg-white rounded-lg shadow-md p-6">
+                <h4 class="font-semibold text-purple-700 mb-4">
+                  <i class="fas fa-database mr-2"></i>数据访问层
+                </h4>
+                <div class="space-y-3">
+                  <div class="flex items-center text-sm">
+                    <span class="w-16 font-medium">Java:</span>
+                    <code class="bg-blue-50 px-2 py-1 rounded">Repository</code>
+                  </div>
+                  <div class="flex items-center text-sm">
+                    <span class="w-16 font-medium">Python:</span>
+                    <code class="bg-green-50 px-2 py-1 rounded">models.py</code>
+                  </div>
+                  <div class="flex items-center text-sm">
+                    <span class="w-16 font-medium">Go:</span>
+                    <code class="bg-purple-50 px-2 py-1 rounded">model/</code>
+                  </div>
+                </div>
+                <p class="text-xs text-secondary mt-3">关键抽象：隐藏数据持久化细节</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Modularization Strategies -->
+          <div class="mb-12">
+            <h3 class="font-serif text-xl font-semibold mb-6">模块化与组件化策略</h3>
+
+            <div class="overflow-x-auto">
+              <table class="w-full bg-white rounded-lg shadow-md">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="px-6 py-4 text-left font-semibold">语言</th>
+                    <th class="px-6 py-4 text-left font-semibold">模块化机制</th>
+                    <th class="px-6 py-4 text-left font-semibold">特点</th>
+                    <th class="px-6 py-4 text-left font-semibold">优势</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                  <tr>
+                    <td class="px-6 py-4 font-medium">Java</td>
+                    <td class="px-6 py-4">
+                      <div class="space-y-1">
+                        <div><strong>Package</strong> - 命名空间管理</div>
+                        <div><strong>Module</strong> - 强封装依赖</div>
+                      </div>
+                    </td>
+                    <td class="px-6 py-4 text-sm">强类型，编译时检查</td>
+                    <td class="px-6 py-4 text-sm">严格的模块边界</td>
+                  </tr>
+                  <tr>
+                    <td class="px-6 py-4 font-medium">Python</td>
+                    <td class="px-6 py-4">
+                      <div class="space-y-1">
+                        <div><strong>Package</strong> - 目录组织</div>
+                        <div><strong>Blueprint/APIRouter</strong> - 路由组件</div>
+                      </div>
+                    </td>
+                    <td class="px-6 py-4 text-sm">动态灵活，运行时组织</td>
+                    <td class="px-6 py-4 text-sm">可插拔，易扩展</td>
+                  </tr>
+                  <tr>
+                    <td class="px-6 py-4 font-medium">Go</td>
+                    <td class="px-6 py-4">
+                      <div class="space-y-1">
+                        <div><strong>Package</strong> - 代码组织</div>
+                        <div><strong>internal</strong> - 强制封装</div>
+                      </div>
+                    </td>
+                    <td class="px-6 py-4 text-sm">编译器强制，语言级别</td>
+                    <td class="px-6 py-4 text-sm">清晰的依赖关系</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Configuration, Testing, Deployment -->
+          <div class="mb-12">
+            <h3 class="font-serif text-xl font-semibold mb-6">配置、测试与部署的组织</h3>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div class="bg-white rounded-lg shadow-md p-6">
+                <h4 class="font-semibold text-blue-700 mb-4">
+                  <i class="fas fa-cogs mr-2"></i>配置文件管理
+                </h4>
+                <div class="space-y-3">
+                  <div class="flex items-center text-sm">
+                    <i class="fas fa-file-code text-blue-500 mr-2"></i>
+                    <span>YAML/TOML - 结构化配置</span>
+                  </div>
+                  <div class="flex items-center text-sm">
+                    <i class="fas fa-file-alt text-green-500 mr-2"></i>
+                    <span>.env - 环境变量</span>
+                  </div>
+                  <div class="flex items-center text-sm">
+                    <i class="fas fa-server text-purple-500 mr-2"></i>
+                    <span>配置中心 - 集中管理</span>
+                  </div>
+                </div>
+                <p class="text-xs text-secondary mt-3">最佳实践：配置与代码分离</p>
+              </div>
+
+              <div class="bg-white rounded-lg shadow-md p-6">
+                <h4 class="font-semibold text-green-700 mb-4">
+                  <i class="fas fa-vial mr-2"></i>测试目录规范
+                </h4>
+                <div class="space-y-3">
+                  <div class="text-sm">
+                    <p class="font-medium">Java: src/test/java</p>
+                    <p class="text-secondary text-xs">与主代码结构对应</p>
+                  </div>
+                  <div class="text-sm">
+                    <p class="font-medium">Python: tests/</p>
+                    <p class="text-secondary text-xs">独立测试目录</p>
+                  </div>
+                  <div class="text-sm">
+                    <p class="font-medium">Go: *_test.go</p>
+                    <p class="text-secondary text-xs">与主代码同目录</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-white rounded-lg shadow-md p-6">
+                <h4 class="font-semibold text-purple-700 mb-4">
+                  <i class="fas fa-docker mr-2"></i>构建与部署
+                </h4>
+                <div class="space-y-3">
+                  <div class="flex items-center text-sm">
+                    <i class="fab fa-docker text-blue-500 mr-2"></i>
+                    <span>Dockerfile - 容器化</span>
+                  </div>
+                  <div class="flex items-center text-sm">
+                    <i class="fas fa-dharmachakra text-green-500 mr-2"></i>
+                    <span>Kubernetes - 编排管理</span>
+                  </div>
+                  <div class="flex items-center text-sm">
+                    <i class="fas fa-code-branch text-purple-500 mr-2"></i>
+                    <span>CI/CD - 自动化流程</span>
+                  </div>
+                </div>
+                <p class="text-xs text-secondary mt-3">基础设施即代码</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Best Practices Summary -->
+          <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-8">
+            <h4 class="font-semibold mb-6 text-center">
+              <i class="fas fa-star text-yellow-500 mr-2"></i>跨框架最佳实践总结
+            </h4>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div class="text-center p-4 bg-white rounded-lg shadow-sm">
+                <i class="fas fa-layer-group text-2xl text-blue-500 mb-3"></i>
+                <h5 class="font-semibold text-blue-700">分层架构</h5>
+                <p class="text-xs text-secondary">职责分离，高内聚低耦合</p>
+              </div>
+
+              <div class="text-center p-4 bg-white rounded-lg shadow-sm">
+                <i class="fas fa-puzzle-piece text-2xl text-green-500 mb-3"></i>
+                <h5 class="font-semibold text-green-700">模块化</h5>
+                <p class="text-xs text-secondary">功能独立，易于维护</p>
+              </div>
+
+              <div class="text-center p-4 bg-white rounded-lg shadow-sm">
+                <i class="fas fa-shield-alt text-2xl text-purple-500 mb-3"></i>
+                <h5 class="font-semibold text-purple-700">接口隔离</h5>
+                <p class="text-xs text-secondary">依赖抽象，不依赖实现</p>
+              </div>
+
+              <div class="text-center p-4 bg-white rounded-lg shadow-sm">
+                <i class="fas fa-expand-arrows-alt text-2xl text-orange-500 mb-3"></i>
+                <h5 class="font-semibold text-orange-700">可扩展性</h5>
+                <p class="text-xs text-secondary">开放封闭，易于扩展</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <!-- Conclusion -->
+      <section class="py-12 px-8" id="conclusion">
+        <div class="max-w-4xl mx-auto">
+          <h2 class="font-serif text-3xl font-bold mb-8 text-primary">总结与展望</h2>
+
+          <div class="prose prose-lg max-w-none">
+            <p class="text-xl leading-relaxed text-secondary mb-8">
+              通过对Java、Python和Go生态中主流框架的目录组织方案进行深入调研，我们发现尽管具体实现和技术栈有所不同，但其背后遵循的核心理论和设计原则是高度一致的。这些原则构成了现代软件工程的基础，为构建高质量、可维护、可扩展的后端系统提供了指导。
+            </p>
+
+            <!-- Key Insights -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+              <div class="bg-white rounded-xl shadow-lg p-8">
+                <h3 class="font-serif text-xl font-semibold mb-6 text-center">核心洞察</h3>
+                <div class="space-y-4">
+                  <div class="flex items-start">
+                    <div class="bg-blue-100 rounded-full w-8 h-8 flex items-center justify-center mr-3 mt-1">
+                      <span class="text-blue-700 font-bold text-sm">1</span>
+                    </div>
+                    <div>
+                      <h4 class="font-semibold">分层架构是通用语言</h4>
+                      <p class="text-sm text-secondary">无论是单体应用还是微服务，分层架构都是管理复杂性的有效手段</p>
+                    </div>
+                  </div>
+
+                  <div class="flex items-start">
+                    <div class="bg-green-100 rounded-full w-8 h-8 flex items-center justify-center mr-3 mt-1">
+                      <span class="text-green-700 font-bold text-sm">2</span>
+                    </div>
+                    <div>
+                      <h4 class="font-semibold">微服务推动垂直组织</h4>
+                      <p class="text-sm text-secondary">按业务能力拆分成为主流，服务内部分层保持一致</p>
+                    </div>
+                  </div>
+
+                  <div class="flex items-start">
+                    <div class="bg-purple-100 rounded-full w-8 h-8 flex items-center justify-center mr-3 mt-1">
+                      <span class="text-purple-700 font-bold text-sm">3</span>
+                    </div>
+                    <div>
+                      <h4 class="font-semibold">数据对象模式多样化</h4>
+                      <p class="text-sm text-secondary">DTO、VO、PO、BO等模式在不同场景下发挥各自优势</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-white rounded-xl shadow-lg p-8">
+                <h3 class="font-serif text-xl font-semibold mb-6 text-center">框架特色</h3>
+                <div class="space-y-4">
+                  <div class="border-l-4 border-orange-500 pl-4">
+                    <h4 class="font-semibold text-orange-700">Java生态</h4>
+                    <p class="text-sm text-secondary">强类型，编译时检查，企业级特性丰富</p>
+                  </div>
+
+                  <div class="border-l-4 border-blue-500 pl-4">
+                    <h4 class="font-semibold text-blue-700">Python生态</h4>
+                    <p class="text-sm text-secondary">动态灵活，快速开发，现代化框架支持</p>
+                  </div>
+
+                  <div class="border-l-4 border-cyan-500 pl-4">
+                    <h4 class="font-semibold text-cyan-700">Go生态</h4>
+                    <p class="text-sm text-secondary">简洁高效，并发友好，云原生优先</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Future Trends -->
+            <div class="bg-gradient-to-r from-teal-50 to-cyan-50 rounded-xl p-8 mb-12">
+              <h3 class="font-serif text-xl font-semibold mb-6 text-center">未来趋势展望</h3>
+
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="text-center">
+                  <div class="bg-teal-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-cloud text-teal-600 text-2xl"></i>
+                  </div>
+                  <h4 class="font-semibold mb-2">云原生架构</h4>
+                  <p class="text-sm text-secondary">容器化、服务网格、无服务器成为主流</p>
+                </div>
+
+                <div class="text-center">
+                  <div class="bg-cyan-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-robot text-cyan-600 text-2xl"></i>
+                  </div>
+                  <h4 class="font-semibold mb-2">智能化开发</h4>
+                  <p class="text-sm text-secondary">AI辅助编程，自动化代码生成和优化</p>
+                </div>
+
+                <div class="text-center">
+                  <div class="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-code-branch text-blue-600 text-2xl"></i>
+                  </div>
+                  <h4 class="font-semibold mb-2">多语言协作</h4>
+                  <p class="text-sm text-secondary">多语言微服务，标准化通信协议</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Final Recommendations -->
+            <div class="bg-white rounded-xl shadow-lg p-8">
+              <h3 class="font-serif text-xl font-semibold mb-6 text-center">实践建议</h3>
+
+              <div class="space-y-6">
+                <div class="flex items-start">
+                  <i class="fas fa-lightbulb text-yellow-500 text-2xl mr-4 mt-1"></i>
+                  <div>
+                    <h4 class="font-semibold mb-2">选择合适的架构模式</h4>
+                    <p class="text-secondary">根据项目规模、团队能力和业务复杂度选择单体、微服务或混合架构。不必盲目追求潮流，适合的才是最好的。</p>
+                  </div>
+                </div>
+
+                <div class="flex items-start">
+                  <i class="fas fa-check-circle text-green-500 text-2xl mr-4 mt-1"></i>
+                  <div>
+                    <h4 class="font-semibold mb-2">坚持核心原则</h4>
+                    <p class="text-secondary">无论选择何种技术栈，都应该坚持关注点分离、高内聚低耦合、可维护性和可扩展性等核心原则。</p>
+                  </div>
+                </div>
+
+                <div class="flex items-start">
+                  <i class="fas fa-users text-blue-500 text-2xl mr-4 mt-1"></i>
+                  <div>
+                    <h4 class="font-semibold mb-2">注重团队协作</h4>
+                    <p class="text-secondary">代码组织应该反映团队的沟通和协作方式。遵循康威定律，设计符合团队结构的架构。</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Closing -->
+            <div class="mt-12 text-center">
+              <p class="text-lg text-secondary italic">
+                &#34;好的架构不是一开始就设计出来的，而是随着业务演进逐步演化出来的。&#34;
+              </p>
+              <p class="text-sm text-secondary mt-2">
+                持续关注技术发展，保持架构的灵活性和适应性，是构建成功后端系统的关键。
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Footer -->
+      <footer class="bg-gray-50 py-8 px-8">
+        <div class="max-w-4xl mx-auto text-center">
+          <p class="text-secondary text-sm">
+            后端项目源码目录组织方案调研 2024 | 基于最佳实践和行业标准
+          </p>
+        </div>
+      </footer>
+    </div>
+
+    <script>
+        // Initialize Mermaid
+        document.addEventListener('DOMContentLoaded', function() {
+            mermaid.initialize({ 
+                startOnLoad: true,
+                theme: 'base',
+                themeVariables: {
+                    // 主要颜色
+                    primaryColor: '#ffffff',
+                    primaryTextColor: '#374151',
+                    primaryBorderColor: '#0f766e',
+                    lineColor: '#64748b',
+                    
+                    // 背景颜色
+                    background: '#ffffff',
+                    mainBkg: '#ffffff',
+                    secondBkg: '#f8fafc',
+                    tertiaryColor: '#f0f9ff',
+                    
+                    // 节点颜色 - 多种类型，确保对比度
+                    nodeBkg: '#ffffff',
+                    nodeBorder: '#0f766e',
+                    
+                    clusterBkg: '#f8fafc',
+                    clusterBorder: '#64748b',
+                    
+                    // 不同类型节点的颜色 - 确保良好的对比度
+                    cScale0: '#e3f2fd',  // 浅蓝色
+                    cScale1: '#f3e5f5',  // 浅紫色
+                    cScale2: '#e8f5e8',  // 浅绿色
+                    cScale3: '#fff3e0',  // 浅橙色
+                    cScale4: '#fce4ec',  // 浅粉色
+                    
+                    // 文本颜色 - 深灰色确保可读性
+                    textColor: '#374151',
+                    nodeTextColor: '#374151',
+                    
+                    // 边和箭头颜色
+                    edgeLabelBackground: '#ffffff',
+                    edgeLabelText: '#374151',
+                    
+                    // 确保不同节点类型的文本对比度
+                    cScaleLabel0: '#1e40af',  // 深蓝色
+                    cScaleLabel1: '#7c3aed',  // 深紫色
+                    cScaleLabel2: '#166534',  // 深绿色
+                    cScaleLabel3: '#c2410c',  // 深橙色
+                    cScaleLabel4: '#be185d',  // 深粉色
+                    
+                    // 字体
+                    fontFamily: 'Inter, sans-serif',
+                    fontSize: '14px'
+                },
+                flowchart: {
+                    htmlLabels: true,
+                    curve: 'basis',
+                    padding: 20,
+                    nodeSpacing: 50,
+                    rankSpacing: 80,
+                    diagramPadding: 20
+                },
+                gantt: {
+                    fontFamily: 'Inter, sans-serif',
+                    fontSize: 14
+                }
+            });
+            
+            // Initialize mermaid controls after mermaid is loaded
+            initializeMermaidControls();
+        });
+
+        // Initialize Mermaid Controls for zoom and pan
+        function initializeMermaidControls() {
+            const containers = document.querySelectorAll('.mermaid-container');
+
+            containers.forEach(container => {
+            const mermaidElement = container.querySelector('.mermaid');
+            let scale = 1;
+            let isDragging = false;
+            let startX, startY, translateX = 0, translateY = 0;
+
+            // 触摸相关状态
+            let isTouch = false;
+            let touchStartTime = 0;
+            let initialDistance = 0;
+            let initialScale = 1;
+            let isPinching = false;
+
+            // Zoom controls
+            const zoomInBtn = container.querySelector('.zoom-in');
+            const zoomOutBtn = container.querySelector('.zoom-out');
+            const resetBtn = container.querySelector('.reset-zoom');
+            const fullscreenBtn = container.querySelector('.fullscreen');
+
+            function updateTransform() {
+                mermaidElement.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+
+                if (scale > 1) {
+                container.classList.add('zoomed');
+                } else {
+                container.classList.remove('zoomed');
+                }
+
+                mermaidElement.style.cursor = isDragging ? 'grabbing' : 'grab';
+            }
+
+            if (zoomInBtn) {
+                zoomInBtn.addEventListener('click', () => {
+                scale = Math.min(scale * 1.25, 4);
+                updateTransform();
+                });
+            }
+
+            if (zoomOutBtn) {
+                zoomOutBtn.addEventListener('click', () => {
+                scale = Math.max(scale / 1.25, 0.3);
+                if (scale <= 1) {
+                    translateX = 0;
+                    translateY = 0;
+                }
+                updateTransform();
+                });
+            }
+
+            if (resetBtn) {
+                resetBtn.addEventListener('click', () => {
+                scale = 1;
+                translateX = 0;
+                translateY = 0;
+                updateTransform();
+                });
+            }
+
+            if (fullscreenBtn) {
+                fullscreenBtn.addEventListener('click', () => {
+                if (container.requestFullscreen) {
+                    container.requestFullscreen();
+                } else if (container.webkitRequestFullscreen) {
+                    container.webkitRequestFullscreen();
+                } else if (container.msRequestFullscreen) {
+                    container.msRequestFullscreen();
+                }
+                });
+            }
+
+            // Mouse Events
+            mermaidElement.addEventListener('mousedown', (e) => {
+                if (isTouch) return; // 如果是触摸设备，忽略鼠标事件
+
+                isDragging = true;
+                startX = e.clientX - translateX;
+                startY = e.clientY - translateY;
+                mermaidElement.style.cursor = 'grabbing';
+                updateTransform();
+                e.preventDefault();
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (isDragging && !isTouch) {
+                translateX = e.clientX - startX;
+                translateY = e.clientY - startY;
+                updateTransform();
+                }
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (isDragging && !isTouch) {
+                isDragging = false;
+                mermaidElement.style.cursor = 'grab';
+                updateTransform();
+                }
+            });
+
+            document.addEventListener('mouseleave', () => {
+                if (isDragging && !isTouch) {
+                isDragging = false;
+                mermaidElement.style.cursor = 'grab';
+                updateTransform();
+                }
+            });
+
+            // 获取两点之间的距离
+            function getTouchDistance(touch1, touch2) {
+                return Math.hypot(
+                touch2.clientX - touch1.clientX,
+                touch2.clientY - touch1.clientY
+                );
+            }
+
+            // Touch Events - 触摸事件处理
+            mermaidElement.addEventListener('touchstart', (e) => {
+                isTouch = true;
+                touchStartTime = Date.now();
+
+                if (e.touches.length === 1) {
+                // 单指拖动
+                isPinching = false;
+                isDragging = true;
+
+                const touch = e.touches[0];
+                startX = touch.clientX - translateX;
+                startY = touch.clientY - translateY;
+
+                } else if (e.touches.length === 2) {
+                // 双指缩放
+                isPinching = true;
+                isDragging = false;
+
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                initialDistance = getTouchDistance(touch1, touch2);
+                initialScale = scale;
+                }
+
+                e.preventDefault();
+            }, { passive: false });
+
+            mermaidElement.addEventListener('touchmove', (e) => {
+                if (e.touches.length === 1 && isDragging && !isPinching) {
+                // 单指拖动
+                const touch = e.touches[0];
+                translateX = touch.clientX - startX;
+                translateY = touch.clientY - startY;
+                updateTransform();
+
+                } else if (e.touches.length === 2 && isPinching) {
+                // 双指缩放
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                const currentDistance = getTouchDistance(touch1, touch2);
+
+                if (initialDistance > 0) {
+                    const newScale = Math.min(Math.max(
+                    initialScale * (currentDistance / initialDistance),
+                    0.3
+                    ), 4);
+                    scale = newScale;
+                    updateTransform();
+                }
+                }
+
+                e.preventDefault();
+            }, { passive: false });
+
+            mermaidElement.addEventListener('touchend', (e) => {
+                // 重置状态
+                if (e.touches.length === 0) {
+                isDragging = false;
+                isPinching = false;
+                initialDistance = 0;
+
+                // 延迟重置isTouch，避免鼠标事件立即触发
+                setTimeout(() => {
+                    isTouch = false;
+                }, 100);
+                } else if (e.touches.length === 1 && isPinching) {
+                // 从双指变为单指，切换为拖动模式
+                isPinching = false;
+                isDragging = true;
+
+                const touch = e.touches[0];
+                startX = touch.clientX - translateX;
+                startY = touch.clientY - translateY;
+                }
+
+                updateTransform();
+            });
+
+            mermaidElement.addEventListener('touchcancel', (e) => {
+                isDragging = false;
+                isPinching = false;
+                initialDistance = 0;
+
+                setTimeout(() => {
+                isTouch = false;
+                }, 100);
+
+                updateTransform();
+            });
+
+            // Enhanced wheel zoom with better center point handling
+            container.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                const rect = container.getBoundingClientRect();
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+
+                const delta = e.deltaY > 0 ? 0.9 : 1.1;
+                const newScale = Math.min(Math.max(scale * delta, 0.3), 4);
+
+                // Adjust translation to zoom towards center
+                if (newScale !== scale) {
+                const scaleDiff = newScale / scale;
+                translateX = translateX * scaleDiff;
+                translateY = translateY * scaleDiff;
+                scale = newScale;
+
+                if (scale <= 1) {
+                    translateX = 0;
+                    translateY = 0;
+                }
+
+                updateTransform();
+                }
+            });
+
+            // Initialize display
+            updateTransform();
+            });
+        }
+
+        // Smooth scrolling for TOC links
+        document.querySelectorAll('.toc-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                
+                if (targetElement) {
+                    targetElement.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                    
+                    // Update active state
+                    document.querySelectorAll('.toc-link').forEach(l => l.classList.remove('active'));
+                    this.classList.add('active');
+                }
+            });
+        });
+
+        // Update active TOC link on scroll
+        window.addEventListener('scroll', function() {
+            const sections = document.querySelectorAll('section[id]');
+            const tocLinks = document.querySelectorAll('.toc-link');
+            
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (window.pageYOffset >= sectionTop - 200) {
+                    current = section.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        });
+
+        // TOC toggle for mobile
+        const tocNav = document.getElementById('toc-nav');
+        const tocToggle = document.getElementById('toc-toggle');
+        const tocClose = document.getElementById('toc-close');
+
+        tocToggle.addEventListener('click', function() {
+            tocNav.classList.remove('-translate-x-full');
+        });
+
+        tocClose.addEventListener('click', function() {
+            tocNav.classList.add('-translate-x-full');
+        });
+
+        // Close TOC when clicking on a link (mobile)
+        document.querySelectorAll('.toc-link').forEach(link => {
+            link.addEventListener('click', function() {
+                if (window.innerWidth < 768) {
+                    tocNav.classList.add('-translate-x-full');
+                }
+            });
+        });
+    </script>
+
+  
+
+</body></html>
