@@ -3,12 +3,20 @@
   "quoteNote": "本索引汇总若干 AI 生成的高质量专题报告，报告用于快速从 0 到 1 了解实际问题的成体系解决方案。使用 Ctrl + F 可快速查找报告。",
   "reports": [
     {
+      "title": "26岁技术转管理：项目技术管理人员转型与能力提升完整指南.html",
+      "href": "content\\26岁技术转管理：项目技术管理人员转型与能力提升完整指南.html"
+    },
+    {
+      "title": "26岁技术转管理：项目技术管理人员转型与能力提升完整指南.pdf",
+      "href": "content\\26岁技术转管理：项目技术管理人员转型与能力提升完整指南.pdf"
+    },
+    {
       "title": "26岁男性生活指南：全面挑战与解决方案.html",
       "href": "content\\26岁男性生活指南：全面挑战与解决方案.html"
     },
     {
-      "title": "26岁男性生活指南：问题与解决方案.pdf",
-      "href": "content\\26岁男性生活指南：问题与解决方案.pdf"
+      "title": "26岁男性生活指南：全面挑战与解决方案.pdf",
+      "href": "content\\26岁男性生活指南：全面挑战与解决方案.pdf"
     },
     {
       "title": "bestpractice-dcs-hk-pdf.pdf",
@@ -27,12 +35,20 @@
       "href": "content\\MySQL与Doris大数据量Excel导出方案.pdf"
     },
     {
+      "title": "Python JSON 序列化器深度调研：开箱即用与多类型支持.html",
+      "href": "content\\Python JSON 序列化器深度调研：开箱即用与多类型支持.html"
+    },
+    {
       "title": "Python JSON 序列化器深度调研：开箱即用与多类型支持.pdf",
       "href": "content\\Python JSON 序列化器深度调研：开箱即用与多类型支持.pdf"
     },
     {
-      "title": "Python JSON序列化器深度调研：开箱即用与多类型支持.html",
-      "href": "content\\Python JSON序列化器深度调研：开箱即用与多类型支持.html"
+      "title": "Python 生态中 Celery 替代品深度调研与对比分析.html",
+      "href": "content\\Python 生态中 Celery 替代品深度调研与对比分析.html"
+    },
+    {
+      "title": "Python 生态中 Celery 替代品深度调研与对比分析.pdf",
+      "href": "content\\Python 生态中 Celery 替代品深度调研与对比分析.pdf"
     },
     {
       "title": "Python企业级邮件发送库深度研究.html",
@@ -79,8 +95,8 @@
       "href": "content\\国内大厂算法面试真题分析：2023-2024年度报告.html"
     },
     {
-      "title": "国内大厂（BAT、TMD）算法面试真题分析（2023-2024）：类型与难度.pdf",
-      "href": "content\\国内大厂（BAT、TMD）算法面试真题分析（2023-2024）：类型与难度.pdf"
+      "title": "国内大厂算法面试真题分析：2023-2024年度报告.pdf",
+      "href": "content\\国内大厂算法面试真题分析：2023-2024年度报告.pdf"
     },
     {
       "title": "寻找靠谱女朋友渠道指南.html",
@@ -119,12 +135,12 @@
       "href": "content\\近两年后端面试高频100题深度解析.html"
     },
     {
-      "title": "高级 Python Web 开发者的 AI 转型之路：大模型与 AI 应用开发学习路线图.pdf",
-      "href": "content\\高级 Python Web 开发者的 AI 转型之路：大模型与 AI 应用开发学习路线图.pdf"
+      "title": "高级 Python Web 开发者的 AI 转型之路：大模型与 AI 应用开发学习路线图.html",
+      "href": "content\\高级 Python Web 开发者的 AI 转型之路：大模型与 AI 应用开发学习路线图.html"
     },
     {
-      "title": "高级Python Web开发者的AI转型之路：大模型与AI应用开发学习路线图.html",
-      "href": "content\\高级Python Web开发者的AI转型之路：大模型与AI应用开发学习路线图.html"
+      "title": "高级 Python Web 开发者的 AI 转型之路：大模型与 AI 应用开发学习路线图.pdf",
+      "href": "content\\高级 Python Web 开发者的 AI 转型之路：大模型与 AI 应用开发学习路线图.pdf"
     }
   ]
 }

@@ -1,0 +1,1197 @@
+<!DOCTYPE html><html lang="zh-CN"><head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Python 生态中 Celery 替代品深度调研与对比分析</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&amp;family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        .font-display { font-family: 'Playfair Display', serif; }
+        .font-body { font-family: 'Inter', sans-serif; }
+        
+        :root {
+            --primary: #2c3e50;
+            --secondary: #34495e;
+            --accent: #3498db;
+            --muted: #7f8c8d;
+            --background: #fefefe;
+            --surface: #ffffff;
+        }
+        
+        .gradient-overlay {
+            background: linear-gradient(135deg, rgba(44, 62, 80, 0.9) 0%, rgba(52, 73, 94, 0.8) 50%, rgba(52, 152, 219, 0.7) 100%);
+        }
+        
+        .text-shadow {
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            grid-template-rows: auto auto;
+            gap: 2rem;
+            height: 60vh;
+            min-height: 500px;
+        }
+        
+        .hero-main {
+            grid-column: 1 / 2;
+            grid-row: 1 / 3;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .hero-side-1 {
+            grid-column: 2 / 3;
+            grid-row: 1 / 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(52, 152, 219, 0.1);
+            border-radius: 1rem;
+        }
+        
+        .hero-side-2 {
+            grid-column: 2 / 3;
+            grid-row: 2 / 3;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(44, 62, 80, 0.1);
+            border-radius: 1rem;
+        }
+        
+        .toc-fixed {
+            position: fixed;
+            top: 2rem;
+            left: 2rem;
+            width: 280px;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+            z-index: 50;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(127, 140, 141, 0.2);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .content-main {
+            margin-left: 320px;
+            padding: 2rem;
+        }
+        
+        .comparison-matrix {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+        
+        .feature-card {
+            background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+            border: 1px solid #e9ecef;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            word-break: break-word;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .citation {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: 500;
+            position: relative;
+        }
+        
+        .citation:hover {
+            text-decoration: underline;
+        }
+        
+        .pull-quote {
+            font-size: 1.25rem;
+            font-style: italic;
+            color: #2c3e50;
+            border-left: 4px solid #3498db;
+            padding-left: 2rem;
+            margin: 2rem 0;
+            background: rgba(52, 152, 219, 0.05);
+            padding: 2rem;
+            border-radius: 0.5rem;
+        }
+
+        .mermaid-container {
+            display: flex;
+            justify-content: center;
+            min-height: 300px;
+            max-height: 800px;
+            background: #ffffff;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 30px;
+            margin: 30px 0;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mermaid-container .mermaid {
+            width: 100%;
+            max-width: 100%;
+            height: 100%;
+            cursor: grab;
+            transition: transform 0.3s ease;
+            transform-origin: center center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            touch-action: none; /* 防止触摸设备上的默认行为 */
+            -webkit-user-select: none; /* 防止文本选择 */
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        .mermaid-container .mermaid svg {
+            max-width: 100%;
+            height: 100%;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .mermaid-container .mermaid:active {
+            cursor: grabbing;
+        }
+
+        .mermaid-container.zoomed .mermaid {
+            height: 100%;
+            width: 100%;
+            cursor: grab;
+        }
+
+        .mermaid-controls {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            display: flex;
+            gap: 10px;
+            z-index: 20;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 8px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .mermaid-control-btn {
+            background: #ffffff;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #374151;
+            font-size: 14px;
+            min-width: 36px;
+            height: 36px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mermaid-control-btn:hover {
+            background: #f8fafc;
+            border-color: #3b82f6;
+            color: #3b82f6;
+            transform: translateY(-1px);
+        }
+
+        .mermaid-control-btn:active {
+            transform: scale(0.95);
+        }
+        
+        @media (max-width: 1200px) {
+            .toc-fixed {
+                position: relative;
+                top: 0;
+                left: 0;
+                width: 100%;
+                margin-bottom: 2rem;
+            }
+            .content-main {
+                margin-left: 0;
+            }
+            .hero-grid {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto auto;
+                height: auto;
+            }
+            .hero-main {
+                grid-column: 1;
+                grid-row: 1;
+            }
+            .hero-side-1 {
+                grid-column: 1;
+                grid-row: 2;
+            }
+            .hero-side-2 {
+                grid-column: 1;
+                grid-row: 3;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .mermaid-control-btn:not(.reset-zoom) {
+                display: none;
+            }
+            .mermaid-controls {
+                top: auto;
+                bottom: 15px;
+                right: 15px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            /* Prevent horizontal overflow */
+            body {
+                overflow-x: hidden;
+            }
+            
+            /* Hero section adjustments */
+            .hero-main h1 {
+                font-size: 2.5rem !important;
+                line-height: 1.2;
+            }
+            
+            .hero-main p {
+                font-size: 1.1rem !important;
+            }
+            
+            /* Adjust hero grid for small screens */
+            .hero-grid {
+                gap: 1rem;
+                padding: 1rem 0;
+            }
+            
+            /* Ensure hero-side blocks don't have excessive height */
+            .hero-side-1, .hero-side-2 {
+                min-height: 120px;
+                height: auto;
+                padding: 1rem;
+            }
+            
+            /* Adjust comparison matrix */
+            .comparison-matrix {
+                grid-template-columns: 1fr;
+            }
+            
+            /* Adjust feature cards */
+            .feature-card {
+                padding: 1rem;
+            }
+            
+            /* Ensure images scale properly */
+            .hero-side-1 img, .hero-side-2 img {
+                height: auto;
+                max-width: 100%;
+            }
+            
+            /* Adjust mermaid container */
+            .mermaid-container {
+                padding: 1rem;
+            }
+        }
+    </style>
+  <base target="_blank">
+</head>
+
+  <body class="font-body bg-gray-50 text-gray-800">
+    <!-- Table of Contents -->
+    <nav class="toc-fixed">
+      <h3 class="font-display font-semibold text-lg text-gray-800 mb-4">目录导航</h3>
+      <ul class="space-y-2 text-sm">
+        <li>
+          <a class="citation block py-1 hover:text-gray-600" href="#pain-points">核心痛点分析</a>
+        </li>
+        <li>
+          <a class="citation block py-1 hover:text-gray-600" href="#extensions">基于 Celery 的扩展优化</a>
+        </li>
+        <li>
+          <a class="citation block py-1 hover:text-gray-600" href="#alternatives">Python 生态替代品</a>
+        </li>
+        <li>
+          <a class="citation block py-1 hover:text-gray-600" href="#other-stacks">其他技术栈方案</a>
+        </li>
+        <li>
+          <a class="citation block py-1 hover:text-gray-600" href="#comparison">综合对比与选型</a>
+        </li>
+        <li>
+          <a class="citation block py-1 hover:text-gray-600" href="#conclusion">总结建议</a>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="content-main">
+      <!-- Hero Section -->
+      <section class="mb-16">
+        <div class="hero-grid">
+          <div class="hero-main relative">
+            <div class="absolute inset-0 bg-gradient-to-br from-blue-900/20 to-indigo-900/20 rounded-2xl"></div>
+            <div class="relative z-10 p-8">
+              <h1 class="font-display text-5xl font-bold text-gray-900 mb-6 leading-tight text-shadow">
+                Python 生态中 <em class="text-blue-600">Celery</em> 替代品
+                <span class="block text-4xl text-gray-700 mt-2">深度调研与对比分析</span>
+              </h1>
+              <p class="text-xl text-gray-600 mb-8 leading-relaxed">
+                针对分布式任务队列的核心痛点，探索保留优化与迁移替代的完整技术路径
+              </p>
+              <div class="flex items-center space-x-6 text-sm text-gray-500">
+                <span class="flex items-center"><i class="fas fa-clock mr-2"></i>深度分析</span>
+                <span class="flex items-center"><i class="fas fa-chart-line mr-2"></i>数据驱动</span>
+                <span class="flex items-center"><i class="fas fa-code mr-2"></i>技术实践</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="hero-side-1">
+            <img alt="分布式任务队列架构示意图" class="w-full h-32 object-cover rounded-lg opacity-80" src="https://kimi-web-img.moonshot.cn/img/img2018.cnblogs.com/7f0d2fc93d53801892b27526b89dde2ee9b9f98c.png" size="small" aspect="wide" query="分布式任务队列架构" referrerpolicy="no-referrer" data-modified="1" data-score="0.00"/>
+          </div>
+
+          <div class="hero-side-2">
+            <img alt="跨平台开发环境" class="w-full h-32 object-cover rounded-lg opacity-80" src="https://kimi-web-img.moonshot.cn/img/www.yuendong.com:8080/f687c68330a670748384c1f4883309b29587ef98.jpg" size="small" aspect="wide" style="photo" query="跨平台开发环境" referrerpolicy="no-referrer" data-modified="1" data-score="0.00"/>
+          </div>
+        </div>
+      </section>
+
+      <!-- Core Pain Points -->
+      <section class="mb-16" id="pain-points">
+        <h2 class="font-display text-3xl font-semibold text-gray-900 mb-8">核心痛点分析：为何需要替代 Celery？</h2>
+
+        <div class="grid md:grid-cols-2 gap-8 mb-12">
+          <div class="feature-card">
+            <div class="flex items-center mb-4">
+              <i class="fas fa-sync-alt text-red-500 text-2xl mr-3"></i>
+              <h3 class="font-display text-xl font-semibold">分布式部署下的任务重复执行</h3>
+            </div>
+            <p class="text-gray-600 mb-4">
+              在多实例部署场景下，多个 Celery Worker 可能同时处理同一任务，导致数据不一致和业务逻辑错误。
+              例如电商订单支付回调被重复执行，造成用户账户重复扣款。
+            </p>
+            <div class="bg-red-50 p-4 rounded-lg">
+              <h4 class="font-semibold text-red-800 mb-2">问题根源：Redis Visibility Timeout 机制</h4>
+              <p class="text-red-700 text-sm">
+                当 Worker 崩溃或超时未能及时确认，任务会在超时后重新变为可见状态，
+                被其他 Worker 再次获取执行 <a class="citation" href="https://note.qidong.name/2021/01/celery-visibility-timeout/" target="_blank">[^93]</a>
+              </p>
+            </div>
+          </div>
+
+          <div class="feature-card">
+            <div class="flex items-center mb-4">
+              <i class="fas fa-desktop text-blue-500 text-2xl mr-3"></i>
+              <h3 class="font-display text-xl font-semibold">Windows 平台支持不佳</h3>
+            </div>
+            <p class="text-gray-600 mb-4">
+              Celery 底层依赖 Unix/Linux 特有的 fork() 系统调用，在 Windows 平台上运行时会出现进程创建、
+              信号处理等兼容性问题。
+            </p>
+            <div class="bg-blue-50 p-4 rounded-lg">
+              <h4 class="font-semibold text-blue-800 mb-2">官方立场：我们不支持 Microsoft Windows</h4>
+              <p class="text-blue-700 text-sm">
+                官方文档明确指出 Windows 支持有限，开发者难以获得有效支持
+                <a class="citation" href="https://github.com/celery/celery" target="_blank">[^208]</a>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="pull-quote">
+          &#34;任务重复执行和跨平台支持问题，已经成为阻碍 Celery 在现代分布式系统中大规模应用的核心痛点。&#34;
+        </div>
+      </section>
+
+      <!-- Celery Extensions -->
+      <section class="mb-16" id="extensions">
+        <h2 class="font-display text-3xl font-semibold text-gray-900 mb-8">核心解决方案：基于 Celery 的扩展与优化</h2>
+
+        <div class="grid lg:grid-cols-3 gap-6 mb-12">
+          <div class="feature-card">
+            <div class="flex items-center mb-4">
+              <i class="fas fa-lock text-green-500 text-2xl mr-3"></i>
+              <h3 class="font-display text-lg font-semibold">Celery Once</h3>
+            </div>
+            <p class="text-gray-600 text-sm mb-4">
+              通过分布式锁机制确保任务唯一性，基于任务名称和参数生成指纹，
+              使用 Redis SET 命令实现锁定。
+            </p>
+            <div class="bg-green-50 p-3 rounded">
+              <p class="text-green-800 text-xs font-semibold">适用场景：订单处理、支付回调</p>
+            </div>
+          </div>
+
+          <div class="feature-card">
+            <div class="flex items-center mb-4">
+              <i class="fas fa-user text-purple-500 text-2xl mr-3"></i>
+              <h3 class="font-display text-lg font-semibold">Celery Singleton</h3>
+            </div>
+            <p class="text-gray-600 text-sm mb-4">
+              确保同一任务实例唯一，通过维护运行任务列表，
+              实现串行化处理，避免并发冲突。
+            </p>
+            <div class="bg-purple-50 p-3 rounded">
+              <p class="text-purple-800 text-xs font-semibold">适用场景：数据迁移、批量更新</p>
+            </div>
+          </div>
+
+          <div class="feature-card">
+            <div class="flex items-center mb-4">
+              <i class="fab fa-docker text-blue-500 text-2xl mr-3"></i>
+              <h3 class="font-display text-lg font-semibold">Docker 化部署</h3>
+            </div>
+            <p class="text-gray-600 text-sm mb-4">
+              通过容器化技术绕过 Windows 原生环境限制，
+              实现跨平台一致的运行环境。
+            </p>
+            <div class="bg-blue-50 p-3 rounded">
+              <p class="text-blue-800 text-xs font-semibold">优势：一次构建，到处运行</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-gray-100 p-6 rounded-xl">
+          <h3 class="font-display text-xl font-semibold mb-4">Docker Compose 配置示例</h3>
+          <pre class="bg-gray-800 text-green-400 p-4 rounded-lg text-sm overflow-x-auto"><code>version: &#39;3.8&#39;
+services:
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/code
+    ports:
+      - &#34;8000:8000&#34;
+    depends_on:
+      - redis
+      - worker
+
+  worker:
+    build: .
+    command: celery -A project worker --loglevel=info
+    volumes:
+      - .:/code
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:alpine
+    ports:
+      - &#34;6379:6379&#34;
+
+  flower:
+    build: .
+    command: celery -A project flower --port=5555
+    ports:
+      - &#34;5555:5555&#34;
+    depends_on:
+      - redis
+      - worker</code></pre>
+        </div>
+      </section>
+
+      <!-- Python Alternatives -->
+      <section class="mb-16" id="alternatives">
+        <h2 class="font-display text-3xl font-semibold text-gray-900 mb-8">Python 生态主流替代品全方位对比</h2>
+
+        <div class="comparison-matrix">
+          <div class="feature-card">
+            <div class="flex items-center mb-3">
+              <i class="fas fa-list text-red-500 mr-2"></i>
+              <h4 class="font-semibold">RQ (Redis Queue)</h4>
+            </div>
+            <div class="space-y-2 text-sm">
+              <div class="flex justify-between">
+                <span class="text-gray-600">GitHub Stars</span>
+                <span class="font-semibold">数千个</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">跨平台支持</span>
+                <span class="text-red-500">有限</span>
+              </div>
+              <div class="text-xs text-gray-500 mt-2">
+                轻量级、易上手，但功能相对简单，不支持 Windows
+              </div>
+            </div>
+          </div>
+
+          <div class="feature-card">
+            <div class="flex items-center mb-3">
+              <i class="fas fa-rocket text-blue-500 mr-2"></i>
+              <h4 class="font-semibold">Dramatiq</h4>
+            </div>
+            <div class="space-y-2 text-sm">
+              <div class="flex justify-between">
+                <span class="text-gray-600">GitHub Stars</span>
+                <span class="font-semibold">数千个</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">性能表现</span>
+                <span class="text-green-500">优秀</span>
+              </div>
+              <div class="text-xs text-gray-500 mt-2">
+                高性能、低延迟，适合 IO 密集型任务，生态系统较小
+              </div>
+            </div>
+          </div>
+
+          <div class="feature-card">
+            <div class="flex items-center mb-3">
+              <i class="fas fa-palette text-purple-500 mr-2"></i>
+              <h4 class="font-semibold">Huey</h4>
+            </div>
+            <div class="space-y-2 text-sm">
+              <div class="flex justify-between">
+                <span class="text-gray-600">后端支持</span>
+                <span class="font-semibold">多后端</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">使用复杂度</span>
+                <span class="text-green-500">简单</span>
+              </div>
+              <div class="text-xs text-gray-500 mt-2">
+                支持 Redis、SQLite、文件系统，适合轻量级场景
+              </div>
+            </div>
+          </div>
+
+          <div class="feature-card">
+            <div class="flex items-center mb-3">
+              <i class="fas fa-calendar text-green-500 mr-2"></i>
+              <h4 class="font-semibold">APScheduler</h4>
+            </div>
+            <div class="space-y-2 text-sm">
+              <div class="flex justify-between">
+                <span class="text-gray-600">核心功能</span>
+                <span class="font-semibold">定时调度</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">社区活跃度</span>
+                <span class="text-green-500">活跃</span>
+              </div>
+              <div class="text-xs text-gray-500 mt-2">
+                专注定时任务调度，非严格意义上的任务队列
+              </div>
+            </div>
+          </div>
+
+          <div class="feature-card">
+            <div class="flex items-center mb-3">
+              <i class="fas fa-star text-yellow-500 mr-2"></i>
+              <h4 class="font-semibold">Funboost</h4>
+            </div>
+            <div class="space-y-2 text-sm">
+              <div class="flex justify-between">
+                <span class="text-gray-600">GitHub Stars</span>
+                <span class="font-semibold">872个</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Windows 支持</span>
+                <span class="text-green-500">宣称支持</span>
+              </div>
+              <div class="text-xs text-gray-500 mt-2">
+                功能丰富，兼容 Celery 接口，但社区规模较小
+                <a class="citation" href="https://github.com/ydf0509/funboost" target="_blank">[^35]</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Other Tech Stacks -->
+      <section class="mb-16" id="other-stacks">
+        <h2 class="font-display text-3xl font-semibold text-gray-900 mb-8">其他技术栈的潜在解决方案</h2>
+
+        <div class="grid md:grid-cols-2 gap-8 mb-12">
+          <div class="feature-card">
+            <div class="flex items-center mb-4">
+              <i class="fas fa-golang text-blue-600 text-2xl mr-3"></i>
+              <h3 class="font-display text-xl font-semibold">Go 语言生态：Asynq</h3>
+            </div>
+            <p class="text-gray-600 mb-4">
+              基于 Go 语言的高性能分布式任务队列，原生支持任务去重和跨平台部署。
+              利用 Redis 作为消息代理，通过 SET NX EX 命令实现分布式锁。
+            </p>
+            <div class="space-y-2 text-sm">
+              <div class="flex items-center text-green-600">
+                <i class="fas fa-check mr-2"></i>
+                原生支持任务去重
+              </div>
+              <div class="flex items-center text-green-600">
+                <i class="fas fa-check mr-2"></i>
+                优秀的跨平台编译能力
+              </div>
+              <div class="flex items-center text-green-600">
+                <i class="fas fa-check mr-2"></i>
+                高性能并发处理
+              </div>
+            </div>
+          </div>
+
+          <div class="feature-card">
+            <div class="flex items-center mb-4">
+              <i class="fas fa-file-alt text-purple-600 text-2xl mr-3"></i>
+              <h3 class="font-display text-xl font-semibold">基于文件系统：fs-task-queue</h3>
+            </div>
+            <p class="text-gray-600 mb-4">
+              轻量级零依赖的解决方案，利用文件锁机制协调任务执行，
+              适用于无法部署 Redis 等外部服务的场景。
+            </p>
+            <div class="space-y-2 text-sm">
+              <div class="flex items-center text-green-600">
+                <i class="fas fa-check mr-2"></i>
+                零依赖部署简单
+              </div>
+              <div class="flex items-center text-green-600">
+                <i class="fas fa-check mr-2"></i>
+                通过 filelock 实现跨平台
+              </div>
+              <div class="flex items-center text-yellow-600">
+                <i class="fas fa-exclamation-triangle mr-2"></i>
+                性能受限于文件 I/O
+              </div>
+            </div>
+            <p class="text-xs text-gray-500 mt-3">
+              项目详情 <a class="citation" href="https://pypi.org/project/fs-task-queue/" target="_blank">[^300]</a>
+            </p>
+          </div>
+        </div>
+
+        <div class="bg-gray-100 p-6 rounded-xl">
+          <h3 class="font-display text-xl font-semibold mb-4">技术栈选择决策树</h3>
+          <div class="mermaid-container">
+            <div class="mermaid-controls">
+              <button class="mermaid-control-btn zoom-in" title="放大">
+                <i class="fas fa-search-plus"></i>
+              </button>
+              <button class="mermaid-control-btn zoom-out" title="缩小">
+                <i class="fas fa-search-minus"></i>
+              </button>
+              <button class="mermaid-control-btn reset-zoom" title="重置">
+                <i class="fas fa-expand-arrows-alt"></i>
+              </button>
+              <button class="mermaid-control-btn fullscreen" title="全屏查看">
+                <i class="fas fa-expand"></i>
+              </button>
+            </div>
+            <div class="mermaid" id="decision-tree">
+              flowchart TD
+              A[&#34;需要替代 Celery?&#34;] --&gt; B{&#34;对性能要求高?&#34;}
+              B --&gt;|是| C[&#34;考虑 Asynq (Go)&#34;]
+              B --&gt;|否| D{&#34;是否需要跨平台?&#34;}
+              D --&gt;|是| E[&#34;考虑 Docker + Celery&#34;]
+              D --&gt;|否| F{&#34;任务量大小?&#34;}
+              F --&gt;|大| G[&#34;考虑 Dramatiq&#34;]
+              F --&gt;|小| H{&#34;是否需要外部服务?&#34;}
+              H --&gt;|否| I[&#34;考虑 fs-task-queue&#34;]
+              H --&gt;|是| J[&#34;考虑 RQ/Huey&#34;]
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Comprehensive Comparison -->
+      <section class="mb-16" id="comparison">
+        <h2 class="font-display text-3xl font-semibold text-gray-900 mb-8">综合对比与选型建议</h2>
+
+        <div class="overflow-x-auto mb-12">
+          <table class="w-full bg-white rounded-lg shadow-lg overflow-hidden">
+            <thead class="bg-gray-800 text-white">
+              <tr>
+                <th class="px-6 py-4 text-left">特性</th>
+                <th class="px-6 py-4 text-center">Asynq (Go)</th>
+                <th class="px-6 py-4 text-center">fs-task-queue</th>
+                <th class="px-6 py-4 text-center">persist-queue</th>
+                <th class="px-6 py-4 text-center">自建方案</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+              <tr class="hover:bg-gray-50">
+                <td class="px-6 py-4 font-semibold">核心语言</td>
+                <td class="px-6 py-4 text-center">Go</td>
+                <td class="px-6 py-4 text-center">Python</td>
+                <td class="px-6 py-4 text-center">Python</td>
+                <td class="px-6 py-4 text-center">Python</td>
+              </tr>
+              <tr class="hover:bg-gray-50">
+                <td class="px-6 py-4 font-semibold">跨平台支持</td>
+                <td class="px-6 py-4 text-center text-green-600">优秀</td>
+                <td class="px-6 py-4 text-center text-yellow-600">良好</td>
+                <td class="px-6 py-4 text-center text-yellow-600">良好</td>
+                <td class="px-6 py-4 text-center text-yellow-600">良好</td>
+              </tr>
+              <tr class="hover:bg-gray-50">
+                <td class="px-6 py-4 font-semibold">任务去重</td>
+                <td class="px-6 py-4 text-center text-green-600">原生支持</td>
+                <td class="px-6 py-4 text-center text-green-600">支持</td>
+                <td class="px-6 py-4 text-center text-green-600">支持</td>
+                <td class="px-6 py-4 text-center text-green-600">支持</td>
+              </tr>
+              <tr class="hover:bg-gray-50">
+                <td class="px-6 py-4 font-semibold">部署复杂性</td>
+                <td class="px-6 py-4 text-center text-yellow-600">中等</td>
+                <td class="px-6 py-4 text-center text-green-600">低</td>
+                <td class="px-6 py-4 text-center text-green-600">低</td>
+                <td class="px-6 py-4 text-center text-green-600">低</td>
+              </tr>
+              <tr class="hover:bg-gray-50">
+                <td class="px-6 py-4 font-semibold">性能</td>
+                <td class="px-6 py-4 text-center text-green-600">高</td>
+                <td class="px-6 py-4 text-center text-red-600">中低</td>
+                <td class="px-6 py-4 text-center text-yellow-600">中</td>
+                <td class="px-6 py-4 text-center text-red-600">中低</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-8">
+          <div class="feature-card">
+            <h3 class="font-display text-lg font-semibold mb-4">社区活跃度对比</h3>
+            <div class="space-y-3">
+              <div class="flex justify-between items-center">
+                <span class="text-gray-600">persist-queue</span>
+                <span class="font-semibold text-blue-600">1.5k+ Stars</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-gray-600">Funboost</span>
+                <span class="font-semibold text-blue-600">872 Stars</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-gray-600">APScheduler</span>
+                <span class="font-semibold text-green-600">数万 Stars</span>
+              </div>
+            </div>
+            <p class="text-xs text-gray-500 mt-3">
+              数据来源 <a class="citation" href="https://github.com/peter-wangxu/persist-queue" target="_blank">[^297]</a>
+            </p>
+          </div>
+
+          <div class="feature-card">
+            <h3 class="font-display text-lg font-semibold mb-4">选型决策建议</h3>
+            <div class="space-y-3 text-sm">
+              <div class="bg-blue-50 p-3 rounded">
+                <strong class="text-blue-800">高性能场景：</strong>
+                <span class="text-blue-700">选择 Asynq (Go)</span>
+              </div>
+              <div class="bg-green-50 p-3 rounded">
+                <strong class="text-green-800">轻量级场景：</strong>
+                <span class="text-green-700">选择 persist-queue</span>
+              </div>
+              <div class="bg-purple-50 p-3 rounded">
+                <strong class="text-purple-800">定时任务：</strong>
+                <span class="text-purple-700">选择 APScheduler</span>
+              </div>
+              <div class="bg-yellow-50 p-3 rounded">
+                <strong class="text-yellow-800">无依赖环境：</strong>
+                <span class="text-yellow-700">选择 fs-task-queue</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Conclusion -->
+      <section class="mb-16" id="conclusion">
+        <h2 class="font-display text-3xl font-semibold text-gray-900 mb-8">总结建议</h2>
+
+        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-8 rounded-xl mb-8">
+          <h3 class="font-display text-2xl font-semibold text-gray-900 mb-4">核心发现</h3>
+          <p class="text-lg text-gray-700 leading-relaxed mb-6">
+            对于寻求替代 Celery 的开发者，<strong class="text-blue-600">核心解决方案可分为两类</strong>：
+            保留 Celery 并通过扩展库修复痛点，或迁移至更现代的技术栈。
+          </p>
+
+          <div class="grid md:grid-cols-2 gap-6">
+            <div class="bg-white p-6 rounded-lg">
+              <h4 class="font-semibold text-lg mb-3 text-blue-600">保留优化路径</h4>
+              <ul class="space-y-2 text-sm text-gray-600">
+                <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>使用 celery-once 解决任务重复</li>
+                <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>采用 Docker 容器化部署解决跨平台问题</li>
+                <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>最小化迁移成本和风险</li>
+              </ul>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg">
+              <h4 class="font-semibold text-lg mb-3 text-purple-600">迁移替代路径</h4>
+              <ul class="space-y-2 text-sm text-gray-600">
+                <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Asynq (Go) 提供高性能和原生跨平台支持</li>
+                <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>轻量级 Python 方案如 persist-queue</li>
+                <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>从根本上解决核心痛点</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="pull-quote">
+          &#34;最终选择哪种方案，取决于团队的技术栈、对性能的要求、以及是否愿意引入新的技术来解决现有问题。
+          没有银弹，只有最适合特定场景的选择。&#34;
+        </div>
+
+        <div class="bg-gray-800 text-white p-8 rounded-xl">
+          <h3 class="font-display text-xl font-semibold mb-4">实践建议</h3>
+          <div class="grid md:grid-cols-3 gap-6 text-sm">
+            <div>
+              <h4 class="font-semibold mb-2 text-blue-300">评估阶段</h4>
+              <p class="text-gray-300">
+                深入分析业务场景，明确性能、跨平台、
+                任务去重等核心需求的优先级
+              </p>
+            </div>
+            <div>
+              <h4 class="font-semibold mb-2 text-green-300">试点阶段</h4>
+              <p class="text-gray-300">
+                选择最具潜力的 2-3 个方案进行小规模试点，
+                验证实际效果和团队适应性
+              </p>
+            </div>
+            <div>
+              <h4 class="font-semibold mb-2 text-purple-300">实施阶段</h4>
+              <p class="text-gray-300">
+                制定详细的迁移计划，包括代码改造、
+                测试覆盖和回滚策略
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Footer -->
+      <footer class="border-t border-gray-200 pt-8 mt-16">
+        <div class="text-center text-gray-500 text-sm">
+          <p>本调研报告基于公开资料和社区实践，为技术选型提供参考依据</p>
+          <p class="mt-2"> 2026 Python 生态技术调研</p>
+        </div>
+      </footer>
+    </div>
+
+    <script>
+        // Initialize Mermaid
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'base',
+            themeVariables: {
+                primaryColor: '#3498db',
+                primaryTextColor: '#2c3e50',
+                primaryBorderColor: '#34495e',
+                lineColor: '#7f8c8d',
+                secondaryColor: '#ecf0f1',
+                tertiaryColor: '#ffffff',
+                background: '#ffffff',
+                mainBkg: '#ffffff',
+                secondBkg: '#f8f9fa',
+                tertiaryBkg: '#e9ecef',
+                fontFamily: 'Inter, sans-serif',
+                fontSize: '14px'
+            },
+            flowchart: {
+                useMaxWidth: false,
+                htmlLabels: true,
+                curve: 'basis',
+                padding: 20
+            },
+            securityLevel: 'loose'
+        });
+
+        // Initialize Mermaid Controls for zoom and pan
+        function initializeMermaidControls() {
+            const containers = document.querySelectorAll('.mermaid-container');
+
+            containers.forEach(container => {
+            const mermaidElement = container.querySelector('.mermaid');
+            let scale = 1;
+            let isDragging = false;
+            let startX, startY, translateX = 0, translateY = 0;
+
+            // 触摸相关状态
+            let isTouch = false;
+            let touchStartTime = 0;
+            let initialDistance = 0;
+            let initialScale = 1;
+            let isPinching = false;
+
+            // Zoom controls
+            const zoomInBtn = container.querySelector('.zoom-in');
+            const zoomOutBtn = container.querySelector('.zoom-out');
+            const resetBtn = container.querySelector('.reset-zoom');
+            const fullscreenBtn = container.querySelector('.fullscreen');
+
+            function updateTransform() {
+                mermaidElement.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+
+                if (scale > 1) {
+                container.classList.add('zoomed');
+                } else {
+                container.classList.remove('zoomed');
+                }
+
+                mermaidElement.style.cursor = isDragging ? 'grabbing' : 'grab';
+            }
+
+            if (zoomInBtn) {
+                zoomInBtn.addEventListener('click', () => {
+                scale = Math.min(scale * 1.25, 4);
+                updateTransform();
+                });
+            }
+
+            if (zoomOutBtn) {
+                zoomOutBtn.addEventListener('click', () => {
+                scale = Math.max(scale / 1.25, 0.3);
+                if (scale <= 1) {
+                    translateX = 0;
+                    translateY = 0;
+                }
+                updateTransform();
+                });
+            }
+
+            if (resetBtn) {
+                resetBtn.addEventListener('click', () => {
+                scale = 1;
+                translateX = 0;
+                translateY = 0;
+                updateTransform();
+                });
+            }
+
+            if (fullscreenBtn) {
+                fullscreenBtn.addEventListener('click', () => {
+                if (container.requestFullscreen) {
+                    container.requestFullscreen();
+                } else if (container.webkitRequestFullscreen) {
+                    container.webkitRequestFullscreen();
+                } else if (container.msRequestFullscreen) {
+                    container.msRequestFullscreen();
+                }
+                });
+            }
+
+            // Mouse Events
+            mermaidElement.addEventListener('mousedown', (e) => {
+                if (isTouch) return; // 如果是触摸设备，忽略鼠标事件
+
+                isDragging = true;
+                startX = e.clientX - translateX;
+                startY = e.clientY - translateY;
+                mermaidElement.style.cursor = 'grabbing';
+                updateTransform();
+                e.preventDefault();
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (isDragging && !isTouch) {
+                translateX = e.clientX - startX;
+                translateY = e.clientY - startY;
+                updateTransform();
+                }
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (isDragging && !isTouch) {
+                isDragging = false;
+                mermaidElement.style.cursor = 'grab';
+                updateTransform();
+                }
+            });
+
+            document.addEventListener('mouseleave', () => {
+                if (isDragging && !isTouch) {
+                isDragging = false;
+                mermaidElement.style.cursor = 'grab';
+                updateTransform();
+                }
+            });
+
+            // 获取两点之间的距离
+            function getTouchDistance(touch1, touch2) {
+                return Math.hypot(
+                touch2.clientX - touch1.clientX,
+                touch2.clientY - touch1.clientY
+                );
+            }
+
+            // Touch Events - 触摸事件处理
+            mermaidElement.addEventListener('touchstart', (e) => {
+                isTouch = true;
+                touchStartTime = Date.now();
+
+                if (e.touches.length === 1) {
+                // 单指拖动
+                isPinching = false;
+                isDragging = true;
+
+                const touch = e.touches[0];
+                startX = touch.clientX - translateX;
+                startY = touch.clientY - translateY;
+
+                } else if (e.touches.length === 2) {
+                // 双指缩放
+                isPinching = true;
+                isDragging = false;
+
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                initialDistance = getTouchDistance(touch1, touch2);
+                initialScale = scale;
+                }
+
+                e.preventDefault();
+            }, { passive: false });
+
+            mermaidElement.addEventListener('touchmove', (e) => {
+                if (e.touches.length === 1 && isDragging && !isPinching) {
+                // 单指拖动
+                const touch = e.touches[0];
+                translateX = touch.clientX - startX;
+                translateY = touch.clientY - startY;
+                updateTransform();
+
+                } else if (e.touches.length === 2 && isPinching) {
+                // 双指缩放
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                const currentDistance = getTouchDistance(touch1, touch2);
+
+                if (initialDistance > 0) {
+                    const newScale = Math.min(Math.max(
+                    initialScale * (currentDistance / initialDistance),
+                    0.3
+                    ), 4);
+                    scale = newScale;
+                    updateTransform();
+                }
+                }
+
+                e.preventDefault();
+            }, { passive: false });
+
+            mermaidElement.addEventListener('touchend', (e) => {
+                // 重置状态
+                if (e.touches.length === 0) {
+                isDragging = false;
+                isPinching = false;
+                initialDistance = 0;
+
+                // 延迟重置isTouch，避免鼠标事件立即触发
+                setTimeout(() => {
+                    isTouch = false;
+                }, 100);
+                } else if (e.touches.length === 1 && isPinching) {
+                // 从双指变为单指，切换为拖动模式
+                isPinching = false;
+                isDragging = true;
+
+                const touch = e.touches[0];
+                startX = touch.clientX - translateX;
+                startY = touch.clientY - translateY;
+                }
+
+                updateTransform();
+            });
+
+            mermaidElement.addEventListener('touchcancel', (e) => {
+                isDragging = false;
+                isPinching = false;
+                initialDistance = 0;
+
+                setTimeout(() => {
+                isTouch = false;
+                }, 100);
+
+                updateTransform();
+            });
+
+            // Enhanced wheel zoom with better center point handling
+            container.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                const rect = container.getBoundingClientRect();
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+
+                const delta = e.deltaY > 0 ? 0.9 : 1.1;
+                const newScale = Math.min(Math.max(scale * delta, 0.3), 4);
+
+                // Adjust translation to zoom towards center
+                if (newScale !== scale) {
+                const scaleDiff = newScale / scale;
+                translateX = translateX * scaleDiff;
+                translateY = translateY * scaleDiff;
+                scale = newScale;
+
+                if (scale <= 1) {
+                    translateX = 0;
+                    translateY = 0;
+                }
+
+                updateTransform();
+                }
+            });
+
+            // Initialize display
+            updateTransform();
+            });
+        }
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Highlight current section in TOC
+        const sections = document.querySelectorAll('section[id]');
+        const tocLinks = document.querySelectorAll('.toc-fixed a[href^="#"]');
+        
+        function updateActiveTocLink() {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (window.scrollY >= (sectionTop - 200)) {
+                    current = section.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('font-semibold', 'text-blue-600');
+                if (link.getAttribute('href') === `#${current}`) {
+                    link.classList.add('font-semibold', 'text-blue-600');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateActiveTocLink);
+        updateActiveTocLink(); // Initial call
+
+        // Initialize mermaid controls
+        initializeMermaidControls();
+    </script>
+
+  
+
+</body></html>

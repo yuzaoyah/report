@@ -1,0 +1,1641 @@
+<!DOCTYPE html><html lang="zh-CN"><head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>26岁技术转管理：完整转型指南</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --secondary: #64748b;
+            --accent: #0ea5e9;
+            --neutral: #f8fafc;
+            --base-100: #ffffff;
+            --base-200: #f1f5f9;
+            --base-300: #e2e8f0;
+        }
+        
+        .font-serif { font-family: 'Noto Serif SC', serif; }
+        .font-sans { font-family: 'Inter', sans-serif; }
+        
+        .toc-fixed {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 280px;
+            height: 100vh;
+            background: var(--base-100);
+            border-right: 1px solid var(--base-300);
+            z-index: 50;
+            overflow-y: auto;
+            padding: 2rem 1.5rem;
+        }
+        
+        .main-content {
+            margin-left: 280px;
+            min-height: 100vh;
+        }
+        
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            align-items: center;
+            min-height: 60vh;
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .section-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--base-300), transparent);
+            margin: 4rem 0;
+        }
+        
+        .highlight-box {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border-left: 4px solid var(--accent);
+        }
+        
+        .citation {
+            display: inline-block;
+            background: var(--accent);
+            color: white;
+            padding: 0.125rem 0.375rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-decoration: none;
+            margin-left: 0.25rem;
+        }
+        
+        .citation:hover {
+            background: #0284c7;
+            transform: translateY(-1px);
+            transition: all 0.2s ease;
+        }
+        
+        .toc-link {
+            display: block;
+            padding: 0.5rem 0;
+            color: var(--secondary);
+            text-decoration: none;
+            font-size: 0.875rem;
+            border-left: 2px solid transparent;
+            padding-left: 1rem;
+            transition: all 0.2s ease;
+        }
+        
+        .toc-link:hover, .toc-link.active {
+            color: var(--primary);
+            border-left-color: var(--accent);
+            background: rgba(14, 165, 233, 0.05);
+        }
+        
+        .toc-link.level-2 {
+            padding-left: 1.5rem;
+            font-size: 0.8rem;
+        }
+        
+        .toc-link.level-3 {
+            padding-left: 2rem;
+            font-size: 0.75rem;
+        }
+        
+        /* Mermaid diagram styling */
+        .mermaid-container {
+            display: flex;
+            justify-content: center;
+            min-height: 300px;
+            max-height: 800px;
+            background: #ffffff;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 30px;
+            margin: 30px 0;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mermaid-container .mermaid {
+            width: 100%;
+            max-width: 100%;
+            height: 100%;
+            cursor: grab;
+            transition: transform 0.3s ease;
+            transform-origin: center center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            touch-action: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        .mermaid-container .mermaid svg {
+            max-width: 100%;
+            height: 100%;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .mermaid-container .mermaid:active {
+            cursor: grabbing;
+        }
+
+        .mermaid-container.zoomed .mermaid {
+            height: 100%;
+            width: 100%;
+            cursor: grab;
+        }
+
+        .mermaid-controls {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            display: flex;
+            gap: 10px;
+            z-index: 20;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 8px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .mermaid-control-btn {
+            background: #ffffff;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #374151;
+            font-size: 14px;
+            min-width: 36px;
+            height: 36px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mermaid-control-btn:hover {
+            background: #f8fafc;
+            border-color: #3b82f6;
+            color: #3b82f6;
+            transform: translateY(-1px);
+        }
+
+        .mermaid-control-btn:active {
+            transform: scale(0.95);
+        }
+        
+        /* Enhanced contrast for mermaid diagrams */
+        .mermaid .node rect,
+        .mermaid .node circle,
+        .mermaid .node polygon {
+            stroke-width: 2px !important;
+        }
+        
+        .mermaid .node text {
+            font-weight: 600 !important;
+            font-size: 14px !important;
+        }
+        
+        .mermaid .edgePath path {
+            stroke-width: 2px !important;
+        }
+        
+        .mermaid .edgeLabel {
+            background-color: rgba(255, 255, 255, 0.9) !important;
+            border-radius: 4px !important;
+            padding: 2px 6px !important;
+            font-weight: 500 !important;
+        }
+        
+        @media (max-width: 1024px) {
+            .toc-fixed {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            
+            .toc-fixed.mobile-open {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .hero-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            /* Responsive mermaid controls */
+            .mermaid-control-btn:not(.reset-zoom) {
+                display: none;
+            }
+            .mermaid-controls {
+                top: auto;
+                bottom: 15px;
+                right: 15px;
+            }
+        }
+
+        /* Additional responsive adjustments for small screens */
+        @media (max-width: 768px) {
+            .hero-grid h1 {
+                font-size: 2.5rem;
+                line-height: 1.2;
+            }
+            .hero-grid p {
+                font-size: 1rem;
+            }
+            .hero-grid .grid.grid-cols-2 {
+                grid-template-columns: 1fr;
+            }
+            section {
+                padding-left: 1rem !important;
+                padding-right: 1rem !important;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .hero-grid h1 {
+                font-size: 2rem;
+            }
+            .hero-grid .grid.grid-cols-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+  <base target="_blank">
+</head>
+
+  <body class="font-sans bg-neutral text-gray-800">
+    <!-- Mobile TOC Toggle -->
+    <button id="toc-toggle" class="lg:hidden fixed top-4 left-4 z-50 bg-primary text-white p-3 rounded-lg shadow-lg">
+      <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Table of Contents -->
+    <nav id="toc" class="toc-fixed">
+      <div class="mb-8">
+        <h3 class="font-serif text-lg font-semibold text-primary mb-4">目录导航</h3>
+        <div class="space-y-1">
+          <a href="#hero" class="toc-link">概述</a>
+          <a href="#cognitive-transition" class="toc-link">1. 核心认知转型</a>
+          <a href="#cognitive-essentials" class="toc-link level-2">1.1 思维模式转变</a>
+          <a href="#role-positioning" class="toc-link level-2">1.2 角色定位</a>
+          <a href="#pm-capabilities" class="toc-link">2. 项目管理能力</a>
+          <a href="#pm-framework" class="toc-link level-2">2.1 知识框架</a>
+          <a href="#scheduling" class="toc-link level-2">2.2 排期管理</a>
+          <a href="#risk-management" class="toc-link level-2">2.3 风险管理</a>
+          <a href="#team-management" class="toc-link">3. 团队管理</a>
+          <a href="#team-building" class="toc-link level-2">3.1 团队建设</a>
+          <a href="#talent-development" class="toc-link level-2">3.2 人才培养</a>
+          <a href="#communication" class="toc-link level-2">3.3 沟通协调</a>
+          <a href="#learning-resources" class="toc-link">4. 学习资源</a>
+          <a href="#books" class="toc-link level-2">4.1 经典书籍</a>
+          <a href="#courses" class="toc-link level-2">4.2 在线课程</a>
+          <a href="#tools" class="toc-link level-2">4.3 工具推荐</a>
+          <a href="#growth-path" class="toc-link">5. 成长路径</a>
+          <a href="#phase1" class="toc-link level-2">5.1 适应期</a>
+          <a href="#phase2" class="toc-link level-2">5.2 成长期</a>
+          <a href="#phase3" class="toc-link level-2">5.3 突破期</a>
+          <a href="#pitfalls" class="toc-link">6. 常见陷阱</a>
+          <a href="#time-management" class="toc-link level-2">6.1 时间管理</a>
+          <a href="#relationships" class="toc-link level-2">6.2 关系处理</a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Hero Section -->
+      <section id="hero" class="px-4 sm:px-8 py-12 bg-gradient-to-br from-slate-50 to-blue-50">
+        <div class="max-w-7xl mx-auto">
+          <div class="hero-grid">
+            <div class="space-y-8">
+              <div class="space-y-4">
+                <div class="text-sm font-medium text-accent uppercase tracking-wider">
+                  职业转型指南
+                </div>
+                <h1 class="font-serif text-4xl sm:text-5xl font-bold leading-tight">
+                  26岁技术转管理：
+                  <br/>
+                  <span class="gradient-text italic">项目技术管理人员</span>
+                  <br/>
+                  完整转型指南
+                </h1>
+                <p class="text-xl text-gray-600 leading-relaxed">
+                  从技术专家到团队领导者的系统性成长路径，掌握项目管理核心能力，构建高效团队领导力
+                </p>
+              </div>
+
+              <div class="grid grid-cols-2 gap-6">
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                  <div class="text-2xl font-bold text-primary mb-2">黄金窗口期</div>
+                  <div class="text-sm text-gray-600">26岁是技术转管理的最佳时机</div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                  <div class="text-2xl font-bold text-accent mb-2">三阶段成长</div>
+                  <div class="text-sm text-gray-600">适应期→成长期→突破期</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="relative">
+              <div class="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-slate-600/20 rounded-2xl"></div>
+              <img src="https://kimi-web-img.moonshot.cn/img/www.slengy.com/1d6f708c5db275b9e1bc102c24edab2f252fff40.jpg" alt="技术管理者在办公桌前看屏幕" class="relative rounded-2xl shadow-2xl" size="large" aspect="wide" style="photo" query="技术管理者工作场景" referrerpolicy="no-referrer" data-modified="1" data-score="0.00"/>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Key Highlights -->
+      <section class="px-4 sm:px-8 py-12 bg-white">
+        <div class="max-w-6xl mx-auto">
+          <div class="grid md:grid-cols-3 gap-8">
+            <div class="highlight-box p-8 rounded-xl">
+              <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+                <i class="fas fa-brain text-blue-600 text-xl"></i>
+              </div>
+              <h3 class="font-serif text-xl font-semibold mb-3">认知转型</h3>
+              <p class="text-gray-600">从技术思维到管理思维的三大转变：目标导向、系统思考、团队赋能</p>
+            </div>
+
+            <div class="highlight-box p-8 rounded-xl">
+              <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+                <i class="fas fa-chart-line text-green-600 text-xl"></i>
+              </div>
+              <h3 class="font-serif text-xl font-semibold mb-3">能力构建</h3>
+              <p class="text-gray-600">系统学习PMBOK/敏捷方法，掌握估算、排期、风险管理核心技能</p>
+            </div>
+
+            <div class="highlight-box p-8 rounded-xl">
+              <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
+                <i class="fas fa-users text-purple-600 text-xl"></i>
+              </div>
+              <h3 class="font-serif text-xl font-semibold mb-3">团队领导</h3>
+              <p class="text-gray-600">建立信任、培养梯队、塑造文化，从个人贡献者到团队赋能者</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <!-- Section 1: Core Cognitive Transition -->
+      <section id="cognitive-transition" class="px-4 sm:px-8 py-12">
+        <div class="max-w-6xl mx-auto">
+          <h2 class="font-serif text-3xl font-bold text-primary mb-8">1. 核心认知转型：从技术思维到管理思维</h2>
+
+          <div id="cognitive-essentials" class="mb-12">
+            <h3 class="font-serif text-2xl font-semibold text-gray-800 mb-6">1.1 思维模式的根本转变</h3>
+
+            <div class="grid md:grid-cols-2 gap-8 mb-8">
+              <div class="bg-red-50 p-6 rounded-xl border-l-4 border-red-400">
+                <h4 class="font-semibold text-red-800 mb-3">技术型思维特征</h4>
+                <ul class="space-y-2 text-red-700 text-sm">
+                  <li>• 以过程为中心，过度关注实现细节</li>
+                  <li>• 习惯单打独斗，缺乏全局规划意识</li>
+                  <li>• 追求完美解决方案，忽视资源约束</li>
+                </ul>
+              </div>
+
+              <div class="bg-green-50 p-6 rounded-xl border-l-4 border-green-400">
+                <h4 class="font-semibold text-green-800 mb-3">管理型思维核心</h4>
+                <ul class="space-y-2 text-green-700 text-sm">
+                  <li>• 以目标为导向，关注成果交付</li>
+                  <li>• 系统思维，自上而下的问题分解</li>
+                  <li>• 以团队为中心，激活集体能力</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="bg-blue-50 p-6 rounded-xl mb-8">
+              <h4 class="font-semibold text-blue-800 mb-4">思维转型的关键触发点</h4>
+              <div class="grid md:grid-cols-3 gap-6">
+                <div class="text-center">
+                  <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-users text-blue-600 text-xl"></i>
+                  </div>
+                  <h5 class="font-medium text-blue-800 mb-2">个人vs团队产出</h5>
+                  <p class="text-blue-600 text-sm">意识到管理者价值在于团队整体产出提升</p>
+                </div>
+                <div class="text-center">
+                  <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-handshake text-blue-600 text-xl"></i>
+                  </div>
+                  <h5 class="font-medium text-blue-800 mb-2">通过他人完成工作</h5>
+                  <p class="text-blue-600 text-sm">掌握选人、用人、育人、留人的系统方法</p>
+                </div>
+                <div class="text-center">
+                  <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-balance-scale text-blue-600 text-xl"></i>
+                  </div>
+                  <h5 class="font-medium text-blue-800 mb-2">满意决策标准</h5>
+                  <p class="text-blue-600 text-sm">接受&#34;不完美但可交付&#34;的决策标准</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="role-positioning" class="mb-12">
+            <h3 class="font-serif text-2xl font-semibold text-gray-800 mb-6">1.2 角色定位与自我认知</h3>
+
+            <h4 class="font-semibold text-gray-800 mb-4">新角色的核心职责</h4>
+            <div class="overflow-x-auto mb-6">
+              <table class="w-full bg-white rounded-lg shadow-sm border border-gray-200">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="px-4 py-3 text-left font-medium text-gray-700">职责维度</th>
+                    <th class="px-4 py-3 text-left font-medium text-gray-700">具体内容</th>
+                    <th class="px-4 py-3 text-left font-medium text-gray-700">关键能力要求</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                  <tr>
+                    <td class="px-4 py-3 font-medium text-blue-700">技术攻坚</td>
+                    <td class="px-4 py-3 text-gray-600 text-sm">关键难点突破、架构方案决策、技术风险评估、技术债务管理</td>
+                    <td class="px-4 py-3 text-gray-600 text-sm">保持技术敏感度，能在关键决策点提供有价值的输入</td>
+                  </tr>
+                  <tr>
+                    <td class="px-4 py-3 font-medium text-green-700">项目排期</td>
+                    <td class="px-4 py-3 text-gray-600 text-sm">工作分解与估算、进度规划与监控、资源协调与优化、里程碑管理</td>
+                    <td class="px-4 py-3 text-gray-600 text-sm">掌握WBS、关键路径法、敏捷估算等方法</td>
+                  </tr>
+                  <tr>
+                    <td class="px-4 py-3 font-medium text-purple-700">团队赋能</td>
+                    <td class="px-4 py-3 text-gray-600 text-sm">核心成员识别与培养、人才梯队建设、团队文化塑造、组织能力沉淀</td>
+                    <td class="px-4 py-3 text-gray-600 text-sm">投入时间进行一对一沟通，设计成长路径</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="bg-yellow-50 p-6 rounded-xl mb-6">
+              <h4 class="font-semibold text-yellow-800 mb-4 flex items-center">
+                <i class="fas fa-star text-yellow-600 mr-2"></i>
+                26岁转型者的独特优势
+              </h4>
+              <div class="grid md:grid-cols-3 gap-4">
+                <div class="flex items-start space-x-3">
+                  <div class="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
+                    <i class="fas fa-code text-yellow-600 text-sm"></i>
+                  </div>
+                  <div>
+                    <h5 class="font-medium text-yellow-800">技术理解深度</h5>
+                    <p class="text-yellow-700 text-sm">准确评估任务难度、识别技术风险</p>
+                  </div>
+                </div>
+                <div class="flex items-start space-x-3">
+                  <div class="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
+                    <i class="fas fa-user-friends text-yellow-600 text-sm"></i>
+                  </div>
+                  <div>
+                    <h5 class="font-medium text-yellow-800">年龄优势</h5>
+                    <p class="text-yellow-700 text-sm">与一线开发者代沟小，易于建立信任</p>
+                  </div>
+                </div>
+                <div class="flex items-start space-x-3">
+                  <div class="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
+                    <i class="fas fa-rocket text-yellow-600 text-sm"></i>
+                  </div>
+                  <div>
+                    <h5 class="font-medium text-yellow-800">成长窗口期</h5>
+                    <p class="text-yellow-700 text-sm">职业可塑性强，有足够时间积累经验</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <!-- Section 2: Project Management Capabilities -->
+      <section id="pm-capabilities" class="px-4 sm:px-8 py-12 bg-gray-50">
+        <div class="max-w-6xl mx-auto">
+          <h2 class="font-serif text-3xl font-bold text-primary mb-8">2. 项目管理能力体系构建</h2>
+
+          <div id="pm-framework" class="mb-12">
+            <h3 class="font-serif text-2xl font-semibold text-gray-800 mb-6">2.1 项目管理知识框架</h3>
+
+            <h4 class="font-semibold text-gray-800 mb-4">经典理论体系</h4>
+            <div class="bg-white p-6 rounded-xl shadow-sm mb-6">
+              <div class="grid md:grid-cols-2 gap-6">
+                <div>
+                  <h5 class="font-medium text-blue-700 mb-3 flex items-center">
+                    <i class="fas fa-book text-blue-600 mr-2"></i>
+                    PMBOK指南
+                  </h5>
+                  <p class="text-gray-600 text-sm mb-3">项目管理知识体系标准，覆盖十大知识领域与五大过程组</p>
+                  <ul class="text-gray-600 text-sm space-y-1">
+                    <li>• 范围管理：需求收集与范围界定</li>
+                    <li>• 进度管理：关键路径法和敏捷估算</li>
+                    <li>• 风险管理：识别、定性和定量分析</li>
+                  </ul>
+                </div>
+                <div>
+                  <h5 class="font-medium text-green-700 mb-3 flex items-center">
+                    <i class="fas fa-sync-alt text-green-600 mr-2"></i>
+                    敏捷项目管理
+                  </h5>
+                  <p class="text-gray-600 text-sm mb-3">Scrum框架通过固定时长的迭代交付可工作的软件</p>
+                  <div class="grid grid-cols-3 gap-2 text-xs">
+                    <div class="bg-green-50 p-2 rounded text-center">三个角色</div>
+                    <div class="bg-green-50 p-2 rounded text-center">五个事件</div>
+                    <div class="bg-green-50 p-2 rounded text-center">三个工件</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="scheduling" class="mb-12">
+            <h3 class="font-serif text-2xl font-semibold text-gray-800 mb-6">2.2 项目排期与进度管理</h3>
+
+            <h4 class="font-semibold text-gray-800 mb-4">估算技术与方法</h4>
+            <div class="overflow-x-auto mb-6">
+              <table class="w-full bg-white rounded-lg shadow-sm border border-gray-200">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="px-4 py-3 text-left font-medium text-gray-700">方法</th>
+                    <th class="px-4 py-3 text-left font-medium text-gray-700">核心机制</th>
+                    <th class="px-4 py-3 text-left font-medium text-gray-700">适用场景</th>
+                    <th class="px-4 py-3 text-left font-medium text-gray-700">关键要点</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                  <tr>
+                    <td class="px-4 py-3 font-medium text-blue-700">三点估算</td>
+                    <td class="px-4 py-3 text-gray-600 text-sm">乐观+最可能+悲观，期望工期=(O+4M+P)/6</td>
+                    <td class="px-4 py-3 text-gray-600 text-sm">不确定性较高的任务</td>
+                    <td class="px-4 py-3 text-gray-600 text-sm">强制思考最佳/最差场景</td>
+                  </tr>
+                  <tr>
+                    <td class="px-4 py-3 font-medium text-green-700">故事点估算</td>
+                    <td class="px-4 py-3 text-gray-600 text-sm">相对规模单位，团队集体估算</td>
+                    <td class="px-4 py-3 text-gray-600 text-sm">敏捷开发环境</td>
+                    <td class="px-4 py-3 text-gray-600 text-sm">建立团队velocity基准</td>
+                  </tr>
+                  <tr>
+                    <td class="px-4 py-3 font-medium text-purple-700">关键路径分析</td>
+                    <td class="px-4 py-3 text-gray-600 text-sm">识别任务依赖，计算最早/最晚时间</td>
+                    <td class="px-4 py-3 text-gray-600 text-sm">复杂项目进度规划</td>
+                    <td class="px-4 py-3 text-gray-600 text-sm">关键路径延误直接导致延期</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div id="risk-management" class="mb-12">
+            <h3 class="font-serif text-2xl font-semibold text-gray-800 mb-6">2.3 风险管理与问题解决</h3>
+
+            <h4 class="font-semibold text-gray-800 mb-4">技术风险识别</h4>
+            <div class="overflow-x-auto mb-6">
+              <table class="w-full bg-white rounded-lg shadow-sm border border-gray-200">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="px-4 py-3 text-left font-medium text-gray-700">风险类别</th>
+                    <th class="px-4 py-3 text-left font-medium text-gray-700">典型表现</th>
+                    <th class="px-4 py-3 text-left font-medium text-gray-700">识别方法</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                  <tr>
+                    <td class="px-4 py-3 font-medium text-red-700">架构设计风险</td>
+                    <td class="px-4 py-3 text-gray-600 text-sm">扩展性不足、性能瓶颈、安全漏洞</td>
+                    <td class="px-4 py-3 text-gray-600 text-sm">架构权衡分析、原型验证、代码复杂度分析</td>
+                  </tr>
+                  <tr>
+                    <td class="px-4 py-3 font-medium text-orange-700">关键技术选型风险</td>
+                    <td class="px-4 py-3 text-gray-600 text-sm">技术成熟度不足、社区支持薄弱</td>
+                    <td class="px-4 py-3 text-gray-600 text-sm">技术雷达评估、概念验证、同行业案例调研</td>
+                  </tr>
+                  <tr>
+                    <td class="px-4 py-3 font-medium text-yellow-700">人员技能缺口风险</td>
+                    <td class="px-4 py-3 text-gray-600 text-sm">核心人员离职、关键技术单点依赖</td>
+                    <td class="px-4 py-3 text-gray-600 text-sm">技能矩阵盘点、代码贡献集中度分析</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <!-- Section 3: Team Management -->
+      <section id="team-management" class="px-4 sm:px-8 py-12">
+        <div class="max-w-6xl mx-auto">
+          <h2 class="font-serif text-3xl font-bold text-primary mb-8">3. 团队管理与领导力发展</h2>
+
+          <div id="team-building" class="mb-12">
+            <h3 class="font-serif text-2xl font-semibold text-gray-800 mb-6">3.1 团队建设基础</h3>
+
+            <div class="grid md:grid-cols-3 gap-6 mb-8">
+              <div class="bg-blue-50 p-6 rounded-xl">
+                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+                  <i class="fas fa-users-cog text-blue-600 text-xl"></i>
+                </div>
+                <h4 class="font-semibold text-blue-800 mb-3">核心团队识别</h4>
+                <ul class="text-blue-700 text-sm space-y-1">
+                  <li>• 关键技能持有者</li>
+                  <li>• 团队影响力中心</li>
+                  <li>• 组织承诺度高</li>
+                  <li>• 成长潜力大</li>
+                </ul>
+              </div>
+
+              <div class="bg-green-50 p-6 rounded-xl">
+                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+                  <i class="fas fa-puzzle-piece text-green-600 text-xl"></i>
+                </div>
+                <h4 class="font-semibold text-green-800 mb-3">能力互补配置</h4>
+                <ul class="text-green-700 text-sm space-y-1">
+                  <li>• 架构设计能力</li>
+                  <li>• 核心开发能力</li>
+                  <li>• 测试质量保障</li>
+                  <li>• 运维交付能力</li>
+                </ul>
+              </div>
+
+              <div class="bg-purple-50 p-6 rounded-xl">
+                <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
+                  <i class="fas fa-heart text-purple-600 text-xl"></i>
+                </div>
+                <h4 class="font-semibold text-purple-800 mb-3">团队文化塑造</h4>
+                <ul class="text-purple-700 text-sm space-y-1">
+                  <li>• 技术追求卓越</li>
+                  <li>• 心理安全氛围</li>
+                  <li>• 知识分享机制</li>
+                  <li>• 学习型组织</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div id="talent-development" class="mb-12">
+            <h3 class="font-serif text-2xl font-semibold text-gray-800 mb-6">3.2 人员管理与激励</h3>
+
+            <h4 class="font-semibold text-gray-800 mb-4">技术人才培养机制</h4>
+            <div class="overflow-x-auto mb-6">
+              <table class="w-full bg-white rounded-lg shadow-sm border border-gray-200">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="px-4 py-3 text-left font-medium text-gray-700">培养机制</th>
+                    <th class="px-4 py-3 text-left font-medium text-gray-700">核心方法</th>
+                    <th class="px-4 py-3 text-left font-medium text-gray-700">关键成功因素</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                  <tr>
+                    <td class="px-4 py-3 font-medium text-blue-700">技术梯队建设</td>
+                    <td class="px-4 py-3 text-gray-600 text-sm">明确初中高级能力标准和成长路径</td>
+                    <td class="px-4 py-3 text-gray-600 text-sm">清晰的晋升标准、定期的能力评估</td>
+                  </tr>
+                  <tr>
+                    <td class="px-4 py-3 font-medium text-green-700">挑战性任务分配</td>
+                    <td class="px-4 py-3 text-gray-600 text-sm">分配略高于当前能力的任务</td>
+                    <td class="px-4 py-3 text-gray-600 text-sm">任务难度与支持的平衡、容错空间</td>
+                  </tr>
+                  <tr>
+                    <td class="px-4 py-3 font-medium text-purple-700">技术影响力建设</td>
+                    <td class="px-4 py-3 text-gray-600 text-sm">内部技术品牌、外部社区参与</td>
+                    <td class="px-4 py-3 text-gray-600 text-sm">创造分享机会、认可影响力成果</td>
+                  </tr>
+                  <tr>
+                    <td class="px-4 py-3 font-medium text-orange-700">继任计划</td>
+                    <td class="px-4 py-3 text-gray-600 text-sm">针对关键岗位识别和培养后备人选</td>
+                    <td class="px-4 py-3 text-gray-600 text-sm">轮岗机会、导师指导、代理实践</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div id="communication" class="mb-12">
+            <h3 class="font-serif text-2xl font-semibold text-gray-800 mb-6">3.3 冲突处理与沟通协调</h3>
+
+            <h4 class="font-semibold text-gray-800 mb-4">常见冲突场景及处理</h4>
+            <div class="overflow-x-auto mb-6">
+              <table class="w-full bg-white rounded-lg shadow-sm border border-gray-200">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="px-4 py-3 text-left font-medium text-gray-700">冲突类型</th>
+                    <th class="px-4 py-3 text-left font-medium text-gray-700">根源</th>
+                    <th class="px-4 py-3 text-left font-medium text-gray-700">处理原则</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                  <tr>
+                    <td class="px-4 py-3 font-medium text-blue-700">技术方案争议</td>
+                    <td class="px-4 py-3 text-gray-600 text-sm">不同技术路线、架构选择的专业判断差异</td>
+                    <td class="px-4 py-3 text-gray-600 text-sm">建立客观评估标准、明确决策权限</td>
+                  </tr>
+                  <tr>
+                    <td class="px-4 py-3 font-medium text-green-700">资源分配矛盾</td>
+                    <td class="px-4 py-3 text-gray-600 text-sm">多项目并行时人力、时间、预算的竞争</td>
+                    <td class="px-4 py-3 text-gray-600 text-sm">建立透明的优先级决策机制</td>
+                  </tr>
+                  <tr>
+                    <td class="px-4 py-3 font-medium text-orange-700">进度与质量平衡</td>
+                    <td class="px-4 py-3 text-gray-600 text-sm">业务方追求速度、技术方关注质量的结构性张力</td>
+                    <td class="px-4 py-3 text-gray-600 text-sm">数据化沟通技术债务成本、寻求MVP折中方案</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <!-- Section 4: Learning Resources -->
+      <section id="learning-resources" class="px-4 sm:px-8 py-12 bg-gray-50">
+        <div class="max-w-6xl mx-auto">
+          <h2 class="font-serif text-3xl font-bold text-primary mb-8">4. 核心学习资源推荐</h2>
+
+          <div id="books" class="mb-12">
+            <h3 class="font-serif text-2xl font-semibold text-gray-800 mb-6">4.1 必读经典书籍</h3>
+
+            <div class="grid md:grid-cols-2 gap-8 mb-8">
+              <div class="bg-white p-6 rounded-xl shadow-sm">
+                <h4 class="font-semibold text-blue-700 mb-4 flex items-center">
+                  <i class="fas fa-book text-blue-600 mr-2"></i>
+                  项目管理基础
+                </h4>
+                <div class="space-y-4">
+                  <div class="border-l-4 border-blue-400 pl-4">
+                    <h5 class="font-medium text-gray-800">《PMBOK指南》</h5>
+                    <p class="text-gray-600 text-sm">项目管理知识体系标准，十大知识领域与五大过程组
+                      <a href="https://www.pmi.org/pmbok-guide-standards" class="citation" target="_blank">PMI官方</a>
+                    </p>
+                  </div>
+                  <div class="border-l-4 border-green-400 pl-4">
+                    <h5 class="font-medium text-gray-800">《敏捷项目管理》</h5>
+                    <p class="text-gray-600 text-sm">吉姆·海史密斯，敏捷原则与实践框架的系统阐述</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-white p-6 rounded-xl shadow-sm">
+                <h4 class="font-semibold text-green-700 mb-4 flex items-center">
+                  <i class="fas fa-user-tie text-green-600 mr-2"></i>
+                  技术转型管理实战
+                </h4>
+                <div class="space-y-4">
+                  <div class="border-l-4 border-blue-400 pl-4">
+                    <h5 class="font-medium text-gray-800">《IT项目经理成长手记》</h5>
+                    <p class="text-gray-600 text-sm">潘东、韩秋泉，技术人员转型项目经理的完整案例</p>
+                  </div>
+                  <div class="border-l-4 border-purple-400 pl-4">
+                    <h5 class="font-medium text-gray-800">《认知跃迁》</h5>
+                    <p class="text-gray-600 text-sm">乔新亮，20年经验总结，25个关键节点深度复盘
+                      <a href="https://time.geekbang.org/column/intro/100052601" class="citation" target="_blank">极客时间</a>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-sm mb-6">
+              <h4 class="font-semibold text-purple-700 mb-4">思维与沟通提升</h4>
+              <div class="grid md:grid-cols-2 gap-6">
+                <ul class="space-y-3">
+                  <li class="flex items-start space-x-3">
+                    <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
+                      <i class="fas fa-triangle text-purple-600 text-sm"></i>
+                    </div>
+                    <div>
+                      <h5 class="font-medium text-gray-800">《金字塔原理》</h5>
+                      <p class="text-gray-600 text-sm">结构化思考与表达：结论先行、逻辑递进</p>
+                    </div>
+                  </li>
+                  <li class="flex items-start space-x-3">
+                    <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
+                      <i class="fas fa-handshake text-purple-600 text-sm"></i>
+                    </div>
+                    <div>
+                      <h5 class="font-medium text-gray-800">《非暴力沟通》</h5>
+                      <p class="text-gray-600 text-sm">同理心倾听与有效反馈四要素</p>
+                    </div>
+                  </li>
+                </ul>
+                <ul class="space-y-3">
+                  <li class="flex items-start space-x-3">
+                    <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
+                      <i class="fas fa-comments text-purple-600 text-sm"></i>
+                    </div>
+                    <div>
+                      <h5 class="font-medium text-gray-800">《关键对话》</h5>
+                      <p class="text-gray-600 text-sm">高风险情境下的沟通技巧</p>
+                    </div>
+                  </li>
+                  <li class="flex items-start space-x-3">
+                    <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
+                      <i class="fas fa-brain text-purple-600 text-sm"></i>
+                    </div>
+                    <div>
+                      <h5 class="font-medium text-gray-800">《情商是训练出来的》</h5>
+                      <p class="text-gray-600 text-sm">情绪管理与关系构建系统方法</p>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div id="courses" class="mb-12">
+            <h3 class="font-serif text-2xl font-semibold text-gray-800 mb-6">4.2 在线课程与平台</h3>
+
+            <div class="grid md:grid-cols-2 gap-8 mb-8">
+              <div class="bg-white p-6 rounded-xl shadow-sm">
+                <h4 class="font-semibold text-blue-700 mb-4 flex items-center">
+                  <i class="fas fa-certificate text-blue-600 mr-2"></i>
+                  系统化认证课程
+                </h4>
+                <div class="space-y-4">
+                  <div class="bg-blue-50 p-4 rounded-lg">
+                    <h5 class="font-medium text-blue-800">PMP认证</h5>
+                    <p class="text-blue-700 text-sm">PMI颁发，项目管理知识体系，适合大型企业
+                      <a href="https://www.pmi.org/" class="citation" target="_blank">PMI官网</a>
+                    </p>
+                  </div>
+                  <div class="bg-green-50 p-4 rounded-lg">
+                    <h5 class="font-medium text-green-800">PMI-ACP认证</h5>
+                    <p class="text-green-700 text-sm">敏捷项目管理，覆盖Scrum、Kanban等多种方法</p>
+                  </div>
+                  <div class="bg-orange-50 p-4 rounded-lg">
+                    <h5 class="font-medium text-orange-800">软考高级</h5>
+                    <p class="text-orange-700 text-sm">信息系统项目管理师，适合国企、政府项目</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-white p-6 rounded-xl shadow-sm">
+                <h4 class="font-semibold text-green-700 mb-4 flex items-center">
+                  <i class="fas fa-laptop-code text-green-600 mr-2"></i>
+                  实战型在线课程
+                </h4>
+                <div class="space-y-4">
+                  <div class="bg-green-50 p-4 rounded-lg">
+                    <h5 class="font-medium text-green-800">乔新亮的CTO成长复盘</h5>
+                    <p class="text-green-700 text-sm">极客时间，25个关键节点的深度复盘，超过2.5万学员验证
+                      <a href="https://time.geekbang.org/column/intro/100052601" class="citation" target="_blank">课程链接</a>
+                    </p>
+                  </div>
+                  <div class="bg-blue-50 p-4 rounded-lg">
+                    <h5 class="font-medium text-blue-800">Google项目管理证书</h5>
+                    <p class="text-blue-700 text-sm">Coursera平台，Google项目经理授课，注重实践技能</p>
+                  </div>
+                  <div class="bg-purple-50 p-4 rounded-lg">
+                    <h5 class="font-medium text-purple-800">技术管理实战课程</h5>
+                    <p class="text-purple-700 text-sm">网易云课堂/慕课网，贴近国内技术环境的案例和场景</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="tools" class="mb-12">
+            <h3 class="font-serif text-2xl font-semibold text-gray-800 mb-6">4.3 工具与效率提升</h3>
+
+            <h4 class="font-semibold text-gray-800 mb-4">项目管理工具</h4>
+            <div class="grid md:grid-cols-3 gap-6 mb-6">
+              <div class="bg-white p-6 rounded-xl shadow-sm">
+                <h5 class="font-semibold text-blue-700 mb-3 flex items-center">
+                  <i class="fas fa-project-diagram text-blue-600 mr-2"></i>
+                  研发管理
+                </h5>
+                <div class="space-y-3">
+                  <div class="border-l-3 border-blue-400 pl-3">
+                    <div class="font-medium text-gray-800 text-sm">Jira</div>
+                    <div class="text-gray-600 text-xs">敏捷项目管理、丰富插件生态</div>
+                  </div>
+                  <div class="border-l-3 border-green-400 pl-3">
+                    <div class="font-medium text-gray-800 text-sm">禅道</div>
+                    <div class="text-gray-600 text-xs">产品、项目、质量管理一体化</div>
+                  </div>
+                  <div class="border-l-3 border-purple-400 pl-3">
+                    <div class="font-medium text-gray-800 text-sm">PingCode</div>
+                    <div class="text-gray-600 text-xs">需求管理、迭代规划、效能度量</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-white p-6 rounded-xl shadow-sm">
+                <h5 class="font-semibold text-green-700 mb-3 flex items-center">
+                  <i class="fas fa-comments text-green-600 mr-2"></i>
+                  协作沟通
+                </h5>
+                <div class="space-y-3">
+                  <div class="border-l-3 border-blue-400 pl-3">
+                    <div class="font-medium text-gray-800 text-sm">飞书</div>
+                    <div class="text-gray-600 text-xs">即时通讯、视频会议、文档协作</div>
+                  </div>
+                  <div class="border-l-3 border-green-400 pl-3">
+                    <div class="font-medium text-gray-800 text-sm">钉钉</div>
+                    <div class="text-gray-600 text-xs">企业级协作平台，审批流程</div>
+                  </div>
+                  <div class="border-l-3 border-purple-400 pl-3">
+                    <div class="font-medium text-gray-800 text-sm">企业微信</div>
+                    <div class="text-gray-600 text-xs">与微信生态无缝连接</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-white p-6 rounded-xl shadow-sm">
+                <h5 class="font-semibold text-purple-700 mb-3 flex items-center">
+                  <i class="fas fa-book-open text-purple-600 mr-2"></i>
+                  文档知识
+                </h5>
+                <div class="space-y-3">
+                  <div class="border-l-3 border-blue-400 pl-3">
+                    <div class="font-medium text-gray-800 text-sm">Confluence</div>
+                    <div class="text-gray-600 text-xs">技术知识库，与Jira深度集成</div>
+                  </div>
+                  <div class="border-l-3 border-green-400 pl-3">
+                    <div class="font-medium text-gray-800 text-sm">语雀</div>
+                    <div class="text-gray-600 text-xs">优雅的编辑体验，结构化组织</div>
+                  </div>
+                  <div class="border-l-3 border-purple-400 pl-3">
+                    <div class="font-medium text-gray-800 text-sm">Notion</div>
+                    <div class="text-gray-600 text-xs">灵活的块编辑和数据库功能</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <!-- Section 5: Growth Path -->
+      <section id="growth-path" class="px-4 sm:px-8 py-12">
+        <div class="max-w-6xl mx-auto">
+          <h2 class="font-serif text-3xl font-bold text-primary mb-8">5. 实战能力提升路径</h2>
+
+          <!-- Growth Path Timeline -->
+          <div class="mb-12 w-full overflow-x-auto">
+            <div class="mermaid-container" style="min-width: 800px;">
+              <div class="mermaid-controls">
+                <button class="mermaid-control-btn zoom-in" title="放大">
+                  <i class="fas fa-search-plus"></i>
+                </button>
+                <button class="mermaid-control-btn zoom-out" title="缩小">
+                  <i class="fas fa-search-minus"></i>
+                </button>
+                <button class="mermaid-control-btn reset-zoom" title="重置">
+                  <i class="fas fa-expand-arrows-alt"></i>
+                </button>
+                <button class="mermaid-control-btn fullscreen" title="全屏查看">
+                  <i class="fas fa-expand"></i>
+                </button>
+              </div>
+              <div class="mermaid">
+                timeline
+                title &#34;技术管理者成长路径&#34;
+
+                0-6个月 : &#34;适应期&#34;
+                : &#34;• 熟悉项目管理流程与工具&#34;
+                : &#34;• 建立团队信任关系&#34;
+                : &#34;• 完成首个项目管理实践&#34;
+
+                6-18个月 : &#34;成长期&#34;
+                : &#34;• 系统学习PMBOK知识体系&#34;
+                : &#34;• 培养核心团队成员&#34;
+                : &#34;• 优化团队协作机制&#34;
+
+                18-36个月 : &#34;突破期&#34;
+                : &#34;• 形成个人管理风格&#34;
+                : &#34;• 扩展管理幅度&#34;
+                : &#34;• 向技术总监方向进阶&#34;
+              </div>
+            </div>
+          </div>
+
+          <div id="phase1" class="mb-12">
+            <h3 class="font-serif text-2xl font-semibold text-blue-700 mb-6">5.1 第一阶段：适应期（0-6个月）</h3>
+
+            <div class="bg-blue-50 p-8 rounded-xl mb-6">
+              <h4 class="font-semibold text-blue-800 mb-4 flex items-center">
+                <i class="fas fa-target text-blue-600 mr-2"></i>
+                核心任务
+              </h4>
+              <div class="grid md:grid-cols-3 gap-6">
+                <div class="text-center">
+                  <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-cogs text-blue-600 text-xl"></i>
+                  </div>
+                  <h5 class="font-medium text-blue-800 mb-2">熟悉流程工具</h5>
+                  <p class="text-blue-600 text-sm">系统学习组织使用的项目管理方法论和工具</p>
+                </div>
+                <div class="text-center">
+                  <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-handshake text-blue-600 text-xl"></i>
+                  </div>
+                  <h5 class="font-medium text-blue-800 mb-2">建立信任关系</h5>
+                  <p class="text-blue-600 text-sm">投入大量时间进行一对一沟通，了解团队成员</p>
+                </div>
+                <div class="text-center">
+                  <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-rocket text-blue-600 text-xl"></i>
+                  </div>
+                  <h5 class="font-medium text-blue-800 mb-2">完成首个项目</h5>
+                  <p class="text-blue-600 text-sm">从计划制定到交付验收的全流程经历</p>
+                </div>
+              </div>
+            </div>
+
+            <h4 class="font-semibold text-gray-800 mb-4">关键行动计划</h4>
+            <div class="overflow-x-auto mb-6">
+              <table class="w-full bg-white rounded-lg shadow-sm border border-gray-200">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="px-4 py-3 text-left font-medium text-gray-700">行动</th>
+                    <th class="px-4 py-3 text-left font-medium text-gray-700">频率</th>
+                    <th class="px-4 py-3 text-left font-medium text-gray-700">具体内容</th>
+                    <th class="px-4 py-3 text-left font-medium text-gray-700">预期产出</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                  <tr>
+                    <td class="px-4 py-3 font-medium text-blue-700">时间日志记录</td>
+                    <td class="px-4 py-3 text-gray-600 text-sm">每日</td>
+                    <td class="px-4 py-3 text-gray-600 text-sm">区分技术、管理、行政活动时间占比</td>
+                    <td class="px-4 py-3 text-gray-600 text-sm">识别时间分配偏差，管理时间提升至60%以上</td>
+                  </tr>
+                  <tr>
+                    <td class="px-4 py-3 font-medium text-green-700">一对一沟通</td>
+                    <td class="px-4 py-3 text-gray-600 text-sm">每周</td>
+                    <td class="px-4 py-3 text-gray-600 text-sm">与每位直接下属30分钟深度交流</td>
+                    <td class="px-4 py-3 text-gray-600 text-sm">建立个人联系和信任，了解真实状态和需求</td>
+                  </tr>
+                  <tr>
+                    <td class="px-4 py-3 font-medium text-purple-700">月度复盘</td>
+                    <td class="px-4 py-3 text-gray-600 text-sm">每月</td>
+                    <td class="px-4 py-3 text-gray-600 text-sm">回顾项目进展，分析计划与实际的偏差</td>
+                    <td class="px-4 py-3 text-gray-600 text-sm">识别改进机会，形成具体行动计划</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div id="phase2" class="mb-12">
+            <h3 class="font-serif text-2xl font-semibold text-green-700 mb-6">5.2 第二阶段：成长期（6-18个月）</h3>
+
+            <div class="bg-green-50 p-8 rounded-xl mb-6">
+              <h4 class="font-semibold text-green-800 mb-4 flex items-center">
+                <i class="fas fa-chart-line text-green-600 mr-2"></i>
+                核心任务
+              </h4>
+              <div class="grid md:grid-cols-3 gap-6">
+                <div class="text-center">
+                  <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-graduation-cap text-green-600 text-xl"></i>
+                  </div>
+                  <h5 class="font-medium text-green-800 mb-2">系统学习知识体系</h5>
+                  <p class="text-green-600 text-sm">以PMP认证为目标，建立完整的知识框架</p>
+                </div>
+                <div class="text-center">
+                  <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-users text-green-600 text-xl"></i>
+                  </div>
+                  <h5 class="font-medium text-green-800 mb-2">培养核心团队</h5>
+                  <p class="text-green-600 text-sm">识别高潜人才，给予挑战性任务和发展机会</p>
+                </div>
+                <div class="text-center">
+                  <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-cogs text-green-600 text-xl"></i>
+                  </div>
+                  <h5 class="font-medium text-green-800 mb-2">优化工作流程</h5>
+                  <p class="text-green-600 text-sm">改进协作机制、代码规范、评审流程等</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="phase3" class="mb-12">
+            <h3 class="font-serif text-2xl font-semibold text-purple-700 mb-6">5.3 第三阶段：突破期（18-36个月）</h3>
+
+            <div class="bg-purple-50 p-8 rounded-xl mb-6">
+              <h4 class="font-semibold text-purple-800 mb-4 flex items-center">
+                <i class="fas fa-rocket text-purple-600 mr-2"></i>
+                核心任务
+              </h4>
+              <div class="grid md:grid-cols-3 gap-6">
+                <div class="text-center">
+                  <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-user-tie text-purple-600 text-xl"></i>
+                  </div>
+                  <h5 class="font-medium text-purple-800 mb-2">形成个人风格</h5>
+                  <p class="text-purple-600 text-sm">整合理论和方法，发展独特且有效的个人方式</p>
+                </div>
+                <div class="text-center">
+                  <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-expand text-purple-600 text-xl"></i>
+                  </div>
+                  <h5 class="font-medium text-purple-800 mb-2">扩展管理幅度</h5>
+                  <p class="text-purple-600 text-sm">管理更大规模团队、更复杂项目</p>
+                </div>
+                <div class="text-center">
+                  <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-star text-purple-600 text-xl"></i>
+                  </div>
+                  <h5 class="font-medium text-purple-800 mb-2">向更高层级进阶</h5>
+                  <p class="text-purple-600 text-sm">深化技术影响力，提升战略规划能力</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <!-- Section 6: Pitfalls -->
+      <section id="pitfalls" class="px-4 sm:px-8 py-12 bg-gray-50">
+        <div class="max-w-6xl mx-auto">
+          <h2 class="font-serif text-3xl font-bold text-primary mb-8">6. 关键注意事项与常见陷阱</h2>
+
+          <div id="time-management" class="mb-12">
+            <h3 class="font-serif text-2xl font-semibold text-red-700 mb-6">6.1 转型期核心禁忌</h3>
+
+            <h4 class="font-semibold text-gray-800 mb-4">时间管理失衡</h4>
+            <div class="overflow-x-auto mb-6">
+              <table class="w-full bg-white rounded-lg shadow-sm border border-gray-200">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="px-4 py-3 text-left font-medium text-gray-700">失衡模式</th>
+                    <th class="px-4 py-3 text-left font-medium text-gray-700">典型表现</th>
+                    <th class="px-4 py-3 text-left font-medium text-gray-700">应对策略</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                  <tr>
+                    <td class="px-4 py-3 font-medium text-red-700">技术沉迷</td>
+                    <td class="px-4 py-3 text-gray-600 text-sm">大量时间投入编码，以&#34;技术把关&#34;为由逃避管理挑战</td>
+                    <td class="px-4 py-3 text-gray-600 text-sm">设定技术活动时间上限（20%-30%），将管理任务日历化</td>
+                  </tr>
+                  <tr>
+                    <td class="px-4 py-3 font-medium text-orange-700">会议陷阱</td>
+                    <td class="px-4 py-3 text-gray-600 text-sm">日程被各种会议填满，缺乏深度思考时间</td>
+                    <td class="px-4 py-3 text-gray-600 text-sm">严格筛选会议，推动会议效率改进，保留&#34;深度工作&#34;时间块</td>
+                  </tr>
+                  <tr>
+                    <td class="px-4 py-3 font-medium text-yellow-700">随时响应</td>
+                    <td class="px-4 py-3 text-gray-600 text-sm">缺乏工作边界，即时通讯工具持续在线，注意力碎片化</td>
+                    <td class="px-4 py-3 text-gray-600 text-sm">与团队沟通响应时间预期，培养团队成员的自主决策能力</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div id="relationships" class="mb-12">
+            <h3 class="font-serif text-2xl font-semibold text-orange-700 mb-6">6.2 关系处理失误</h3>
+
+            <h4 class="font-semibold text-gray-800 mb-4">常见关系处理失误</h4>
+            <div class="overflow-x-auto mb-6">
+              <table class="w-full bg-white rounded-lg shadow-sm border border-gray-200">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="px-4 py-3 text-left font-medium text-gray-700">失误类型</th>
+                    <th class="px-4 py-3 text-left font-medium text-gray-700">典型表现</th>
+                    <th class="px-4 py-3 text-left font-medium text-gray-700">健康做法</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                  <tr>
+                    <td class="px-4 py-3 font-medium text-red-700">前同事关系转换困难</td>
+                    <td class="px-4 py-3 text-gray-600 text-sm">过度追求被喜欢而回避困难决策，或刻意疏远以树立权威</td>
+                    <td class="px-4 py-3 text-gray-600 text-sm">保持专业友好但清晰的边界，在决策中展现公正性</td>
+                  </tr>
+                  <tr>
+                    <td class="px-4 py-3 font-medium text-orange-700">回避困难对话</td>
+                    <td class="px-4 py-3 text-gray-600 text-sm">拖延或回避绩效问题、行为冲突等令人不适的话题</td>
+                    <td class="px-4 py-3 text-gray-600 text-sm">充分准备、选择合适时机、运用非暴力沟通等技巧</td>
+                  </tr>
+                  <tr>
+                    <td class="px-4 py-3 font-medium text-yellow-700">过度追求被喜欢</td>
+                    <td class="px-4 py-3 text-gray-600 text-sm">以维持和谐表象为目标，损害团队效能和个人信誉</td>
+                    <td class="px-4 py-3 text-gray-600 text-sm">建立基于专业能力和公正性的尊重，接受短期不适</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="bg-gradient-to-r from-blue-50 to-purple-50 p-8 rounded-xl">
+            <h4 class="font-serif text-xl font-semibold text-gray-800 mb-4 text-center">持续成长建议</h4>
+            <div class="grid md:grid-cols-3 gap-6">
+              <div class="text-center">
+                <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <i class="fas fa-user-graduate text-blue-600 text-xl"></i>
+                </div>
+                <h5 class="font-medium text-blue-800 mb-2">建立支持系统</h5>
+                <p class="text-blue-600 text-sm">寻找导师、加入同伴学习社群、获取外部视角</p>
+              </div>
+              <div class="text-center">
+                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <i class="fas fa-code text-green-600 text-xl"></i>
+                </div>
+                <h5 class="font-medium text-green-800 mb-2">保持技术敏感度</h5>
+                <p class="text-green-600 text-sm">定期技术学习、参与关键决策、Code Review</p>
+              </div>
+              <div class="text-center">
+                <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <i class="fas fa-heart text-purple-600 text-xl"></i>
+                </div>
+                <h5 class="font-medium text-purple-800 mb-2">身心健康管理</h5>
+                <p class="text-purple-600 text-sm">建立工作生活边界，预防职业倦怠</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Footer -->
+      <footer class="px-4 sm:px-8 py-8 bg-gray-800 text-white">
+        <div class="max-w-6xl mx-auto text-center">
+          <p class="text-gray-300 mb-4">
+            技术转管理是一个系统性成长过程，需要持续学习、实践和反思。
+            26岁正是开启这段旅程的黄金时期。
+          </p>
+          <div class="flex justify-center space-x-6 text-sm text-gray-400">
+            <span>核心三阶段：认知转型 → 能力构建 → 团队领导</span>
+            <span>•</span>
+            <span>持续学习，不断进化</span>
+          </div>
+        </div>
+      </footer>
+    </main>
+
+    <script>
+        // Initialize Mermaid with enhanced styling and contrast
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'base',
+            themeVariables: {
+                primaryColor: '#ffffff',
+                primaryTextColor: '#1e293b',
+                primaryBorderColor: '#1e3a8a',
+                lineColor: '#475569',
+                secondaryColor: '#f8fafc',
+                tertiaryColor: '#e2e8f0',
+                background: '#ffffff',
+                mainBkg: '#ffffff',
+                secondBkg: '#f1f5f9',
+                tertiaryBkg: '#e2e8f0',
+                nodeBorder: '#1e3a8a',
+                clusterBkg: '#f8fafc',
+                edgeLabelBackground: 'rgba(255, 255, 255, 0.9)',
+                nodeTextColor: '#1e293b',
+                textColor: '#1e293b',
+                titleColor: '#1e3a8a',
+                darkMode: false,
+                fontFamily: 'Inter, sans-serif',
+                fontSize: '14px'
+            },
+            timeline: {
+                padding: 30,
+                useMaxWidth: true,
+                rightAngles: false,
+                numberSectionStyles: 3
+            },
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'basis'
+            },
+            sequence: {
+                useMaxWidth: true
+            },
+            gantt: {
+                useMaxWidth: true
+            }
+        });
+
+        // Initialize Mermaid Controls for zoom and pan
+        function initializeMermaidControls() {
+            const containers = document.querySelectorAll('.mermaid-container');
+
+            containers.forEach(container => {
+            const mermaidElement = container.querySelector('.mermaid');
+            let scale = 1;
+            let isDragging = false;
+            let startX, startY, translateX = 0, translateY = 0;
+
+            // 触摸相关状态
+            let isTouch = false;
+            let touchStartTime = 0;
+            let initialDistance = 0;
+            let initialScale = 1;
+            let isPinching = false;
+
+            // Zoom controls
+            const zoomInBtn = container.querySelector('.zoom-in');
+            const zoomOutBtn = container.querySelector('.zoom-out');
+            const resetBtn = container.querySelector('.reset-zoom');
+            const fullscreenBtn = container.querySelector('.fullscreen');
+
+            function updateTransform() {
+                mermaidElement.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+
+                if (scale > 1) {
+                container.classList.add('zoomed');
+                } else {
+                container.classList.remove('zoomed');
+                }
+
+                mermaidElement.style.cursor = isDragging ? 'grabbing' : 'grab';
+            }
+
+            if (zoomInBtn) {
+                zoomInBtn.addEventListener('click', () => {
+                scale = Math.min(scale * 1.25, 4);
+                updateTransform();
+                });
+            }
+
+            if (zoomOutBtn) {
+                zoomOutBtn.addEventListener('click', () => {
+                scale = Math.max(scale / 1.25, 0.3);
+                if (scale <= 1) {
+                    translateX = 0;
+                    translateY = 0;
+                }
+                updateTransform();
+                });
+            }
+
+            if (resetBtn) {
+                resetBtn.addEventListener('click', () => {
+                scale = 1;
+                translateX = 0;
+                translateY = 0;
+                updateTransform();
+                });
+            }
+
+            if (fullscreenBtn) {
+                fullscreenBtn.addEventListener('click', () => {
+                if (container.requestFullscreen) {
+                    container.requestFullscreen();
+                } else if (container.webkitRequestFullscreen) {
+                    container.webkitRequestFullscreen();
+                } else if (container.msRequestFullscreen) {
+                    container.msRequestFullscreen();
+                }
+                });
+            }
+
+            // Mouse Events
+            mermaidElement.addEventListener('mousedown', (e) => {
+                if (isTouch) return; // 如果是触摸设备，忽略鼠标事件
+
+                isDragging = true;
+                startX = e.clientX - translateX;
+                startY = e.clientY - translateY;
+                mermaidElement.style.cursor = 'grabbing';
+                updateTransform();
+                e.preventDefault();
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (isDragging && !isTouch) {
+                translateX = e.clientX - startX;
+                translateY = e.clientY - startY;
+                updateTransform();
+                }
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (isDragging && !isTouch) {
+                isDragging = false;
+                mermaidElement.style.cursor = 'grab';
+                updateTransform();
+                }
+            });
+
+            document.addEventListener('mouseleave', () => {
+                if (isDragging && !isTouch) {
+                isDragging = false;
+                mermaidElement.style.cursor = 'grab';
+                updateTransform();
+                }
+            });
+
+            // 获取两点之间的距离
+            function getTouchDistance(touch1, touch2) {
+                return Math.hypot(
+                touch2.clientX - touch1.clientX,
+                touch2.clientY - touch1.clientY
+                );
+            }
+
+            // Touch Events - 触摸事件处理
+            mermaidElement.addEventListener('touchstart', (e) => {
+                isTouch = true;
+                touchStartTime = Date.now();
+
+                if (e.touches.length === 1) {
+                // 单指拖动
+                isPinching = false;
+                isDragging = true;
+
+                const touch = e.touches[0];
+                startX = touch.clientX - translateX;
+                startY = touch.clientY - translateY;
+
+                } else if (e.touches.length === 2) {
+                // 双指缩放
+                isPinching = true;
+                isDragging = false;
+
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                initialDistance = getTouchDistance(touch1, touch2);
+                initialScale = scale;
+                }
+
+                e.preventDefault();
+            }, { passive: false });
+
+            mermaidElement.addEventListener('touchmove', (e) => {
+                if (e.touches.length === 1 && isDragging && !isPinching) {
+                // 单指拖动
+                const touch = e.touches[0];
+                translateX = touch.clientX - startX;
+                translateY = touch.clientY - startY;
+                updateTransform();
+
+                } else if (e.touches.length === 2 && isPinching) {
+                // 双指缩放
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                const currentDistance = getTouchDistance(touch1, touch2);
+
+                if (initialDistance > 0) {
+                    const newScale = Math.min(Math.max(
+                    initialScale * (currentDistance / initialDistance),
+                    0.3
+                    ), 4);
+                    scale = newScale;
+                    updateTransform();
+                }
+                }
+
+                e.preventDefault();
+            }, { passive: false });
+
+            mermaidElement.addEventListener('touchend', (e) => {
+                // 重置状态
+                if (e.touches.length === 0) {
+                isDragging = false;
+                isPinching = false;
+                initialDistance = 0;
+
+                // 延迟重置isTouch，避免鼠标事件立即触发
+                setTimeout(() => {
+                    isTouch = false;
+                }, 100);
+                } else if (e.touches.length === 1 && isPinching) {
+                // 从双指变为单指，切换为拖动模式
+                isPinching = false;
+                isDragging = true;
+
+                const touch = e.touches[0];
+                startX = touch.clientX - translateX;
+                startY = touch.clientY - translateY;
+                }
+
+                updateTransform();
+            });
+
+            mermaidElement.addEventListener('touchcancel', (e) => {
+                isDragging = false;
+                isPinching = false;
+                initialDistance = 0;
+
+                setTimeout(() => {
+                isTouch = false;
+                }, 100);
+
+                updateTransform();
+            });
+
+            // Enhanced wheel zoom with better center point handling
+            container.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                const rect = container.getBoundingClientRect();
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+
+                const delta = e.deltaY > 0 ? 0.9 : 1.1;
+                const newScale = Math.min(Math.max(scale * delta, 0.3), 4);
+
+                // Adjust translation to zoom towards center
+                if (newScale !== scale) {
+                const scaleDiff = newScale / scale;
+                translateX = translateX * scaleDiff;
+                translateY = translateY * scaleDiff;
+                scale = newScale;
+
+                if (scale <= 1) {
+                    translateX = 0;
+                    translateY = 0;
+                }
+
+                updateTransform();
+                }
+            });
+
+            // Initialize display
+            updateTransform();
+            });
+        }
+
+        // Initialize mermaid controls after mermaid renders
+        setTimeout(initializeMermaidControls, 1000);
+
+        // Mobile TOC Toggle
+        const tocToggle = document.getElementById('toc-toggle');
+        const toc = document.getElementById('toc');
+        
+        tocToggle.addEventListener('click', () => {
+            toc.classList.toggle('mobile-open');
+        });
+
+        // Smooth scrolling for TOC links
+        document.querySelectorAll('.toc-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetId = link.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                
+                if (targetElement) {
+                    const offsetTop = targetElement.offsetTop - 20;
+                    window.scrollTo({
+                        top: offsetTop,
+                        behavior: 'smooth'
+                    });
+                    
+                    // Close mobile TOC
+                    toc.classList.remove('mobile-open');
+                }
+            });
+        });
+
+        // Update active TOC link on scroll
+        window.addEventListener('scroll', () => {
+            const sections = document.querySelectorAll('section[id]');
+            const scrollPosition = window.scrollY + 100;
+            
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.offsetHeight;
+                const sectionId = section.getAttribute('id');
+                
+                if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
+                    document.querySelectorAll('.toc-link').forEach(link => {
+                        link.classList.remove('active');
+                        if (link.getAttribute('href') === `#${sectionId}`) {
+                            link.classList.add('active');
+                        }
+                    });
+                }
+            });
+        });
+
+        // Close mobile TOC when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!toc.contains(e.target) && !tocToggle.contains(e.target)) {
+                toc.classList.remove('mobile-open');
+            }
+        });
+    </script>
+  
+
+</body></html>
