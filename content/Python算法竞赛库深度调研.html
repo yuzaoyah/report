@@ -1,0 +1,1559 @@
+<!DOCTYPE html><html lang="zh-CN"><head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Python算法竞赛库深度调研</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'sage': '#9ca3af',
+                        'earth': '#a3a3a3',
+                        'navy': '#1e293b',
+                        'cream': '#fefce8',
+                        'warm-gray': '#78716c'
+                    },
+                    fontFamily: {
+                        'serif': ['Playfair Display', 'serif'],
+                        'sans': ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
+    <style>
+        body {
+            overflow-x: hidden;
+        }
+        .hero-overlay {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(120, 113, 108, 0.7) 100%);
+        }
+        .citation {
+            color: #3b82f6;
+            text-decoration: none;
+            font-size: 0.875rem;
+            vertical-align: super;
+        }
+        .citation:hover {
+            text-decoration: underline;
+        }
+        .toc {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 280px;
+            height: 100vh;
+            background: #f8fafc;
+            border-right: 1px solid #e2e8f0;
+            overflow-y: auto;
+            z-index: 1000;
+            padding: 2rem 1.5rem;
+        }
+        .main-content {
+            margin-left: 280px;
+            min-height: 100vh;
+        }
+        .toc a {
+            display: block;
+            padding: 0.5rem 0;
+            color: #64748b;
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: all 0.2s ease;
+        }
+        .toc a:hover {
+            color: #1e293b;
+            border-bottom-color: #e2e8f0;
+        }
+        .toc .toc-level-2 {
+            margin-left: 1rem;
+            font-size: 0.875rem;
+        }
+        .toc .toc-level-3 {
+            margin-left: 2rem;
+            font-size: 0.8125rem;
+        }
+        .bento-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        .bento-item {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .bento-hero {
+            position: relative;
+            min-height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        .bento-stats {
+            display: grid;
+            grid-template-rows: repeat(3, 1fr);
+            gap: 1rem;
+        }
+        .stat-card {
+            padding: 1.5rem;
+            background: #f1f5f9;
+            border-radius: 8px;
+        }
+        .library-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid #3b82f6;
+        }
+        .library-rating {
+            display: flex;
+            gap: 0.5rem;
+            margin: 1rem 0;
+        }
+        .rating-star {
+            color: #fbbf24;
+        }
+        .comparison-table {
+            overflow-x: auto;
+            margin: 2rem 0;
+        }
+        .comparison-table table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .comparison-table th,
+        .comparison-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .comparison-table th {
+            background: #f8fafc;
+            font-weight: 600;
+            color: #1e293b;
+        }
+        .comparison-table tr:hover {
+            background: #f8fafc;
+        }
+        .scroll-indicator {
+            position: fixed;
+            top: 0;
+            left: 280px;
+            right: 0;
+            height: 4px;
+            background: #e2e8f0;
+            z-index: 999;
+        }
+        .scroll-progress {
+            height: 100%;
+            background: #3b82f6;
+            width: 0%;
+            transition: width 0.1s ease;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        .feature-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .feature-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+        .mermaid-container {
+            display: flex;
+            justify-content: center;
+            min-height: 300px;
+            max-height: 800px;
+            background: #ffffff;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 30px;
+            margin: 30px 0;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mermaid-container .mermaid {
+            width: 100%;
+            max-width: 100%;
+            height: 100%;
+            cursor: grab;
+            transition: transform 0.3s ease;
+            transform-origin: center center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            touch-action: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        .mermaid-container .mermaid svg {
+            max-width: 100%;
+            height: 100%;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .mermaid-container .mermaid:active {
+            cursor: grabbing;
+        }
+
+        .mermaid-container.zoomed .mermaid {
+            height: 100%;
+            width: 100%;
+            cursor: grab;
+        }
+
+        .mermaid-controls {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            display: flex;
+            gap: 10px;
+            z-index: 20;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 8px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .mermaid-control-btn {
+            background: #ffffff;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #374151;
+            font-size: 14px;
+            min-width: 36px;
+            height: 36px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mermaid-control-btn:hover {
+            background: #f8fafc;
+            border-color: #3b82f6;
+            color: #3b82f6;
+            transform: translateY(-1px);
+        }
+
+        .mermaid-control-btn:active {
+            transform: scale(0.95);
+        }
+
+    @media (max-width: 1024px) {
+        .toc {
+            display: none;
+        }
+        .main-content {
+            margin-left: 0;
+        }
+        .scroll-indicator {
+            left: 0;
+        }
+        .bento-grid {
+            grid-template-columns: 1fr;
+        }
+        .mermaid-control-btn:not(.reset-zoom) {
+            display: none;
+        }
+        .mermaid-controls {
+            top: auto;
+            bottom: 15px;
+            right: 15px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .max-w-6xl.mx-auto.px-8 {
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+        .library-card {
+            padding: 1.5rem;
+        }
+        .feature-grid {
+            grid-template-columns: 1fr;
+        }
+        .mermaid-container {
+            padding: 15px;
+        }
+    }
+    </style>
+  </head>
+
+  <body class="bg-gray-50 font-sans">
+    <!-- Scroll Progress Indicator -->
+    <div class="scroll-indicator">
+      <div class="scroll-progress" id="scrollProgress"></div>
+    </div>
+
+    <!-- Table of Contents -->
+    <nav class="toc">
+      <h3 class="font-serif text-lg font-bold text-navy mb-4">目录导航</h3>
+      <a href="#introduction" class="toc-level-1">引言</a>
+      <a href="#ideal-characteristics" class="toc-level-1">理想特性</a>
+      <a href="#existing-libraries" class="toc-level-1">现有库调研</a>
+      <a href="#thealgorithms" class="toc-level-2">TheAlgorithms/Python</a>
+      <a href="#competitivepython" class="toc-level-2">competitivepython</a>
+      <a href="#cstl" class="toc-level-2">cstl</a>
+      <a href="#tryalgo" class="toc-level-2">tryalgo</a>
+      <a href="#cpalgo" class="toc-level-2">cpalgo</a>
+      <a href="#algs4-py" class="toc-level-2">algs4-py</a>
+      <a href="#pyal" class="toc-level-2">pyal</a>
+      <a href="#algorithms-pkg" class="toc-level-2">algorithms包</a>
+      <a href="#python-datastructures" class="toc-level-2">python-datastructures</a>
+      <a href="#resources" class="toc-level-1">竞赛资源</a>
+      <a href="#builtin-modules" class="toc-level-1">内置模块</a>
+      <a href="#conclusion" class="toc-level-1">结论与建议</a>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Hero Section with Bento Layout -->
+      <div class="bento-grid max-w-6xl mx-auto px-8 py-12">
+        <!-- Hero Image with Title -->
+        <div class="bento-item bento-hero">
+          <img src="https://kimi-web-img.moonshot.cn/img/img1.sycdn.imooc.com/8ac183e034fb9980928a73b893f02b6e8223c20f.png" alt="计算机算法概念图" class="absolute inset-0 w-full h-full object-cover" size="wallpaper" aspect="wide" query="算法概念图" referrerpolicy="no-referrer" data-modified="1" data-score="11584.00"/>
+          <div class="hero-overlay absolute inset-0"></div>
+          <div class="relative z-10 text-center max-w-2xl">
+            <h1 class="font-serif text-4xl md:text-5xl font-bold mb-6 leading-tight">
+              <em class="text-yellow-300">Python算法竞赛库</em>
+              <br/>
+              <span class="text-2xl md:text-3xl">深度调研与实战指南</span>
+            </h1>
+            <p class="text-xl text-gray-200 leading-relaxed">
+              探索Python在算法竞赛中的利器，从内置模块到专业库的全面解析
+            </p>
+          </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="bento-stats">
+          <div class="stat-card">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="font-bold text-navy">库数量</h3>
+                <p class="text-3xl font-bold text-blue-600">12+</p>
+              </div>
+              <i class="fas fa-code text-2xl text-blue-500"></i>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="font-bold text-navy">算法覆盖</h3>
+                <p class="text-3xl font-bold text-green-600">128+</p>
+              </div>
+              <i class="fas fa-cogs text-2xl text-green-500"></i>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="font-bold text-navy">社区规模</h3>
+                <p class="text-3xl font-bold text-purple-600">200K+</p>
+              </div>
+              <i class="fas fa-users text-2xl text-purple-500"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Executive Summary -->
+      <section class="max-w-6xl mx-auto px-8 py-8">
+        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-8 border border-blue-100">
+          <h2 class="font-serif text-2xl font-bold text-navy mb-4">核心发现</h2>
+          <div class="grid md:grid-cols-2 gap-6">
+            <div>
+              <h3 class="font-semibold text-navy mb-2">推荐层级</h3>
+              <ul class="space-y-2 text-gray-700">
+                <li><strong class="text-green-600">首选：</strong> tryalgo, algs4-py</li>
+                <li><strong class="text-blue-600">参考：</strong> TheAlgorithms/Python</li>
+                <li><strong class="text-orange-600">内置：</strong> collections, heapq, bisect</li>
+              </ul>
+            </div>
+            <div>
+              <h3 class="font-semibold text-navy mb-2">关键指标</h3>
+              <ul class="space-y-2 text-gray-700">
+                <li><strong>性能优化：</strong> C++扩展优先</li>
+                <li><strong>文档质量：</strong> 配套书籍最佳</li>
+                <li><strong>社区支持：</strong> GitHub活跃度</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Introduction Section -->
+      <section id="introduction" class="max-w-6xl mx-auto px-8 py-12">
+        <h2 class="font-serif text-3xl font-bold text-navy mb-8">Python在算法竞赛中的现状与挑战</h2>
+
+        <div class="prose prose-lg max-w-none">
+          <p class="text-gray-700 leading-relaxed mb-6">
+            Python因其<strong>简洁的语法、丰富的库支持以及快速的开发周期</strong>，在算法竞赛领域逐渐受到欢迎。其动态类型系统和高级数据结构（如列表、字典）使得参赛者能够更专注于算法逻辑本身，而非底层实现细节。<a href="#ref1" class="citation">[1]</a>
+          </p>
+
+          <div class="bg-yellow-50 border-l-4 border-yellow-400 p-6 my-6">
+            <h3 class="font-semibold text-yellow-800 mb-2">
+              <i class="fas fa-exclamation-triangle mr-2"></i>主要挑战
+            </h3>
+            <ul class="text-yellow-700 space-y-2">
+              <li><strong>执行效率：</strong> 通常低于C++或Java等编译型语言</li>
+              <li><strong>内存占用：</strong> 相对较高，大规模数据处理时可能溢出</li>
+              <li><strong>时间限制：</strong> 严格竞赛中容易超时</li>
+            </ul>
+          </div>
+
+          <p class="text-gray-700 leading-relaxed">
+            选择合适的Python库，并充分利用其内置优化模块，对于在算法竞赛中取得好成绩至关重要。这些库不仅需要提供高效的算法和数据结构的实现，还需要有良好的文档和社区支持。<a href="#ref2" class="citation">[2]</a>
+          </p>
+        </div>
+
+        <!-- Algorithm Competition Workflow Diagram -->
+        <div class="mermaid-container">
+          <div class="mermaid-controls">
+            <button class="mermaid-control-btn zoom-in" title="放大">
+              <i class="fas fa-search-plus"></i>
+            </button>
+            <button class="mermaid-control-btn zoom-out" title="缩小">
+              <i class="fas fa-search-minus"></i>
+            </button>
+            <button class="mermaid-control-btn reset-zoom" title="重置">
+              <i class="fas fa-expand-arrows-alt"></i>
+            </button>
+            <button class="mermaid-control-btn fullscreen" title="全屏查看">
+              <i class="fas fa-expand"></i>
+            </button>
+          </div>
+          <div class="mermaid" id="algorithm-workflow">
+            graph TB
+            A[&#34;Python算法竞赛&#34;] --&gt; B[&#34;问题分析&#34;]
+            B --&gt; C[&#34;算法选择&#34;]
+            C --&gt; D[&#34;数据结构选择&#34;]
+            D --&gt; E[&#34;库选择策略&#34;]
+
+            E --&gt; F[&#34;内置模块
+            <br/>collections/heapq/bisect&#34;]
+            E --&gt; G[&#34;专业库
+            <br/>tryalgo/algs4-py&#34;]
+            E --&gt; H[&#34;参考库
+            <br/>TheAlgorithms&#34;]
+
+            F --&gt; I[&#34;性能优化&#34;]
+            G --&gt; I
+            H --&gt; I
+            I --&gt; J[&#34;代码实现&#34;]
+            J --&gt; K[&#34;测试验证&#34;]
+            K --&gt; L[&#34;提交评估&#34;]
+
+            style A fill:#e3f2fd,color:#000000
+			style B color:#000000
+			style C color:#000000
+			style D color:#000000
+			style E color:#000000
+            style F fill:#c8e6c9,color:#000000
+            style G fill:#ffecb3,color:#000000
+            style H fill:#ffccbc,color:#000000
+			style I color:#000000
+			style J color:#000000
+			style K color:#000000
+			style L color:#000000
+          </div>
+        </div>
+      </section>
+
+      <!-- Ideal Characteristics -->
+      <section id="ideal-characteristics" class="max-w-6xl mx-auto px-8 py-12 bg-white">
+        <h2 class="font-serif text-3xl font-bold text-navy mb-8">理想的Python算法竞赛库特性</h2>
+
+        <div class="feature-grid">
+          <div class="feature-card">
+            <div class="flex items-center mb-4">
+              <i class="fas fa-puzzle-piece text-2xl text-blue-500 mr-3"></i>
+              <h3 class="font-semibold text-navy text-lg">全面的功能覆盖</h3>
+            </div>
+            <p class="text-gray-600">
+              提供算法竞赛中常用的基础数据结构和核心算法，覆盖范围越广，参赛者在遇到不同类型问题时，越有可能找到现成的工具。
+            </p>
+          </div>
+
+          <div class="feature-card">
+            <div class="flex items-center mb-4">
+              <i class="fas fa-tachometer-alt text-2xl text-green-500 mr-3"></i>
+              <h3 class="font-semibold text-navy text-lg">卓越的性能优化</h3>
+            </div>
+            <p class="text-gray-600">
+              鉴于Python本身在速度上的劣势，库中的算法和数据结构实现必须经过高度优化，减少不必要的开销，利用C语言扩展。
+            </p>
+          </div>
+
+          <div class="feature-card">
+            <div class="flex items-center mb-4">
+              <i class="fas fa-code text-2xl text-purple-500 mr-3"></i>
+              <h3 class="font-semibold text-navy text-lg">代码简洁性与易用性</h3>
+            </div>
+            <p class="text-gray-600">
+              API设计应简洁明了，易于记忆和使用。代码风格应符合Pythonic惯例，使得集成到解决方案中更为顺畅。
+            </p>
+          </div>
+
+          <div class="feature-card">
+            <div class="flex items-center mb-4">
+              <i class="fas fa-book text-2xl text-orange-500 mr-3"></i>
+              <h3 class="font-semibold text-navy text-lg">完善的文档与示例</h3>
+            </div>
+            <p class="text-gray-600">
+              提供清晰、准确、完整的文档，包括函数说明、参数含义、时间复杂度分析以及典型用例。
+            </p>
+          </div>
+
+          <div class="feature-card">
+            <div class="flex items-center mb-4">
+              <i class="fas fa-users text-2xl text-red-500 mr-3"></i>
+              <h3 class="font-semibold text-navy text-lg">活跃的社区与维护</h3>
+            </div>
+            <p class="text-gray-600">
+              活跃的社区意味着库能够得到持续的维护和更新，bug能够被及时发现和修复，新的算法和数据结构也可能被不断加入。
+            </p>
+          </div>
+
+          <div class="feature-card">
+            <div class="flex items-center mb-4">
+              <i class="fas fa-trophy text-2xl text-yellow-500 mr-3"></i>
+              <h3 class="font-semibold text-navy text-lg">经过实际竞赛验证</h3>
+            </div>
+            <p class="text-gray-600">
+              库中的算法和数据结构最好能在真实的算法竞赛中得到广泛应用和验证，这不仅能证明其有效性，也能积累用户反馈。
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Existing Libraries Analysis -->
+      <section id="existing-libraries" class="max-w-6xl mx-auto px-8 py-12">
+        <h2 class="font-serif text-3xl font-bold text-navy mb-8">现有Python库的调研与分析</h2>
+
+        <!-- TheAlgorithms/Python -->
+        <div id="thealgorithms" class="library-card">
+          <div class="flex items-start justify-between mb-4">
+            <div>
+              <h3 class="font-serif text-2xl font-bold text-navy">TheAlgorithms/Python</h3>
+              <p class="text-gray-600">全面的算法实现集合</p>
+            </div>
+            <div class="text-right">
+              <div class="library-rating">
+                <i class="fas fa-star rating-star"></i>
+                <i class="fas fa-star rating-star"></i>
+                <i class="fas fa-star rating-star"></i>
+                <i class="fas fa-star rating-star"></i>
+                <i class="far fa-star text-gray-300"></i>
+              </div>
+              <span class="text-sm text-gray-500">社区活跃度极高</span>
+            </div>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-6 mb-6">
+            <div>
+              <h4 class="font-semibold text-navy mb-3">核心特点</h4>
+              <ul class="space-y-2 text-gray-700">
+                <li>• GitHub上极受欢迎的开源项目</li>
+                <li>• 获得超过<strong>20万星标</strong>和4.7万次fork</li>
+                <li>• 超过1200位贡献者参与</li>
+                <li>• 覆盖从基础到高级的各种算法</li>
+              </ul>
+            </div>
+            <div>
+              <h4 class="font-semibold text-navy mb-3">功能覆盖</h4>
+              <ul class="space-y-2 text-gray-700">
+                <li>• 回溯算法、位操作</li>
+                <li>• 数据结构：数组、链表、栈、队列、树、图</li>
+                <li>• 高级算法：动态规划、几何算法、图算法</li>
+                <li>• 特定领域：密码学、CV、区块链</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="bg-blue-50 p-4 rounded-lg">
+            <p class="text-blue-800">
+              <strong>注意：</strong> 该项目本质上是GitHub代码仓库，而非可直接通过pip安装的标准Python库。实现更侧重清晰易懂，而非极致性能优化。<a href="#ref55" class="citation">[55]</a>
+            </p>
+          </div>
+        </div>
+
+        <!-- competitivepython -->
+        <div id="competitivepython" class="library-card">
+          <div class="flex items-start justify-between mb-4">
+            <div>
+              <h3 class="font-serif text-2xl font-bold text-navy">competitivepython</h3>
+              <p class="text-gray-600">针对算法竞赛的初步尝试</p>
+            </div>
+            <div class="text-right">
+              <div class="library-rating">
+                <i class="fas fa-star rating-star"></i>
+                <i class="fas fa-star rating-star"></i>
+                <i class="far fa-star text-gray-300"></i>
+                <i class="far fa-star text-gray-300"></i>
+                <i class="far fa-star text-gray-300"></i>
+              </div>
+              <span class="text-sm text-gray-500">社区规模较小</span>
+            </div>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-6">
+            <div>
+              <h4 class="font-semibold text-navy mb-3">核心特点</h4>
+              <ul class="space-y-2 text-gray-700">
+                <li>• 明确针对Codeforces、CodeChef、LeetCode等竞赛</li>
+                <li>• 可通过PyPI安装：<code>pip install competitivepython</code></li>
+                <li>• 采用MIT许可证，鼓励社区贡献</li>
+                <li>• 目标：易于使用、文档完善、兼容Python 3</li>
+              </ul>
+            </div>
+            <div>
+              <h4 class="font-semibold text-navy mb-3">算法实现</h4>
+              <ul class="space-y-2 text-gray-700">
+                <li>• 搜索算法：二分查找、KMP模式匹配</li>
+                <li>• 图算法：BFS、DFS、Dijkstra</li>
+                <li>• 排序算法：10+种经典排序实现</li>
+                <li>• 二叉搜索树等数据结构</li>
+              </ul>
+            </div>
+          </div>
+          <p class="text-sm text-gray-600 mt-4">
+            项目活跃度：16星标，3复刻，最近更新2023年3月 <a href="#ref41" class="citation">[41]</a>
+          </p>
+        </div>
+
+        <!-- tryalgo -->
+        <div id="tryalgo" class="library-card border-l-green-500">
+          <div class="flex items-start justify-between mb-4">
+            <div>
+              <h3 class="font-serif text-2xl font-bold text-navy">tryalgo</h3>
+              <p class="text-gray-600">与算法竞赛书籍配套的专业库</p>
+              <span class="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full mt-2">
+                强烈推荐
+              </span>
+            </div>
+            <div class="text-right">
+              <div class="library-rating">
+                <i class="fas fa-star rating-star"></i>
+                <i class="fas fa-star rating-star"></i>
+                <i class="fas fa-star rating-star"></i>
+                <i class="fas fa-star rating-star"></i>
+                <i class="fas fa-star rating-star"></i>
+              </div>
+              <span class="text-sm text-gray-500">专业配套</span>
+            </div>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-6">
+            <div>
+              <h4 class="font-semibold text-navy mb-3">核心特点</h4>
+              <ul class="space-y-2 text-gray-700">
+                <li>• 专为ICPC等编程竞赛和编码面试设计</li>
+                <li>• 与《Competitive Programming in Python》书籍配套</li>
+                <li>• 包含<strong>超过128种不同算法实现</strong></li>
+                <li>• 安装：<code>pip install tryalgo</code></li>
+              </ul>
+            </div>
+            <div>
+              <h4 class="font-semibold text-navy mb-3">算法覆盖</h4>
+              <ul class="space-y-2 text-gray-700">
+                <li>• 动态规划、图算法、字符串算法</li>
+                <li>• 快速幂算法、快速傅里叶变换</li>
+                <li>• Floyd-Warshall、Ford-Fulkerson等经典算法</li>
+                <li>• 代码经过严格测试，有专业书籍理论支撑</li>
+              </ul>
+            </div>
+          </div>
+          <div class="bg-green-50 p-4 rounded-lg mt-4">
+            <p class="text-green-800">
+              <i class="fas fa-check-circle mr-2"></i>
+              <strong>优势：</strong> 官方文档完善，有配套专业书籍，代码经过优化和测试，非常适合算法竞赛使用。<a href="#ref479" class="citation">[479]</a>
+            </p>
+          </div>
+        </div>
+
+        <!-- algs4-py -->
+        <div id="algs4-py" class="library-card border-l-blue-500">
+          <div class="flex items-start justify-between mb-4">
+            <div>
+              <h3 class="font-serif text-2xl font-bold text-navy">algs4-py</h3>
+              <p class="text-gray-600">《算法（第四版）》的Python实现</p>
+              <span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full mt-2">
+                权威教材
+              </span>
+            </div>
+            <div class="text-right">
+              <div class="library-rating">
+                <i class="fas fa-star rating-star"></i>
+                <i class="fas fa-star rating-star"></i>
+                <i class="fas fa-star rating-star"></i>
+                <i class="fas fa-star rating-star"></i>
+                <i class="far fa-star text-gray-300"></i>
+              </div>
+              <span class="text-sm text-gray-500">教学导向</span>
+            </div>
+          </div>
+
+          <div class="space-y-6">
+            <div>
+              <h4 class="font-semibold text-navy mb-3">背景与特点</h4>
+              <p class="text-gray-700 mb-4">
+                将经典教材《算法（第四版）》（Robert Sedgewick和Kevin Wayne）中的Java算法实现移植到Python环境，
+                保持与原著Java代码在接口和变量命名上的一致性，并尽可能遵循Python的编程习惯。<a href="#ref296" class="citation">[296]</a>
+              </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-6">
+              <div>
+                <h4 class="font-semibold text-navy mb-3">数据结构支持</h4>
+                <ul class="space-y-2 text-gray-700">
+                  <li>• <strong>Bag</strong>：不支持删除元素的无序集合</li>
+                  <li>• <strong>Queue</strong>：基于链表的FIFO数据结构</li>
+                  <li>• <strong>Stack</strong>：基于链表的LIFO数据结构</li>
+                  <li>• <strong>UnionFind</strong>：并查集实现</li>
+                </ul>
+              </div>
+              <div>
+                <h4 class="font-semibold text-navy mb-3">算法支持</h4>
+                <ul class="space-y-2 text-gray-700">
+                  <li>• <strong>排序</strong>：选择、插入、希尔、归并、快速、堆排序</li>
+                  <li>• <strong>搜索</strong>：二叉搜索树、红黑树、散列表</li>
+                  <li>• <strong>图算法</strong>：DFS、BFS、MST、最短路径</li>
+                  <li>• <strong>字符串处理</strong>：Trie、KMP、正则表达式</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="bg-blue-50 p-4 rounded-lg">
+              <p class="text-blue-800">
+                <strong>安装：</strong>
+                <code>pip install algs4</code>
+                <br/>
+                <strong>导入示例：</strong>
+                <code>from algs4.stack import Stack</code> 或
+                <code>from algs4.sorting import merge</code>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- pyal -->
+        <div id="pyal" class="library-card">
+          <div class="flex items-start justify-between mb-4">
+            <div>
+              <h3 class="font-serif text-2xl font-bold text-navy">pyal (Python-Algorithm-pyal)</h3>
+              <p class="text-gray-600">Python版的C++ STL</p>
+            </div>
+            <div class="text-right">
+              <div class="library-rating">
+                <i class="fas fa-star rating-star"></i>
+                <i class="fas fa-star rating-star"></i>
+                <i class="fas fa-star rating-star"></i>
+                <i class="far fa-star text-gray-300"></i>
+                <i class="far fa-star text-gray-300"></i>
+              </div>
+              <span class="text-sm text-gray-500">发展潜力</span>
+            </div>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-6">
+            <div>
+              <h4 class="font-semibold text-navy mb-3">核心特点</h4>
+              <ul class="space-y-2 text-gray-700">
+                <li>• 提供类似于C++标准模板库（STL）功能</li>
+                <li>• 弥补Python在高级数据结构方面的不足</li>
+                <li>• 安装：<code>pip install Python-Algorithm-pyal</code></li>
+                <li>• 最新版本：1.4.3（2025年7月）</li>
+              </ul>
+            </div>
+            <div>
+              <h4 class="font-semibold text-navy mb-3">主要功能</h4>
+              <ul class="space-y-2 text-gray-700">
+                <li>• <strong>TreeMap</strong>：基于平衡搜索树的有序映射</li>
+                <li>• 支持高效查找、插入、删除操作（O(log n)）</li>
+                <li>• 提供上界/下界查找、最小/最大键获取</li>
+                <li>• 适用于需要有序映射的场景</li>
+              </ul>
+            </div>
+          </div>
+          <div class="bg-yellow-50 p-4 rounded-lg mt-4">
+            <p class="text-yellow-800">
+              <i class="fas fa-info-circle mr-2"></i>
+              <strong>现状：</strong> 目前更侧重于数据结构实现，算法支持不明确，文档相对缺乏，但具有发展潜力。<a href="#ref293" class="citation">[293]</a>
+            </p>
+          </div>
+        </div>
+
+        <!-- algorithms package -->
+        <div id="algorithms-pkg" class="library-card">
+          <div class="flex items-start justify-between mb-4">
+            <div>
+              <h3 class="font-serif text-2xl font-bold text-navy">algorithms (PyPI包)</h3>
+              <p class="text-gray-600">声称最全面的Python算法包</p>
+            </div>
+            <div class="text-right">
+              <div class="library-rating">
+                <i class="fas fa-star rating-star"></i>
+                <i class="fas fa-star rating-star"></i>
+                <i class="fas fa-star rating-star"></i>
+                <i class="fas fa-star rating-star"></i>
+                <i class="far fa-star text-gray-300"></i>
+              </div>
+              <span class="text-sm text-gray-500">学习参考</span>
+            </div>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-6">
+            <div>
+              <h4 class="font-semibold text-navy mb-3">核心特点</h4>
+              <ul class="space-y-2 text-gray-700">
+                <li>• 声称提供全面的算法和数据结构</li>
+                <li>• 安装：<code>pip install algorithms</code></li>
+                <li>• 与GitHub项目TheAlgorithms/Python密切相关</li>
+                <li>• 强调易用性和代码清晰度</li>
+              </ul>
+            </div>
+            <div>
+              <h4 class="font-semibold text-navy mb-3">功能覆盖</h4>
+              <ul class="space-y-2 text-gray-700">
+                <li>• 排序：快速排序、归并排序等</li>
+                <li>• 搜索：二分查找、DFS、BFS</li>
+                <li>• 图论、动态规划算法</li>
+                <li>• 数据结构：链表、堆、栈、队列、树</li>
+              </ul>
+            </div>
+          </div>
+          <div class="bg-orange-50 p-4 rounded-lg mt-4">
+            <p class="text-orange-800">
+              <i class="fas fa-exclamation-triangle mr-2"></i>
+              <strong>注意：</strong> 项目明确说明&#34;实现仅用于学习目的。它们可能比Python标准库中的实现效率低。请自行决定是否使用。&#34;<a href="#ref433" class="citation">[433]</a>
+            </p>
+          </div>
+        </div>
+
+        <!-- python-datastructures -->
+        <div id="python-datastructures" class="library-card">
+          <div class="flex items-start justify-between mb-4">
+            <div>
+              <h3 class="font-serif text-2xl font-bold text-navy">python-datastructures</h3>
+              <p class="text-gray-600">专注于数据结构的实现</p>
+            </div>
+            <div class="text-right">
+              <div class="library-rating">
+                <i class="fas fa-star rating-star"></i>
+                <i class="fas fa-star rating-star"></i>
+                <i class="fas fa-star rating-star"></i>
+                <i class="far fa-star text-gray-300"></i>
+                <i class="far fa-star text-gray-300"></i>
+              </div>
+              <span class="text-sm text-gray-500">专项工具</span>
+            </div>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-6">
+            <div>
+              <h4 class="font-semibold text-navy mb-3">核心特点</h4>
+              <ul class="space-y-2 text-gray-700">
+                <li>• 专注于提供各种数据结构的Python实现</li>
+                <li>• 目标：让用户专注于算法开发</li>
+                <li>• 适用于面试准备和学校项目</li>
+                <li>• 采用MIT许可证，欢迎社区贡献</li>
+              </ul>
+            </div>
+            <div>
+              <h4 class="font-semibold text-navy mb-3">支持的数据结构</h4>
+              <ul class="space-y-2 text-gray-700">
+                <li>• 栈、队列、双端队列</li>
+                <li>• 单/双向链表、循环链表</li>
+                <li>• 最大堆、最小堆</li>
+                <li>• 字典树（Trie）</li>
+              </ul>
+            </div>
+          </div>
+          <p class="text-sm text-gray-600 mt-4">
+            提供详细的文档和测试支持，开发环境搭建简单。<a href="#ref216" class="citation">[216]</a>
+          </p>
+        </div>
+      </section>
+
+      <!-- Built-in Modules -->
+      <section id="builtin-modules" class="max-w-6xl mx-auto px-8 py-12 bg-white">
+        <h2 class="font-serif text-3xl font-bold text-navy mb-8">Python内置模块在算法竞赛中的应用</h2>
+
+        <div class="mb-8">
+          <p class="text-gray-700 leading-relaxed text-lg">
+            Python的标准库本身就包含了许多在算法竞赛中非常有用的模块和数据结构。这些内置组件通常经过高度优化（许多是用C实现的），并且直接集成在Python环境中，无需额外安装。<a href="#ref80" class="citation">[80]</a>
+          </p>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-6">
+          <div class="feature-card border-l-4 border-blue-500">
+            <h3 class="font-serif text-xl font-bold text-navy mb-4">collections模块</h3>
+            <ul class="space-y-3">
+              <li class="flex items-start">
+                <i class="fas fa-angle-right text-blue-500 mt-1 mr-2"></i>
+                <div>
+                  <strong>deque</strong>：双端队列，两端O(1)操作，远优于list的insert(0,v)<a href="#ref90" class="citation">[90]</a>
+                </div>
+              </li>
+              <li class="flex items-start">
+                <i class="fas fa-angle-right text-blue-500 mt-1 mr-2"></i>
+                <div>
+                  <strong>defaultdict</strong>：自动提供默认值，避免繁琐的if检查<a href="#ref81" class="citation">[81]</a>
+                </div>
+              </li>
+              <li class="flex items-start">
+                <i class="fas fa-angle-right text-blue-500 mt-1 mr-2"></i>
+                <div>
+                  <strong>Counter</strong>：计数可哈希对象，统计频率的利器<a href="#ref82" class="citation">[82]</a>
+                </div>
+              </li>
+            </ul>
+          </div>
+
+          <div class="feature-card border-l-4 border-green-500">
+            <h3 class="font-serif text-xl font-bold text-navy mb-4">heapq模块</h3>
+            <ul class="space-y-3">
+              <li class="flex items-start">
+                <i class="fas fa-angle-right text-green-500 mt-1 mr-2"></i>
+                <div>
+                  <strong>堆队列算法</strong>：基于列表的最小堆实现<a href="#ref82" class="citation">[82]</a>
+                </div>
+              </li>
+              <li class="flex items-start">
+                <i class="fas fa-angle-right text-green-500 mt-1 mr-2"></i>
+                <div>
+                  <strong>核心函数</strong>：heapify, heappush, heappop, heapreplace<a href="#ref175" class="citation">[175]</a>
+                </div>
+              </li>
+              <li class="flex items-start">
+                <i class="fas fa-angle-right text-green-500 mt-1 mr-2"></i>
+                <div>
+                  <strong>应用场景</strong>：Dijkstra、Prim、Huffman编码等<a href="#ref50" class="citation">[50]</a>
+                </div>
+              </li>
+            </ul>
+          </div>
+
+          <div class="feature-card border-l-4 border-purple-500">
+            <h3 class="font-serif text-xl font-bold text-navy mb-4">bisect模块</h3>
+            <ul class="space-y-3">
+              <li class="flex items-start">
+                <i class="fas fa-angle-right text-purple-500 mt-1 mr-2"></i>
+                <div>
+                  <strong>有序列表维护</strong>：支持二分查找的高效操作<a href="#ref83" class="citation">[83]</a>
+                </div>
+              </li>
+              <li class="flex items-start">
+                <i class="fas fa-angle-right text-purple-500 mt-1 mr-2"></i>
+                <div>
+                  <strong>核心函数</strong>：bisect_left, bisect_right, insort<a href="#ref170" class="citation">[170]</a>
+                </div>
+              </li>
+              <li class="flex items-start">
+                <i class="fas fa-angle-right text-purple-500 mt-1 mr-2"></i>
+                <div>
+                  <strong>时间复杂度</strong>：查找O(log n)，插入O(n)<a href="#ref50" class="citation">[50]</a>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-8 mt-8">
+          <h3 class="font-serif text-xl font-bold text-navy mb-4">
+            <i class="fas fa-lightbulb text-yellow-500 mr-2"></i>
+            内置模块使用建议
+          </h3>
+          <div class="grid md:grid-cols-2 gap-6">
+            <div>
+              <h4 class="font-semibold text-navy mb-2">性能优势</h4>
+              <p class="text-gray-700">
+                这些内置模块通常由C语言实现，在性能上比纯Python实现有显著优势。在算法竞赛中，应优先考虑使用这些模块。
+              </p>
+            </div>
+            <div>
+              <h4 class="font-semibold text-navy mb-2">使用场景</h4>
+              <p class="text-gray-700">
+                双端队列、优先队列、计数器、有序列表维护等场景，这些内置模块都能提供高效且简洁的解决方案。
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Conclusion -->
+      <section id="conclusion" class="max-w-6xl mx-auto px-8 py-12">
+        <h2 class="font-serif text-3xl font-bold text-navy mb-8">结论与建议</h2>
+
+        <div class="space-y-8">
+          <div class="bg-white rounded-xl p-8 shadow-lg">
+            <h3 class="font-serif text-xl font-bold text-navy mb-6">推荐策略</h3>
+
+            <div class="space-y-6">
+              <div class="border-l-4 border-green-500 pl-6">
+                <h4 class="font-semibold text-green-700 mb-2">
+                  <i class="fas fa-star mr-2"></i>优先掌握Python内置模块
+                </h4>
+                <p class="text-gray-700">
+                  <strong>collections、heapq和bisect</strong>是Python标准库中为算法竞赛量身定制的利器。
+                  它们通常由C实现，性能优越，且无需额外安装。熟练掌握这些模块，能解决竞赛中大部分基础的数据结构和算法需求。
+                </p>
+              </div>
+
+              <div class="border-l-4 border-blue-500 pl-6">
+                <h4 class="font-semibold text-blue-700 mb-2">
+                  <i class="fas fa-graduation-cap mr-2"></i>针对算法竞赛的专用库
+                </h4>
+                <div class="grid md:grid-cols-2 gap-4 mt-3">
+                  <div class="bg-blue-50 p-4 rounded-lg">
+                    <h5 class="font-semibold text-navy mb-2">tryalgo</h5>
+                    <p class="text-sm text-gray-700">
+                      高度推荐，与专业书籍配套，提供128+种经过测试和优化的算法实现，
+                      覆盖动态规划、图论、字符串等多个关键领域。
+                    </p>
+                  </div>
+                  <div class="bg-blue-50 p-4 rounded-lg">
+                    <h5 class="font-semibold text-navy mb-2">algs4-py</h5>
+                    <p class="text-sm text-gray-700">
+                      与经典教材《算法（第四版）》紧密对接，提供书中大部分算法和数据结构的Python实现，
+                      代码清晰，有助于理解算法原理。
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="border-l-4 border-orange-500 pl-6">
+                <h4 class="font-semibold text-orange-700 mb-2">
+                  <i class="fas fa-book mr-2"></i>学习与参考资源
+                </h4>
+                <p class="text-gray-700">
+                  <strong>TheAlgorithms/Python</strong>及其PyPI包<strong>algorithms</strong>是极佳的学习和参考资源，
+                  覆盖范围极广。但部分实现可能更侧重教育意义，直接用于竞赛需谨慎评估性能。
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Comprehensive Comparison Table -->
+          <div class="comparison-table">
+            <h3 class="font-serif text-2xl font-bold text-navy mb-6">库特性对比总结</h3>
+            <table class="w-full">
+              <thead>
+                <tr>
+                  <th class="w-1/6">库名称</th>
+                  <th class="w-1/6">主要特点</th>
+                  <th class="w-1/6">安装方式</th>
+                  <th class="w-1/6">数据结构支持</th>
+                  <th class="w-1/6">算法支持</th>
+                  <th class="w-1/6">适用场景</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="font-semibold">TheAlgorithms/Python</td>
+                  <td>全面的算法实现集合</td>
+                  <td>手动下载/克隆</td>
+                  <td>覆盖几乎所有常见数据结构</td>
+                  <td>覆盖几乎所有常见算法类别</td>
+                  <td><span class="bg-orange-100 text-orange-800 px-2 py-1 rounded text-sm">学习参考</span></td>
+                </tr>
+                <tr>
+                  <td class="font-semibold">competitivepython</td>
+                  <td>针对算法竞赛，易用性较好</td>
+                  <td>
+                    <code>pip install competitivepython</code>
+                  </td>
+                  <td>二叉搜索树等基础数据结构</td>
+                  <td>搜索、图算法、排序等</td>
+                  <td><span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">初步尝试</span></td>
+                </tr>
+                <tr class="bg-green-50">
+                  <td class="font-semibold">tryalgo</td>
+                  <td>与竞赛书籍配套，128+种算法</td>
+                  <td>
+                    <code>pip install tryalgo</code>
+                  </td>
+                  <td>覆盖竞赛常用数据结构</td>
+                  <td>动态规划、图算法、字符串算法等</td>
+                  <td><span class="bg-green-100 text-green-800 px-2 py-1 rounded text-sm">强烈推荐</span></td>
+                </tr>
+                <tr>
+                  <td class="font-semibold">cpalgo</td>
+                  <td>标准竞编程算法库，100+种算法</td>
+                  <td>
+                    <code>pip install cpalgo</code>
+                  </td>
+                  <td>信息不明确，侧重算法实现</td>
+                  <td>字符串处理、数论、经典算法等</td>
+                  <td><span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-sm">功能声称全面</span></td>
+                </tr>
+                <tr class="bg-blue-50">
+                  <td class="font-semibold">algs4-py</td>
+                  <td>《算法》第四版Python实现</td>
+                  <td>
+                    <code>pip install algs4</code>
+                  </td>
+                  <td>Bag, Queue, Stack, BST, HashST等</td>
+                  <td>排序、搜索、图算法、字符串处理</td>
+                  <td><span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">推荐学习</span></td>
+                </tr>
+                <tr>
+                  <td class="font-semibold">pyal</td>
+                  <td>Python版C++ STL，TreeMap等</td>
+                  <td>
+                    <code>pip install Python-Algorithm-pyal</code>
+                  </td>
+                  <td>TreeMap (平衡搜索树有序映射)</td>
+                  <td>主要展示数据结构功能</td>
+                  <td><span class="bg-purple-100 text-purple-800 px-2 py-1 rounded text-sm">特定需求</span></td>
+                </tr>
+                <tr>
+                  <td class="font-semibold">algorithms (PyPI包)</td>
+                  <td>全面的Python算法包</td>
+                  <td>
+                    <code>pip install algorithms</code>
+                  </td>
+                  <td>链表、堆、栈、队列、树等</td>
+                  <td>排序、搜索、图论、动态规划等</td>
+                  <td><span class="bg-orange-100 text-orange-800 px-2 py-1 rounded text-sm">学习参考</span></td>
+                </tr>
+                <tr class="bg-green-50">
+                  <td class="font-semibold">collections (内置)</td>
+                  <td>有用的容器数据类型</td>
+                  <td>Python标准库，无需安装</td>
+                  <td>deque, defaultdict, Counter等</td>
+                  <td>主要提供数据结构支持</td>
+                  <td><span class="bg-green-100 text-green-800 px-2 py-1 rounded text-sm">必备</span></td>
+                </tr>
+                <tr class="bg-green-50">
+                  <td class="font-semibold">heapq (内置)</td>
+                  <td>基于列表的堆队列算法</td>
+                  <td>Python标准库，无需安装</td>
+                  <td>基于列表的堆</td>
+                  <td>堆操作（建堆、插入、弹出等）</td>
+                  <td><span class="bg-green-100 text-green-800 px-2 py-1 rounded text-sm">必备</span></td>
+                </tr>
+                <tr class="bg-green-50">
+                  <td class="font-semibold">bisect (内置)</td>
+                  <td>有序列表二分查找和插入</td>
+                  <td>Python标准库，无需安装</td>
+                  <td>维护有序列表</td>
+                  <td>二分查找及其变体</td>
+                  <td><span class="bg-green-100 text-green-800 px-2 py-1 rounded text-sm">必备</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="bg-gradient-to-r from-navy to-blue-900 text-white rounded-xl p-8">
+            <h3 class="font-serif text-2xl font-bold mb-6">
+              <i class="fas fa-trophy text-yellow-400 mr-3"></i>最终建议
+            </h3>
+
+            <div class="grid md:grid-cols-2 gap-8">
+              <div>
+                <h4 class="font-semibold mb-4 text-yellow-300">核心原则</h4>
+                <ul class="space-y-3">
+                  <li class="flex items-start">
+                    <i class="fas fa-check text-green-400 mt-1 mr-3"></i>
+                    <span><strong>基础为王：</strong>深入理解算法原理和数据结构本质最重要</span>
+                  </li>
+                  <li class="flex items-start">
+                    <i class="fas fa-check text-green-400 mt-1 mr-3"></i>
+                    <span><strong>实践出真知：</strong>在OJ上大量练习，检验算法能力</span>
+                  </li>
+                  <li class="flex items-start">
+                    <i class="fas fa-check text-green-400 mt-1 mr-3"></i>
+                    <span><strong>性能敏感：</strong>Python竞赛中性能瓶颈尤为突出</span>
+                  </li>
+                  <li class="flex items-start">
+                    <i class="fas fa-check text-green-400 mt-1 mr-3"></i>
+                    <span><strong>社区文档：</strong>选择有良好文档和活跃社区的库</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div>
+                <h4 class="font-semibold mb-4 text-yellow-300">工具选择</h4>
+                <div class="space-y-3">
+                  <div class="bg-white bg-opacity-10 p-3 rounded">
+                    <strong>首选组合：</strong>内置模块 + tryalgo/algs4-py
+                  </div>
+                  <div class="bg-white bg-opacity-10 p-3 rounded">
+                    <strong>学习资源：</strong>TheAlgorithms/Python + cp-algorithms.com
+                  </div>
+                  <div class="bg-white bg-opacity-10 p-3 rounded">
+                    <strong>性能关键：</strong>优先考虑C实现的模块和经过竞赛验证的库
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Footer -->
+      <footer class="max-w-6xl mx-auto px-8 py-8 border-t border-gray-200">
+        <div class="text-center text-gray-500 text-sm">
+          <p>本调研基于公开资料整理，旨在为Python算法竞赛参与者提供参考</p>
+          <p class="mt-2">数据来源：GitHub仓库、PyPI官方文档、相关技术博客</p>
+        </div>
+      </footer>
+    </main>
+
+    <script>
+        // Scroll progress indicator
+        window.addEventListener('scroll', () => {
+            const scrolled = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
+            document.getElementById('scrollProgress').style.width = scrolled + '%';
+        });
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Highlight current section in TOC
+        window.addEventListener('scroll', () => {
+            const sections = document.querySelectorAll('section[id]');
+            const tocLinks = document.querySelectorAll('.toc a');
+            
+            let currentSection = '';
+            sections.forEach(section => {
+                const rect = section.getBoundingClientRect();
+                if (rect.top <= 100 && rect.bottom >= 100) {
+                    currentSection = section.id;
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('font-semibold', 'text-navy');
+                if (link.getAttribute('href') === '#' + currentSection) {
+                    link.classList.add('font-semibold', 'text-navy');
+                }
+            });
+        });
+
+        // Initialize Mermaid with custom theme and configuration
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'base',
+            themeVariables: {
+                primaryColor: '#3b82f6',
+                primaryTextColor: '#ffffff',
+                primaryBorderColor: '#1e40af',
+                lineColor: '#6b7280',
+                secondaryColor: '#f8fafc',
+                tertiaryColor: '#f1f5f9',
+                background: '#ffffff',
+                mainBkg: '#ffffff',
+                secondBkg: '#f8fafc',
+                tertiaryBkg: '#f1f5f9'
+            },
+            flowchart: {
+                htmlLabels: true,
+                curve: 'basis',
+                padding: 20
+            },
+            sequence: {
+                diagramMarginX: 50,
+                diagramMarginY: 10
+            },
+            gantt: {
+                fontSize: 14
+            }
+        });
+
+        // Initialize Mermaid Controls for zoom and pan
+        function initializeMermaidControls() {
+            const containers = document.querySelectorAll('.mermaid-container');
+
+            containers.forEach(container => {
+            const mermaidElement = container.querySelector('.mermaid');
+            let scale = 1;
+            let isDragging = false;
+            let startX, startY, translateX = 0, translateY = 0;
+
+            // 触摸相关状态
+            let isTouch = false;
+            let touchStartTime = 0;
+            let initialDistance = 0;
+            let initialScale = 1;
+            let isPinching = false;
+
+            // Zoom controls
+            const zoomInBtn = container.querySelector('.zoom-in');
+            const zoomOutBtn = container.querySelector('.zoom-out');
+            const resetBtn = container.querySelector('.reset-zoom');
+            const fullscreenBtn = container.querySelector('.fullscreen');
+
+            function updateTransform() {
+                mermaidElement.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+
+                if (scale > 1) {
+                container.classList.add('zoomed');
+                } else {
+                container.classList.remove('zoomed');
+                }
+
+                mermaidElement.style.cursor = isDragging ? 'grabbing' : 'grab';
+            }
+
+            if (zoomInBtn) {
+                zoomInBtn.addEventListener('click', () => {
+                scale = Math.min(scale * 1.25, 4);
+                updateTransform();
+                });
+            }
+
+            if (zoomOutBtn) {
+                zoomOutBtn.addEventListener('click', () => {
+                scale = Math.max(scale / 1.25, 0.3);
+                if (scale <= 1) {
+                    translateX = 0;
+                    translateY = 0;
+                }
+                updateTransform();
+                });
+            }
+
+            if (resetBtn) {
+                resetBtn.addEventListener('click', () => {
+                scale = 1;
+                translateX = 0;
+                translateY = 0;
+                updateTransform();
+                });
+            }
+
+            if (fullscreenBtn) {
+                fullscreenBtn.addEventListener('click', () => {
+                if (container.requestFullscreen) {
+                    container.requestFullscreen();
+                } else if (container.webkitRequestFullscreen) {
+                    container.webkitRequestFullscreen();
+                } else if (container.msRequestFullscreen) {
+                    container.msRequestFullscreen();
+                }
+                });
+            }
+
+            // Mouse Events
+            mermaidElement.addEventListener('mousedown', (e) => {
+                if (isTouch) return; // 如果是触摸设备，忽略鼠标事件
+
+                isDragging = true;
+                startX = e.clientX - translateX;
+                startY = e.clientY - translateY;
+                mermaidElement.style.cursor = 'grabbing';
+                updateTransform();
+                e.preventDefault();
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (isDragging && !isTouch) {
+                translateX = e.clientX - startX;
+                translateY = e.clientY - startY;
+                updateTransform();
+                }
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (isDragging && !isTouch) {
+                isDragging = false;
+                mermaidElement.style.cursor = 'grab';
+                updateTransform();
+                }
+            });
+
+            document.addEventListener('mouseleave', () => {
+                if (isDragging && !isTouch) {
+                isDragging = false;
+                mermaidElement.style.cursor = 'grab';
+                updateTransform();
+                }
+            });
+
+            // 获取两点之间的距离
+            function getTouchDistance(touch1, touch2) {
+                return Math.hypot(
+                touch2.clientX - touch1.clientX,
+                touch2.clientY - touch1.clientY
+                );
+            }
+
+            // Touch Events - 触摸事件处理
+            mermaidElement.addEventListener('touchstart', (e) => {
+                isTouch = true;
+                touchStartTime = Date.now();
+
+                if (e.touches.length === 1) {
+                // 单指拖动
+                isPinching = false;
+                isDragging = true;
+
+                const touch = e.touches[0];
+                startX = touch.clientX - translateX;
+                startY = touch.clientY - translateY;
+
+                } else if (e.touches.length === 2) {
+                // 双指缩放
+                isPinching = true;
+                isDragging = false;
+
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                initialDistance = getTouchDistance(touch1, touch2);
+                initialScale = scale;
+                }
+
+                e.preventDefault();
+            }, { passive: false });
+
+            mermaidElement.addEventListener('touchmove', (e) => {
+                if (e.touches.length === 1 && isDragging && !isPinching) {
+                // 单指拖动
+                const touch = e.touches[0];
+                translateX = touch.clientX - startX;
+                translateY = touch.clientY - startY;
+                updateTransform();
+
+                } else if (e.touches.length === 2 && isPinching) {
+                // 双指缩放
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                const currentDistance = getTouchDistance(touch1, touch2);
+
+                if (initialDistance > 0) {
+                    const newScale = Math.min(Math.max(
+                    initialScale * (currentDistance / initialDistance),
+                    0.3
+                    ), 4);
+                    scale = newScale;
+                    updateTransform();
+                }
+                }
+
+                e.preventDefault();
+            }, { passive: false });
+
+            mermaidElement.addEventListener('touchend', (e) => {
+                // 重置状态
+                if (e.touches.length === 0) {
+                isDragging = false;
+                isPinching = false;
+                initialDistance = 0;
+
+                // 延迟重置isTouch，避免鼠标事件立即触发
+                setTimeout(() => {
+                    isTouch = false;
+                }, 100);
+                } else if (e.touches.length === 1 && isPinching) {
+                // 从双指变为单指，切换为拖动模式
+                isPinching = false;
+                isDragging = true;
+
+                const touch = e.touches[0];
+                startX = touch.clientX - translateX;
+                startY = touch.clientY - translateY;
+                }
+
+                updateTransform();
+            });
+
+            mermaidElement.addEventListener('touchcancel', (e) => {
+                isDragging = false;
+                isPinching = false;
+                initialDistance = 0;
+
+                setTimeout(() => {
+                isTouch = false;
+                }, 100);
+
+                updateTransform();
+            });
+
+            // Enhanced wheel zoom with better center point handling
+            container.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                const rect = container.getBoundingClientRect();
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+
+                const delta = e.deltaY > 0 ? 0.9 : 1.1;
+                const newScale = Math.min(Math.max(scale * delta, 0.3), 4);
+
+                // Adjust translation to zoom towards center
+                if (newScale !== scale) {
+                const scaleDiff = newScale / scale;
+                translateX = translateX * scaleDiff;
+                translateY = translateY * scaleDiff;
+                scale = newScale;
+
+                if (scale <= 1) {
+                    translateX = 0;
+                    translateY = 0;
+                }
+
+                updateTransform();
+                }
+            });
+
+            // Initialize display
+            updateTransform();
+            });
+        }
+
+        // Initialize Mermaid controls when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeMermaidControls();
+        });
+    </script>
+  
+
+</body></html>

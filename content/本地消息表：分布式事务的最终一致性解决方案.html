@@ -1,0 +1,1388 @@
+<!DOCTYPE html><html lang="zh-CN"><head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>本地消息表：分布式事务的最终一致性解决方案</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;1,400&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'serif': ['Crimson Text', 'serif'],
+                        'sans': ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'sage': {
+                            50: '#f6f7f6',
+                            100: '#e3e7e3',
+                            200: '#c7d0c7',
+                            300: '#a3b2a3',
+                            400: '#7a8f7a',
+                            500: '#5d735d',
+                            600: '#485a48',
+                            700: '#3a483a',
+                            800: '#2f3a2f',
+                            900: '#283128',
+                        },
+                        'warm-gray': {
+                            50: '#fafaf9',
+                            100: '#f5f5f4',
+                            200: '#e7e5e4',
+                            300: '#d6d3d1',
+                            400: '#a8a29e',
+                            500: '#78716c',
+                            600: '#57534e',
+                            700: '#44403c',
+                            800: '#292524',
+                            900: '#1c1917',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .hero-gradient {
+            background: linear-gradient(135deg, #f6f7f6 0%, #e3e7e3 50%, #c7d0c7 100%);
+        }
+        .text-shadow {
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .backdrop-blur-subtle {
+            backdrop-filter: blur(8px);
+        }
+        .citation-link {
+            color: #5d735d;
+            text-decoration: none;
+            border-bottom: 1px dotted #5d735d;
+            transition: all 0.2s ease;
+        }
+        .citation-link:hover {
+            color: #3a483a;
+            border-bottom-style: solid;
+        }
+        .toc-fixed {
+            position: fixed;
+            top: 2rem;
+            left: 2rem;
+            width: 280px;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+            z-index: 50;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(199, 208, 199, 0.3);
+        }
+        .main-content {
+            margin-left: 320px;
+            max-width: 800px;
+        }
+        @media (max-width: 1024px) {
+            .toc-fixed {
+                display: none;
+            }
+            .main-content {
+                margin-left: 0;
+                max-width: 100%;
+            }
+        }
+        .bento-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: auto auto;
+            gap: 1.5rem;
+            height: 400px;
+        }
+        .bento-main {
+            grid-column: 1 / 2;
+            grid-row: 1 / 3;
+        }
+        .bento-side-1 {
+            grid-column: 2 / 3;
+            grid-row: 1 / 2;
+        }
+        .bento-side-2 {
+            grid-column: 2 / 3;
+            grid-row: 2 / 3;
+        }
+        .mermaid-container {
+            display: flex;
+            justify-content: center;
+            min-height: 300px;
+            max-height: 800px;
+            background: #ffffff;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 30px;
+            margin: 30px 0;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mermaid-container .mermaid {
+            width: 100%;
+            max-width: 100%;
+            height: 100%;
+            cursor: grab;
+            transition: transform 0.3s ease;
+            transform-origin: center center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            touch-action: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        .mermaid-container .mermaid svg {
+            max-width: 100%;
+            height: 100%;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .mermaid-container .mermaid:active {
+            cursor: grabbing;
+        }
+
+        .mermaid-container.zoomed .mermaid {
+            height: 100%;
+            width: 100%;
+            cursor: grab;
+        }
+
+        .mermaid-controls {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            display: flex;
+            gap: 10px;
+            z-index: 20;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 8px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .mermaid-control-btn {
+            background: #ffffff;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #374151;
+            font-size: 14px;
+            min-width: 36px;
+            height: 36px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mermaid-control-btn:hover {
+            background: #f8fafc;
+            border-color: #3b82f6;
+            color: #3b82f6;
+            transform: translateY(-1px);
+        }
+
+        .mermaid-control-btn:active {
+            transform: scale(0.95);
+        }
+        @media (max-width: 1024px) {
+            .mermaid-control-btn:not(.reset-zoom) {
+                display: none;
+            }
+            .mermaid-controls {
+                top: auto;
+                bottom: 15px;
+                right: 15px;
+            }
+        }
+    </style>
+  </head>
+
+  <body class="bg-warm-gray-50 font-sans text-warm-gray-800 leading-relaxed">
+
+    <!-- Fixed Table of Contents -->
+    <nav class="toc-fixed rounded-lg shadow-lg">
+      <div class="p-6">
+        <h3 class="font-serif font-semibold text-lg text-sage-700 mb-4">目录</h3>
+        <ul class="space-y-2 text-sm">
+          <li>
+            <a href="#introduction" class="block py-1 px-2 rounded hover:bg-sage-50 transition-colors">引言</a>
+          </li>
+          <li>
+            <a href="#core-concepts" class="block py-1 px-2 rounded hover:bg-sage-50 transition-colors">核心概念与原理</a>
+          </li>
+          <li>
+            <a href="#solution-details" class="block py-1 px-2 rounded hover:bg-sage-50 transition-colors">方案详解</a>
+          </li>
+          <li>
+            <a href="#technical-implementation" class="block py-1 px-2 rounded hover:bg-sage-50 transition-colors">技术实现</a>
+          </li>
+          <li>
+            <a href="#spring-boot-implementation" class="block py-1 px-2 rounded hover:bg-sage-50 transition-colors">Spring Boot实现</a>
+          </li>
+          <li>
+            <a href="#pros-cons" class="block py-1 px-2 rounded hover:bg-sage-50 transition-colors">优缺点分析</a>
+          </li>
+          <li>
+            <a href="#best-practices" class="block py-1 px-2 rounded hover:bg-sage-50 transition-colors">最佳实践</a>
+          </li>
+          <li>
+            <a href="#conclusion" class="block py-1 px-2 rounded hover:bg-sage-50 transition-colors">结论</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content px-4 md:px-8 py-12">
+
+      <!-- Hero Section -->
+      <section class="hero-gradient rounded-2xl p-6 md:p-12 mb-16 relative overflow-hidden">
+        <div class="bento-grid">
+          <div class="bento-main flex flex-col justify-center">
+            <h1 class="font-serif text-3xl md:text-5xl font-bold text-sage-800 leading-tight mb-4 md:mb-6 text-shadow">
+              本地消息表
+              <span class="italic text-sage-600">分布式事务的最终一致性解决方案</span>
+            </h1>
+            <p class="text-lg md:text-xl text-warm-gray-700 mb-6 md:mb-8 leading-relaxed">
+              通过将分布式事务拆分为一系列本地事务，利用消息队列的可靠性实现数据的最终一致性
+            </p>
+            <div class="flex flex-wrap gap-4">
+              <span class="px-4 py-2 bg-sage-100 text-sage-700 rounded-full text-sm font-medium">
+                <i class="fas fa-database mr-2"></i>本地事务
+              </span>
+              <span class="px-4 py-2 bg-sage-100 text-sage-700 rounded-full text-sm font-medium">
+                <i class="fas fa-exchange-alt mr-2"></i>消息队列
+              </span>
+              <span class="px-4 py-2 bg-sage-100 text-sage-700 rounded-full text-sm font-medium">
+                <i class="fas fa-sync-alt mr-2"></i>最终一致性
+              </span>
+            </div>
+          </div>
+          <div class="bento-side-1 bg-white/70 backdrop-blur-subtle rounded-xl p-6 flex items-center justify-center">
+            <img src="https://kimi-web-img.moonshot.cn/img/img2020.cnblogs.com/beb98416338a51ed5a51b5e9840e8e8d740d2ec5.png" alt="本地消息表架构示意图" class="w-full h-full object-cover rounded-lg" size="medium" aspect="wide" query="本地消息表架构" referrerpolicy="no-referrer" data-modified="1" data-score="0.00"/>
+          </div>
+          <div class="bento-side-2 bg-sage-100/80 backdrop-blur-subtle rounded-xl p-6 flex flex-col justify-center">
+            <h3 class="font-serif font-semibold text-sage-800 mb-3">核心优势</h3>
+            <ul class="text-sm text-sage-700 space-y-2">
+              <li class="flex items-center"><i class="fas fa-check-circle text-sage-500 mr-2"></i>高性能异步处理</li>
+              <li class="flex items-center"><i class="fas fa-check-circle text-sage-500 mr-2"></i>服务解耦设计</li>
+              <li class="flex items-center"><i class="fas fa-check-circle text-sage-500 mr-2"></i>可靠消息投递</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- Introduction -->
+      <section id="introduction" class="mb-16">
+        <h2 class="font-serif text-3xl font-bold text-sage-800 mb-8">引言</h2>
+        <div class="prose prose-lg max-w-none">
+          <p class="text-warm-gray-700 leading-relaxed mb-6">
+            在微服务架构中，一个业务操作往往需要跨多个服务进行数据更新。传统的单体应用中，我们可以依赖数据库的ACID事务保证数据一致性。但在分布式环境下，每个服务拥有独立的数据库，传统的本地事务无法跨越服务边界，这就带来了分布式事务的挑战。
+          </p>
+          <p class="text-warm-gray-700 leading-relaxed mb-6">
+            本地消息表（Local Message Table）是一种经典的分布式事务解决方案，最初由eBay的系统架构师Dan Pritchett在2008年提出<a href="https://yeweigen.cn/2021/10/19/%E4%B8%80%E6%96%87%E8%AF%A6%E8%A7%A3%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1%E4%B9%8B%E5%8F%AF%E9%9D%A0%E6%B6%88%E6%81%AF%E6%9C%80%E7%BB%88%E4%B8%80%E8%87%B4%E6%80%A7/" class="citation-link">[301]</a>。该方案通过将分布式事务拆分为一系列本地事务，利用消息队列进行异步通信，在保证最终一致性的同时，实现了服务间的解耦和高性能。
+          </p>
+          <div class="bg-sage-50 border-l-4 border-sage-400 p-6 rounded-r-lg mb-6">
+            <h3 class="font-serif text-lg font-semibold text-sage-800 mb-3">方案核心思想</h3>
+            <p class="text-sage-700">
+              在业务数据库中创建一张消息表，将业务操作与消息写入绑定在同一个本地事务中，确保消息不丢失。随后通过异步定时任务将消息投递到消息队列，由下游服务消费并执行相应操作，从而实现最终一致性。
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Core Concepts -->
+      <section id="core-concepts" class="mb-16">
+        <h2 class="font-serif text-3xl font-bold text-sage-800 mb-8">核心概念与原理</h2>
+
+        <h3 class="font-serif text-2xl font-semibold text-sage-700 mb-6">理论基础</h3>
+
+        <div class="grid md:grid-cols-2 gap-8 mb-8">
+          <div class="bg-white rounded-xl p-6 shadow-sm border border-sage-100">
+            <h4 class="font-serif text-lg font-semibold text-sage-800 mb-4 flex items-center">
+              <i class="fas fa-book text-sage-600 mr-3"></i>BASE理论
+            </h4>
+            <p class="text-warm-gray-700 mb-4">
+              BASE理论是本地消息表模式的重要理论基础<a href="https://blog.csdn.net/K_520_W/article/details/136651296" class="citation-link">[319]</a>，它包含三个核心要素：
+            </p>
+            <ul class="space-y-2 text-sm text-warm-gray-600">
+              <li class="flex items-start"><span class="font-semibold text-sage-600 mr-2">B</span>Basically Available（基本可用）</li>
+              <li class="flex items-start"><span class="font-semibold text-sage-600 mr-2">S</span>Soft state（软状态）</li>
+              <li class="flex items-start"><span class="font-semibold text-sage-600 mr-2">E</span>Eventually consistent（最终一致性）</li>
+            </ul>
+          </div>
+
+          <div class="bg-white rounded-xl p-6 shadow-sm border border-sage-100">
+            <h4 class="font-serif text-lg font-semibold text-sage-800 mb-4 flex items-center">
+              <i class="fas fa-balance-scale text-sage-600 mr-3"></i>CAP定理权衡
+            </h4>
+            <p class="text-warm-gray-700 mb-4">
+              在分布式系统中，网络分区不可避免，必须在一致性和可用性之间做出选择<a href="https://www.cnblogs.com/zoe-zyq/p/15117129.html" class="citation-link">[320]</a>。
+            </p>
+            <div class="space-y-2 text-sm text-warm-gray-600">
+              <div class="flex justify-between items-center">
+                <span>强一致性</span>
+                <span class="text-red-500">❌</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span>高可用性</span>
+                <span class="text-green-500">✅</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span>分区容错性</span>
+                <span class="text-green-500">✅</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h3 class="font-serif text-2xl font-semibold text-sage-700 mb-6">核心组件</h3>
+
+        <div class="bg-white rounded-xl p-8 shadow-sm border border-sage-100 mb-8">
+          <div class="grid md:grid-cols-3 gap-6">
+            <div class="text-center">
+              <div class="w-16 h-16 bg-sage-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-paper-plane text-sage-600 text-xl"></i>
+              </div>
+              <h4 class="font-serif text-lg font-semibold text-sage-800 mb-2">事务发起方</h4>
+              <p class="text-sm text-warm-gray-600">执行本地业务操作，并写入消息表</p>
+            </div>
+            <div class="text-center">
+              <div class="w-16 h-16 bg-sage-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-database text-sage-600 text-xl"></i>
+              </div>
+              <h4 class="font-serif text-lg font-semibold text-sage-800 mb-2">本地消息表</h4>
+              <p class="text-sm text-warm-gray-600">存储待发送的消息，与业务表同库</p>
+            </div>
+            <div class="text-center">
+              <div class="w-16 h-16 bg-sage-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-exchange-alt text-sage-600 text-xl"></i>
+              </div>
+              <h4 class="font-serif text-lg font-semibold text-sage-800 mb-2">消息队列</h4>
+              <p class="text-sm text-warm-gray-600">实现服务间可靠的消息传递</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mermaid Diagram 1: Core Architecture -->
+        <div class="bg-white rounded-xl p-8 shadow-sm border border-sage-100 mb-8">
+          <h4 class="font-serif text-lg font-semibold text-sage-800 mb-4 text-center">本地消息表核心架构</h4>
+          <div class="mermaid-container">
+            <div class="mermaid-controls">
+              <button class="mermaid-control-btn zoom-in" title="放大">
+                <i class="fas fa-search-plus"></i>
+              </button>
+              <button class="mermaid-control-btn zoom-out" title="缩小">
+                <i class="fas fa-search-minus"></i>
+              </button>
+              <button class="mermaid-control-btn reset-zoom" title="重置">
+                <i class="fas fa-expand-arrows-alt"></i>
+              </button>
+              <button class="mermaid-control-btn fullscreen" title="全屏查看">
+                <i class="fas fa-expand"></i>
+              </button>
+            </div>
+            <div class="mermaid" id="mermaid-diagram-1">
+              graph LR
+              A[&#34;业务操作&#34;] --&gt; B[&#34;本地事务&#34;]
+              B --&gt; C[&#34;写入业务表&#34;]
+              B --&gt; D[&#34;写入消息表&#34;]
+              D --&gt; E[&#34;定时任务扫描&#34;]
+              E --&gt; F[&#34;消息队列&#34;]
+              F --&gt; G[&#34;消费者处理&#34;]
+              G --&gt; H[&#34;确认机制&#34;]
+
+              style A fill:#f6f7f6,stroke:#5d735d,stroke-width:2px,color:#2f3a2f
+              style B fill:#e3e7e3,stroke:#5d735d,stroke-width:2px,color:#2f3a2f
+              style C fill:#c7d0c7,stroke:#5d735d,stroke-width:2px,color:#2f3a2f
+              style D fill:#c7d0c7,stroke:#5d735d,stroke-width:2px,color:#2f3a2f
+              style E fill:#a3b2a3,stroke:#5d735d,stroke-width:2px,color:#2f3a2f
+              style F fill:#7a8f7a,stroke:#5d735d,stroke-width:2px,color:#ffffff
+              style G fill:#a3b2a3,stroke:#5d735d,stroke-width:2px,color:#2f3a2f
+              style H fill:#c7d0c7,stroke:#5d735d,stroke-width:2px,color:#2f3a2f
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Solution Details -->
+      <section id="solution-details" class="mb-16">
+        <h2 class="font-serif text-3xl font-bold text-sage-800 mb-8">方案详解：A → B → C 事务链实现</h2>
+
+        <div class="bg-white rounded-xl p-8 shadow-sm border border-sage-100 mb-8">
+          <h3 class="font-serif text-xl font-semibold text-sage-800 mb-6">电商下单流程示例</h3>
+
+          <div class="space-y-6">
+            <div class="border-l-4 border-sage-400 pl-6">
+              <h4 class="font-semibold text-sage-700 mb-2">服务A（订单服务）</h4>
+              <p class="text-warm-gray-600 text-sm mb-3">
+                接收用户下单请求，在本地事务中创建订单并写入&#34;扣减库存&#34;消息。通过定时任务将消息投递到MQ。
+              </p>
+              <div class="bg-sage-50 p-3 rounded text-xs font-mono text-sage-700">
+                @Transactional
+                <br/>
+                public void createOrder() {
+                <br/>
+                  // 1. 创建订单
+                <br/>
+                  // 2. 写入本地消息表
+                <br/>
+                }
+              </div>
+            </div>
+
+            <div class="border-l-4 border-sage-400 pl-6">
+              <h4 class="font-semibold text-sage-700 mb-2">服务B（库存服务）</h4>
+              <p class="text-warm-gray-600 text-sm mb-3">
+                消费&#34;扣减库存&#34;消息，执行库存扣减操作，并写入&#34;执行支付&#34;消息<a href="https://www.souyunku.com/829.html" class="citation-link">[341]</a>。必须实现幂等性处理。
+              </p>
+              <div class="bg-sage-50 p-3 rounded text-xs font-mono text-sage-700">
+                @RabbitListener
+                <br/>
+                public void handleMessage() {
+                <br/>
+                  // 1. 幂等性校验
+                <br/>
+                  // 2. 扣减库存
+                <br/>
+                  // 3. 写入支付消息
+                <br/>
+                }
+              </div>
+            </div>
+
+            <div class="border-l-4 border-sage-400 pl-6">
+              <h4 class="font-semibold text-sage-700 mb-2">服务C（支付服务）</h4>
+              <p class="text-warm-gray-600 text-sm mb-3">
+                消费&#34;执行支付&#34;消息，调用支付网关完成支付操作，并向上游服务发送确认。
+              </p>
+              <div class="bg-sage-50 p-3 rounded text-xs font-mono text-sage-700">
+                public void processPayment() {
+                <br/>
+                  // 1. 幂等性校验
+                <br/>
+                  // 2. 执行支付
+                <br/>
+                  // 3. 发送ACK确认
+                <br/>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mermaid Diagram 2: Transaction Flow -->
+        <div class="bg-white rounded-xl p-8 shadow-sm border border-sage-100 mb-8">
+          <h4 class="font-serif text-lg font-semibold text-sage-800 mb-4 text-center">A → B → C 事务链流程</h4>
+          <div class="mermaid-container">
+            <div class="mermaid-controls">
+              <button class="mermaid-control-btn zoom-in" title="放大">
+                <i class="fas fa-search-plus"></i>
+              </button>
+              <button class="mermaid-control-btn zoom-out" title="缩小">
+                <i class="fas fa-search-minus"></i>
+              </button>
+              <button class="mermaid-control-btn reset-zoom" title="重置">
+                <i class="fas fa-expand-arrows-alt"></i>
+              </button>
+              <button class="mermaid-control-btn fullscreen" title="全屏查看">
+                <i class="fas fa-expand"></i>
+              </button>
+            </div>
+            <div class="mermaid" id="mermaid-diagram-2">
+              sequenceDiagram
+              participant U as 用户
+              participant A as 订单服务
+              participant MQ1 as 消息队列
+              participant B as 库存服务
+              participant MQ2 as 消息队列
+              participant C as 支付服务
+
+              U-&gt;&gt;A: 创建订单
+              A-&gt;&gt;A: 本地事务
+              A-&gt;&gt;A: 1. 创建订单记录
+              A-&gt;&gt;A: 2. 写入消息表
+              A-&gt;&gt;MQ1: 投递扣减库存消息
+              A-&gt;&gt;U: 返回成功
+              MQ1-&gt;&gt;B: 消费消息
+              B-&gt;&gt;B: 本地事务
+              B-&gt;&gt;B: 1. 扣减库存
+              B-&gt;&gt;B: 2. 写入支付消息
+              B-&gt;&gt;MQ2: 投递支付消息
+              MQ2-&gt;&gt;C: 消费消息
+              C-&gt;&gt;C: 本地事务
+              C-&gt;&gt;C: 执行支付
+              C-&gt;&gt;B: 发送ACK
+              B-&gt;&gt;A: 发送ACK
+
+              Note right of A: 最终一致性
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Technical Implementation -->
+      <section id="technical-implementation" class="mb-16">
+        <h2 class="font-serif text-3xl font-bold text-sage-800 mb-8">关键技术点与实现</h2>
+
+        <h3 class="font-serif text-2xl font-semibold text-sage-700 mb-6">数据库表设计</h3>
+
+        <div class="grid md:grid-cols-2 gap-8 mb-8">
+          <div class="bg-white rounded-xl p-6 shadow-sm border border-sage-100">
+            <h4 class="font-serif text-lg font-semibold text-sage-800 mb-4">本地消息表结构</h4>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead class="bg-sage-50">
+                  <tr>
+                    <th class="text-left p-2">字段名</th>
+                    <th class="text-left p-2">类型</th>
+                    <th class="text-left p-2">描述</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-sage-100">
+                  <tr>
+                    <td class="p-2 font-mono text-xs">id</td>
+                    <td class="p-2 text-xs">BIGINT</td>
+                    <td class="p-2 text-xs">自增主键</td>
+                  </tr>
+                  <tr>
+                    <td class="p-2 font-mono text-xs">message_id</td>
+                    <td class="p-2 text-xs">VARCHAR(64)</td>
+                    <td class="p-2 text-xs">业务唯一ID</td>
+                  </tr>
+                  <tr>
+                    <td class="p-2 font-mono text-xs">biz_id</td>
+                    <td class="p-2 text-xs">VARCHAR(64)</td>
+                    <td class="p-2 text-xs">关联业务ID</td>
+                  </tr>
+                  <tr>
+                    <td class="p-2 font-mono text-xs">status</td>
+                    <td class="p-2 text-xs">VARCHAR(16)</td>
+                    <td class="p-2 text-xs">消息状态</td>
+                  </tr>
+                  <tr>
+                    <td class="p-2 font-mono text-xs">retry_count</td>
+                    <td class="p-2 text-xs">INT</td>
+                    <td class="p-2 text-xs">重试次数</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-xl p-6 shadow-sm border border-sage-100">
+            <h4 class="font-serif text-lg font-semibold text-sage-800 mb-4">去重表结构</h4>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead class="bg-sage-50">
+                  <tr>
+                    <th class="text-left p-2">字段名</th>
+                    <th class="text-left p-2">类型</th>
+                    <th class="text-left p-2">描述</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-sage-100">
+                  <tr>
+                    <td class="p-2 font-mono text-xs">id</td>
+                    <td class="p-2 text-xs">BIGINT</td>
+                    <td class="p-2 text-xs">主键</td>
+                  </tr>
+                  <tr>
+                    <td class="p-2 font-mono text-xs">message_id</td>
+                    <td class="p-2 text-xs">VARCHAR(64)</td>
+                    <td class="p-2 text-xs">消息唯一ID</td>
+                  </tr>
+                  <tr>
+                    <td class="p-2 font-mono text-xs">biz_id</td>
+                    <td class="p-2 text-xs">VARCHAR(64)</td>
+                    <td class="p-2 text-xs">业务ID</td>
+                  </tr>
+                  <tr>
+                    <td class="p-2 font-mono text-xs">create_time</td>
+                    <td class="p-2 text-xs">DATETIME</td>
+                    <td class="p-2 text-xs">创建时间</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <h3 class="font-serif text-2xl font-semibold text-sage-700 mb-6">幂等性保障</h3>
+
+        <div class="bg-white rounded-xl p-8 shadow-sm border border-sage-100 mb-8">
+          <p class="text-warm-gray-700 mb-6">
+            幂等性是指一个操作可以被多次执行，但其产生的效果与执行一次相同。在分布式系统中，由于网络重传、服务重启等因素，消息重复投递是不可避免的<a href="https://www.cnblogs.com/zhengzhaoxiang/p/13976517.html" class="citation-link">[350]</a>。
+          </p>
+
+          <div class="grid md:grid-cols-2 gap-6">
+            <div class="border border-sage-200 rounded-lg p-4">
+              <h4 class="font-semibold text-sage-800 mb-3">基于去重表实现</h4>
+              <ul class="text-sm text-warm-gray-600 space-y-2">
+                <li>• 在本地事务中查询并插入去重记录</li>
+                <li>• 利用数据库唯一索引保证原子性</li>
+                <li>• 通用性强，适用于各种场景</li>
+              </ul>
+            </div>
+            <div class="border border-sage-200 rounded-lg p-4">
+              <h4 class="font-semibold text-sage-800 mb-3">基于业务唯一ID实现</h4>
+              <ul class="text-sm text-warm-gray-600 space-y-2">
+                <li>• 利用业务表本身的唯一约束</li>
+                <li>• 减少额外的数据库操作</li>
+                <li>• 适用于具有自然唯一键的业务</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <h3 class="font-serif text-2xl font-semibold text-sage-700 mb-6">异常处理与监控</h3>
+
+        <div class="grid md:grid-cols-3 gap-6 mb-8">
+          <div class="bg-white rounded-xl p-6 shadow-sm border border-sage-100">
+            <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mb-4">
+              <i class="fas fa-exclamation-triangle text-red-600"></i>
+            </div>
+            <h4 class="font-serif text-lg font-semibold text-sage-800 mb-3">消息发送失败</h4>
+            <p class="text-sm text-warm-gray-600 mb-3">
+              定时任务重试机制，指数退避策略，最大重试次数限制。
+            </p>
+            <div class="text-xs text-warm-gray-500">
+              状态：NEW → FAILED → (重试) → SENT
+            </div>
+          </div>
+
+          <div class="bg-white rounded-xl p-6 shadow-sm border border-sage-100">
+            <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mb-4">
+              <i class="fas fa-clock text-yellow-600"></i>
+            </div>
+            <h4 class="font-serif text-lg font-semibold text-sage-800 mb-3">消息消费失败</h4>
+            <p class="text-sm text-warm-gray-600 mb-3">
+              MQ重试机制，死信队列隔离，人工干预流程。
+            </p>
+            <div class="text-xs text-warm-gray-500">
+              处理：重试 → DLQ → 人工处理
+            </div>
+          </div>
+
+          <div class="bg-white rounded-xl p-6 shadow-sm border border-sage-100">
+            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+              <i class="fas fa-chart-line text-blue-600"></i>
+            </div>
+            <h4 class="font-serif text-lg font-semibold text-sage-800 mb-3">监控指标</h4>
+            <p class="text-sm text-warm-gray-600 mb-3">
+              消息积压量，处理延迟，死信队列监控，定时任务执行情况。
+            </p>
+            <div class="text-xs text-warm-gray-500">
+              工具：Prometheus + Grafana
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Spring Boot Implementation -->
+      <section id="spring-boot-implementation" class="mb-16">
+        <h2 class="font-serif text-3xl font-bold text-sage-800 mb-8">基于Spring Boot的落地实现</h2>
+
+        <div class="bg-white rounded-xl p-8 shadow-sm border border-sage-100 mb-8">
+          <h3 class="font-serif text-xl font-semibold text-sage-800 mb-6">技术选型</h3>
+
+          <div class="grid md:grid-cols-2 gap-8">
+            <div>
+              <h4 class="font-semibold text-sage-800 mb-4">核心依赖</h4>
+              <div class="space-y-3">
+                <div class="flex items-center justify-between p-3 bg-sage-50 rounded-lg">
+                  <span class="text-sm font-medium">Spring Boot</span>
+                  <span class="text-xs text-sage-600">事务管理</span>
+                </div>
+                <div class="flex items-center justify-between p-3 bg-sage-50 rounded-lg">
+                  <span class="text-sm font-medium">Spring Data JPA</span>
+                  <span class="text-xs text-sage-600">数据访问</span>
+                </div>
+                <div class="flex items-center justify-between p-3 bg-sage-50 rounded-lg">
+                  <span class="text-sm font-medium">RocketMQ/RabbitMQ</span>
+                  <span class="text-xs text-sage-600">消息队列</span>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h4 class="font-semibold text-sage-800 mb-4">定时任务方案对比</h4>
+              <div class="space-y-3">
+                <div class="p-3 border border-sage-200 rounded-lg">
+                  <div class="flex justify-between items-center mb-2">
+                    <span class="text-sm font-medium">@Scheduled</span>
+                    <span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">简单</span>
+                  </div>
+                  <p class="text-xs text-warm-gray-600">适用于单实例，无需持久化</p>
+                </div>
+                <div class="p-3 border border-sage-200 rounded-lg">
+                  <div class="flex justify-between items-center mb-2">
+                    <span class="text-sm font-medium">Quartz</span>
+                    <span class="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">强大</span>
+                  </div>
+                  <p class="text-xs text-warm-gray-600">支持集群，持久化，复杂调度</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-xl p-8 shadow-sm border border-sage-100 mb-8">
+          <h3 class="font-serif text-xl font-semibold text-sage-800 mb-6">核心代码实现</h3>
+
+          <div class="space-y-8">
+            <div>
+              <h4 class="font-serif text-lg font-semibold text-sage-800 mb-4">生产者端：@Transactional注解应用</h4>
+              <div class="bg-warm-gray-900 rounded-lg p-6 overflow-x-auto">
+                <pre class="text-green-400 text-sm"><code>@Service
+public class OrderService {
+    
+    @Autowired
+    private OrderRepository orderRepository;
+    
+    @Autowired
+    private LocalMessageRepository messageRepository;
+
+    @Transactional
+    public void createOrder(CreateOrderRequest request) {
+        // 1. 创建订单
+        Order order = new Order();
+        order.setStatus(OrderStatus.PENDING);
+        Order savedOrder = orderRepository.save(order);
+        
+        // 2. 写入本地消息表
+        LocalMessage message = new LocalMessage();
+        message.setBizId(savedOrder.getId());
+        message.setStatus(MessageStatus.NEW);
+        message.setMessageContent(buildDeductStockMessage(savedOrder));
+        messageRepository.save(message);
+        
+        // 事务提交：订单和消息同时持久化
+    }
+}</code></pre>
+              </div>
+            </div>
+
+            <div>
+              <h4 class="font-serif text-lg font-semibold text-sage-800 mb-4">消息发送服务：定时任务扫描</h4>
+              <div class="bg-warm-gray-900 rounded-lg p-6 overflow-x-auto">
+                <pre class="text-green-400 text-sm"><code>@Component
+public class MessageSenderService {
+
+    @Autowired
+    private LocalMessageRepository messageRepository;
+    
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
+
+    @Scheduled(fixedDelay = 5000)
+    public void sendPendingMessages() {
+        // 查询待发送的消息
+        List&lt;LocalMessage&gt; messages = messageRepository
+            .findByStatusAndNextRetryTimeLessThanEqual(
+                MessageStatus.NEW, new Date());
+            
+        messages.forEach(message -&gt; {
+            try {
+                // 发送到MQ
+                rabbitTemplate.convertAndSend(
+                    &#34;inventory.exchange&#34;, 
+                    &#34;inventory.deduct&#34;, 
+                    message.getMessageContent());
+                
+                // 更新状态为已发送
+                message.setStatus(MessageStatus.SENT);
+                messageRepository.save(message);
+                
+            } catch (Exception e) {
+                // 重试逻辑
+                message.setRetryCount(message.getRetryCount() + 1);
+                message.setNextRetryTime(calculateNextRetryTime());
+                messageRepository.save(message);
+            }
+        });
+    }
+}</code></pre>
+              </div>
+            </div>
+
+            <div>
+              <h4 class="font-serif text-lg font-semibold text-sage-800 mb-4">消费者端：幂等性处理</h4>
+              <div class="bg-warm-gray-900 rounded-lg p-6 overflow-x-auto">
+                <pre class="text-green-400 text-sm"><code>@Service
+public class InventoryService {
+
+    @Autowired
+    private InventoryRepository inventoryRepository;
+    
+    @Autowired
+    private MessageDeduplicationRepository dedupRepository;
+
+    @Transactional
+    public void deductStock(String messageId, String productId, int quantity) {
+        // 幂等性校验
+        if (dedupRepository.existsByMessageId(messageId)) {
+            log.info(&#34;Duplicate message detected: {}&#34;, messageId);
+            return;
+        }
+        
+        // 扣减库存业务逻辑
+        Inventory inventory = inventoryRepository.findByProductId(productId)
+            .orElseThrow(() -&gt; new BusinessException(&#34;Product not found&#34;));
+        
+        if (inventory.getStock() &lt; quantity) {
+            throw new BusinessException(&#34;Insufficient stock&#34;);
+        }
+        
+        inventory.setStock(inventory.getStock() - quantity);
+        inventoryRepository.save(inventory);
+        
+        // 记录去重信息
+        dedupRepository.save(new MessageDeduplication(messageId, productId));
+    }
+}</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Pros and Cons -->
+      <section id="pros-cons" class="mb-16">
+        <h2 class="font-serif text-3xl font-bold text-sage-800 mb-8">方案优缺点分析</h2>
+
+        <div class="grid md:grid-cols-2 gap-8">
+          <div class="bg-white rounded-xl p-8 shadow-sm border border-sage-100">
+            <h3 class="font-serif text-xl font-semibold text-sage-800 mb-6 flex items-center">
+              <i class="fas fa-thumbs-up text-green-600 mr-3"></i>优点
+            </h3>
+            <div class="space-y-4">
+              <div class="border-l-4 border-green-400 pl-4">
+                <h4 class="font-semibold text-sage-800 mb-2">实现相对简单</h4>
+                <p class="text-sm text-warm-gray-600">
+                  不依赖重量级分布式事务框架，利用数据库本地事务和消息队列即可实现<a href="https://developer.aliyun.com/article/1531650" class="citation-link">[308]</a>。
+                </p>
+              </div>
+              <div class="border-l-4 border-green-400 pl-4">
+                <h4 class="font-semibold text-sage-800 mb-2">高性能</h4>
+                <p class="text-sm text-warm-gray-600">
+                  避免分布式锁和2PC开销，通过异步消息实现服务解耦和高并发处理。
+                </p>
+              </div>
+              <div class="border-l-4 border-green-400 pl-4">
+                <h4 class="font-semibold text-sage-800 mb-2">高可靠性</h4>
+                <p class="text-sm text-warm-gray-600">
+                  本地事务保证消息不丢失，MQ保证可靠投递，补偿机制确保最终一致性。
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-xl p-8 shadow-sm border border-sage-100">
+            <h3 class="font-serif text-xl font-semibold text-sage-800 mb-6 flex items-center">
+              <i class="fas fa-thumbs-down text-red-600 mr-3"></i>缺点与挑战
+            </h3>
+            <div class="space-y-4">
+              <div class="border-l-4 border-red-400 pl-4">
+                <h4 class="font-semibold text-sage-800 mb-2">开发复杂度</h4>
+                <p class="text-sm text-warm-gray-600">
+                  需要处理消息表、补偿逻辑、幂等性校验，增加了代码复杂度。
+                </p>
+              </div>
+              <div class="border-l-4 border-red-400 pl-4">
+                <h4 class="font-semibold text-sage-800 mb-2">数据一致性延迟</h4>
+                <p class="text-sm text-warm-gray-600">
+                  最终一致性模型，数据从更新到一致存在延迟，不适合强一致性场景。
+                </p>
+              </div>
+              <div class="border-l-4 border-red-400 pl-4">
+                <h4 class="font-semibold text-sage-800 mb-2">维护成本</h4>
+                <p class="text-sm text-warm-gray-600">
+                  需要设计监控告警体系，处理死信队列，定期清理数据。
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Best Practices -->
+      <section id="best-practices" class="mb-16">
+        <h2 class="font-serif text-3xl font-bold text-sage-800 mb-8">最佳实践</h2>
+
+        <div class="bg-white rounded-xl p-8 shadow-sm border border-sage-100 mb-8">
+          <h3 class="font-serif text-xl font-semibold text-sage-800 mb-6">设计原则</h3>
+
+          <div class="grid md:grid-cols-2 gap-8">
+            <div>
+              <h4 class="font-semibold text-sage-800 mb-4 flex items-center">
+                <i class="fas fa-lightbulb text-yellow-500 mr-3"></i>核心原则
+              </h4>
+              <ul class="space-y-3 text-sm text-warm-gray-700">
+                <li class="flex items-start">
+                  <span class="w-2 h-2 bg-sage-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                  <span><strong>业务与消息原子化：</strong>确保业务操作和消息写入在同一个本地事务中</span>
+                </li>
+                <li class="flex items-start">
+                  <span class="w-2 h-2 bg-sage-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                  <span><strong>幂等性设计：</strong>消费者必须能够安全地处理重复消息</span>
+                </li>
+                <li class="flex items-start">
+                  <span class="w-2 h-2 bg-sage-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                  <span><strong>可靠投递：</strong>通过定时任务和重试机制确保消息不丢失</span>
+                </li>
+                <li class="flex items-start">
+                  <span class="w-2 h-2 bg-sage-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                  <span><strong>补偿机制：</strong>处理异常情况和长时间未确认的消息</span>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 class="font-semibold text-sage-800 mb-4 flex items-center">
+                <i class="fas fa-cogs text-blue-500 mr-3"></i>实现建议
+              </h4>
+              <ul class="space-y-3 text-sm text-warm-gray-700">
+                <li class="flex items-start">
+                  <span class="w-2 h-2 bg-sage-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                  <span><strong>消息表设计：</strong>合理设计索引，优化查询性能</span>
+                </li>
+                <li class="flex items-start">
+                  <span class="w-2 h-2 bg-sage-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                  <span><strong>重试策略：</strong>使用指数退避算法，避免雪崩效应</span>
+                </li>
+                <li class="flex items-start">
+                  <span class="w-2 h-2 bg-sage-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                  <span><strong>监控体系：</strong>建立完整的指标监控和告警机制</span>
+                </li>
+                <li class="flex items-start">
+                  <span class="w-2 h-2 bg-sage-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                  <span><strong>数据清理：</strong>定期归档和清理已完成的消息</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-xl p-8 shadow-sm border border-sage-100">
+          <h3 class="font-serif text-xl font-semibold text-sage-800 mb-6">适用场景</h3>
+
+          <div class="grid md:grid-cols-3 gap-6">
+            <div class="text-center p-6 bg-sage-50 rounded-lg">
+              <div class="w-16 h-16 bg-sage-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-shopping-cart text-sage-600 text-xl"></i>
+              </div>
+              <h4 class="font-semibold text-sage-800 mb-3">电商系统</h4>
+              <p class="text-sm text-warm-gray-600">
+                订单创建、库存扣减、支付处理等异步业务流程
+              </p>
+            </div>
+
+            <div class="text-center p-6 bg-sage-50 rounded-lg">
+              <div class="w-16 h-16 bg-sage-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-user-plus text-sage-600 text-xl"></i>
+              </div>
+              <h4 class="font-semibold text-sage-800 mb-3">用户服务</h4>
+              <p class="text-sm text-warm-gray-600">
+                用户注册后的异步通知、积分更新、数据同步
+              </p>
+            </div>
+
+            <div class="text-center p-6 bg-sage-50 rounded-lg">
+              <div class="w-16 h-16 bg-sage-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-chart-line text-sage-600 text-xl"></i>
+              </div>
+              <h4 class="font-semibold text-sage-800 mb-3">数据分析</h4>
+              <p class="text-sm text-warm-gray-600">
+                数据变更的异步处理、报表生成、数据同步
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Conclusion -->
+      <section id="conclusion" class="mb-16">
+        <h2 class="font-serif text-3xl font-bold text-sage-800 mb-8">结论</h2>
+
+        <div class="bg-white rounded-xl p-8 shadow-sm border border-sage-100">
+          <div class="prose prose-lg max-w-none">
+            <p class="text-warm-gray-700 leading-relaxed mb-6">
+              本地消息表是一种优雅的分布式事务解决方案，它通过将复杂的分布式事务问题转化为本地事务和可靠消息传递问题，在保证最终一致性的同时，实现了系统的高性能和高可用性。
+            </p>
+
+            <div class="bg-sage-50 rounded-lg p-6 mb-6">
+              <h3 class="font-serif text-lg font-semibold text-sage-800 mb-4">核心价值</h3>
+              <div class="grid md:grid-cols-2 gap-6">
+                <div>
+                  <h4 class="font-semibold text-sage-700 mb-2">技术价值</h4>
+                  <ul class="text-sm text-warm-gray-600 space-y-1">
+                    <li>• 简化分布式事务实现</li>
+                    <li>• 提高系统性能和可用性</li>
+                    <li>• 降低服务间耦合度</li>
+                  </ul>
+                </div>
+                <div>
+                  <h4 class="font-semibold text-sage-700 mb-2">业务价值</h4>
+                  <ul class="text-sm text-warm-gray-600 space-y-1">
+                    <li>• 提升用户体验</li>
+                    <li>• 支持业务快速迭代</li>
+                    <li>• 适应高并发场景</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <p class="text-warm-gray-700 leading-relaxed">
+              在实际应用中，需要根据业务场景选择合适的一致性模型。对于对实时性要求不高但要求数据最终一致的业务场景，如电商下单、用户注册后的异步通知等，本地消息表是一个非常理想的解决方案。通过合理的设计和实现，可以构建出既可靠又高效的分布式系统。
+            </p>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <script>
+        // Initialize Mermaid
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'base',
+            themeVariables: {
+                primaryColor: '#5d735d',
+                primaryTextColor: '#1c1917',
+                primaryBorderColor: '#5d735d',
+                lineColor: '#78716c',
+                sectionBkgColor: '#fafaf9',
+                altSectionBkgColor: '#f6f7f6',
+                gridColor: '#e7e5e4',
+                secondaryColor: '#c7d0c7',
+                tertiaryColor: '#e3e7e3',
+                background: '#ffffff',
+                mainBkg: '#ffffff',
+                secondBkg: '#fafaf9',
+                tertiaryBkg: '#f6f7f6',
+                clusterBkg: '#fafaf9',
+                clusterBorder: '#c7d0c7',
+                defaultLinkColor: '#78716c',
+                titleColor: '#1c1917',
+                edgeLabelBackground: '#ffffff',
+                nodeTextColor: '#1c1917',
+                // Enhanced contrast for different node types
+                cScale0: '#f6f7f6',
+                cScale1: '#e3e7e3', 
+                cScale2: '#c7d0c7',
+                cScale3: '#a3b2a3',
+                cScale4: '#7a8f7a',
+                cScale5: '#5d735d',
+                cScale6: '#485a48',
+                cScale7: '#3a483a'
+            },
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'basis'
+            },
+            sequence: {
+                useMaxWidth: true,
+                wrap: true
+            }
+        });
+
+        // Initialize Mermaid Controls for zoom and pan
+        function initializeMermaidControls() {
+            const containers = document.querySelectorAll('.mermaid-container');
+
+            containers.forEach(container => {
+            const mermaidElement = container.querySelector('.mermaid');
+            let scale = 1;
+            let isDragging = false;
+            let startX, startY, translateX = 0, translateY = 0;
+
+            // 触摸相关状态
+            let isTouch = false;
+            let touchStartTime = 0;
+            let initialDistance = 0;
+            let initialScale = 1;
+            let isPinching = false;
+
+            // Zoom controls
+            const zoomInBtn = container.querySelector('.zoom-in');
+            const zoomOutBtn = container.querySelector('.zoom-out');
+            const resetBtn = container.querySelector('.reset-zoom');
+            const fullscreenBtn = container.querySelector('.fullscreen');
+
+            function updateTransform() {
+                mermaidElement.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+
+                if (scale > 1) {
+                container.classList.add('zoomed');
+                } else {
+                container.classList.remove('zoomed');
+                }
+
+                mermaidElement.style.cursor = isDragging ? 'grabbing' : 'grab';
+            }
+
+            if (zoomInBtn) {
+                zoomInBtn.addEventListener('click', () => {
+                scale = Math.min(scale * 1.25, 4);
+                updateTransform();
+                });
+            }
+
+            if (zoomOutBtn) {
+                zoomOutBtn.addEventListener('click', () => {
+                scale = Math.max(scale / 1.25, 0.3);
+                if (scale <= 1) {
+                    translateX = 0;
+                    translateY = 0;
+                }
+                updateTransform();
+                });
+            }
+
+            if (resetBtn) {
+                resetBtn.addEventListener('click', () => {
+                scale = 1;
+                translateX = 0;
+                translateY = 0;
+                updateTransform();
+                });
+            }
+
+            if (fullscreenBtn) {
+                fullscreenBtn.addEventListener('click', () => {
+                if (container.requestFullscreen) {
+                    container.requestFullscreen();
+                } else if (container.webkitRequestFullscreen) {
+                    container.webkitRequestFullscreen();
+                } else if (container.msRequestFullscreen) {
+                    container.msRequestFullscreen();
+                }
+                });
+            }
+
+            // Mouse Events
+            mermaidElement.addEventListener('mousedown', (e) => {
+                if (isTouch) return; // 如果是触摸设备，忽略鼠标事件
+
+                isDragging = true;
+                startX = e.clientX - translateX;
+                startY = e.clientY - translateY;
+                mermaidElement.style.cursor = 'grabbing';
+                updateTransform();
+                e.preventDefault();
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (isDragging && !isTouch) {
+                translateX = e.clientX - startX;
+                translateY = e.clientY - startY;
+                updateTransform();
+                }
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (isDragging && !isTouch) {
+                isDragging = false;
+                mermaidElement.style.cursor = 'grab';
+                updateTransform();
+                }
+            });
+
+            document.addEventListener('mouseleave', () => {
+                if (isDragging && !isTouch) {
+                isDragging = false;
+                mermaidElement.style.cursor = 'grab';
+                updateTransform();
+                }
+            });
+
+            // 获取两点之间的距离
+            function getTouchDistance(touch1, touch2) {
+                return Math.hypot(
+                touch2.clientX - touch1.clientX,
+                touch2.clientY - touch1.clientY
+                );
+            }
+
+            // Touch Events - 触摸事件处理
+            mermaidElement.addEventListener('touchstart', (e) => {
+                isTouch = true;
+                touchStartTime = Date.now();
+
+                if (e.touches.length === 1) {
+                // 单指拖动
+                isPinching = false;
+                isDragging = true;
+
+                const touch = e.touches[0];
+                startX = touch.clientX - translateX;
+                startY = touch.clientY - translateY;
+
+                } else if (e.touches.length === 2) {
+                // 双指缩放
+                isPinching = true;
+                isDragging = false;
+
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                initialDistance = getTouchDistance(touch1, touch2);
+                initialScale = scale;
+                }
+
+                e.preventDefault();
+            }, { passive: false });
+
+            mermaidElement.addEventListener('touchmove', (e) => {
+                if (e.touches.length === 1 && isDragging && !isPinching) {
+                // 单指拖动
+                const touch = e.touches[0];
+                translateX = touch.clientX - startX;
+                translateY = touch.clientY - startY;
+                updateTransform();
+
+                } else if (e.touches.length === 2 && isPinching) {
+                // 双指缩放
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                const currentDistance = getTouchDistance(touch1, touch2);
+
+                if (initialDistance > 0) {
+                    const newScale = Math.min(Math.max(
+                    initialScale * (currentDistance / initialDistance),
+                    0.3
+                    ), 4);
+                    scale = newScale;
+                    updateTransform();
+                }
+                }
+
+                e.preventDefault();
+            }, { passive: false });
+
+            mermaidElement.addEventListener('touchend', (e) => {
+                // 重置状态
+                if (e.touches.length === 0) {
+                isDragging = false;
+                isPinching = false;
+                initialDistance = 0;
+
+                // 延迟重置isTouch，避免鼠标事件立即触发
+                setTimeout(() => {
+                    isTouch = false;
+                }, 100);
+                } else if (e.touches.length === 1 && isPinching) {
+                // 从双指变为单指，切换为拖动模式
+                isPinching = false;
+                isDragging = true;
+
+                const touch = e.touches[0];
+                startX = touch.clientX - translateX;
+                startY = touch.clientY - translateY;
+                }
+
+                updateTransform();
+            });
+
+            mermaidElement.addEventListener('touchcancel', (e) => {
+                isDragging = false;
+                isPinching = false;
+                initialDistance = 0;
+
+                setTimeout(() => {
+                isTouch = false;
+                }, 100);
+
+                updateTransform();
+            });
+
+            // Enhanced wheel zoom with better center point handling
+            container.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                const rect = container.getBoundingClientRect();
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+
+                const delta = e.deltaY > 0 ? 0.9 : 1.1;
+                const newScale = Math.min(Math.max(scale * delta, 0.3), 4);
+
+                // Adjust translation to zoom towards center
+                if (newScale !== scale) {
+                const scaleDiff = newScale / scale;
+                translateX = translateX * scaleDiff;
+                translateY = translateY * scaleDiff;
+                scale = newScale;
+
+                if (scale <= 1) {
+                    translateX = 0;
+                    translateY = 0;
+                }
+
+                updateTransform();
+                }
+            });
+
+            // Initialize display
+            updateTransform();
+            });
+        }
+
+        // Initialize Mermaid controls after diagrams are rendered
+        setTimeout(() => {
+            initializeMermaidControls();
+        }, 1000);
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Highlight active section in TOC
+        window.addEventListener('scroll', () => {
+            const sections = document.querySelectorAll('section[id]');
+            const navLinks = document.querySelectorAll('.toc-fixed a[href^="#"]');
+            
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (window.pageYOffset >= sectionTop - 200) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('bg-sage-100', 'text-sage-800');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('bg-sage-100', 'text-sage-800');
+                }
+            });
+        });
+    </script>
+
+  
+
+</body></html>

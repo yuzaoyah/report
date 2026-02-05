@@ -1,0 +1,1279 @@
+<!DOCTYPE html><html lang="zh-CN"><head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>提升幸福感的家居用品深度研究报告</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'sage': '#9CAF88',
+                        'forest': '#2D5016',
+                        'cream': '#F7F5F3',
+                        'warm-gray': '#8B7355',
+                        'soft-white': '#FEFCFA'
+                    },
+                    fontFamily: {
+                        'serif': ['Cormorant Garamond', 'serif'],
+                        'sans': ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&amp;family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        .hero-overlay {
+            background: linear-gradient(135deg, rgba(45, 80, 22, 0.85) 0%, rgba(156, 175, 136, 0.75) 100%);
+        }
+        .text-shadow {
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .bento-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            grid-template-rows: auto auto;
+            gap: 1.5rem;
+        }
+        .bento-main {
+            grid-row: 1 / 3;
+        }
+        .toc-fixed {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 280px;
+            height: 100vh;
+            background: rgba(247, 245, 243, 0.98);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid #E5E7EB;
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 2rem 1.5rem;
+        }
+        .content-main {
+            margin-left: 280px;
+            min-height: 100vh;
+        }
+        .toc-link {
+            display: block;
+            padding: 0.5rem 0;
+            color: #8B7355;
+            text-decoration: none;
+            border-left: 2px solid transparent;
+            padding-left: 1rem;
+            transition: all 0.3s ease;
+        }
+        .toc-link:hover, .toc-link.active {
+            color: #2D5016;
+            border-left-color: #9CAF88;
+            background: rgba(156, 175, 136, 0.1);
+        }
+        .toc-link.level-2 {
+            margin-left: 1rem;
+            font-size: 0.9rem;
+        }
+        .toc-link.level-3 {
+            margin-left: 2rem;
+            font-size: 0.85rem;
+        }
+        .citation {
+            color: #2D5016;
+            text-decoration: none;
+            font-weight: 500;
+            border-bottom: 1px dotted #9CAF88;
+        }
+        .citation:hover {
+            background: rgba(156, 175, 136, 0.2);
+            padding: 0 2px;
+        }
+        .insight-highlight {
+            background: linear-gradient(120deg, rgba(156, 175, 136, 0.2) 0%, transparent 100%);
+            border-left: 4px solid #9CAF88;
+            padding: 1rem 1.5rem;
+            margin: 1.5rem 0;
+        }
+        .quote-elegant {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.25rem;
+            font-style: italic;
+            color: #2D5016;
+            border-left: 3px solid #9CAF88;
+            padding-left: 1.5rem;
+            margin: 2rem 0;
+        }
+        .mermaid-container {
+            display: flex;
+            justify-content: center;
+            min-height: 300px;
+            max-height: 800px;
+            background: #ffffff;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 30px;
+            margin: 30px 0;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mermaid-container .mermaid {
+            width: 100%;
+            max-width: 100%;
+            height: 100%;
+            cursor: grab;
+            transition: transform 0.3s ease;
+            transform-origin: center center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            touch-action: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        .mermaid-container .mermaid svg {
+            max-width: 100%;
+            height: 100%;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .mermaid-container .mermaid:active {
+            cursor: grabbing;
+        }
+
+        .mermaid-container.zoomed .mermaid {
+            height: 100%;
+            width: 100%;
+            cursor: grab;
+        }
+
+        .mermaid-controls {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            display: flex;
+            gap: 10px;
+            z-index: 20;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 8px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .mermaid-control-btn {
+            background: #ffffff;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #374151;
+            font-size: 14px;
+            min-width: 36px;
+            height: 36px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mermaid-control-btn:hover {
+            background: #f8fafc;
+            border-color: #3b82f6;
+            color: #3b82f6;
+            transform: translateY(-1px);
+        }
+
+        .mermaid-control-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Enhanced node styling with better contrast */
+        .mermaid .node rect,
+        .mermaid .node circle,
+        .mermaid .node polygon {
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+        }
+        .mermaid .edgeLabel {
+            background-color: rgba(247, 245, 243, 0.9);
+            border-radius: 4px;
+            padding: 2px 6px;
+        }
+        @media (max-width: 1024px) {
+            .toc-fixed {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            .toc-fixed.open {
+                transform: translateX(0);
+            }
+            .content-main {
+                margin-left: 0;
+            }
+            .mermaid-control-btn:not(.reset-zoom) {
+                display: none;
+            }
+            .mermaid-controls {
+                top: auto;
+                bottom: 15px;
+                right: 15px;
+            }
+        }
+        @media (max-width: 768px) {
+            .bento-grid {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto;
+            }
+            .bento-main {
+                grid-row: auto;
+            }
+        }
+    </style>
+  </head>
+
+  <body class="bg-soft-white text-gray-800 font-sans">
+    <!-- Table of Contents -->
+    <nav class="toc-fixed">
+      <div class="mb-6">
+        <h3 class="font-serif font-bold text-lg text-forest mb-4">目录</h3>
+        <div class="space-y-1">
+          <a href="#executive-summary" class="toc-link">执行摘要</a>
+          <a href="#section-1" class="toc-link">1. 核心发现：物质消费与幸福感</a>
+          <a href="#section-1-1" class="toc-link level-2">1.1 体验 vs. 物质购买</a>
+          <a href="#section-1-2" class="toc-link level-2">1.2 边界条件</a>
+          <a href="#section-1-3" class="toc-link level-2">1.3 科学证据</a>
+          <a href="#section-2" class="toc-link">2. 提升日常便利性</a>
+          <a href="#section-2-1" class="toc-link level-2">2.1 智能安防</a>
+          <a href="#section-2-2" class="toc-link level-2">2.2 厨房高效</a>
+          <a href="#section-2-3" class="toc-link level-2">2.3 工作辅助</a>
+          <a href="#section-3" class="toc-link">3. 改善睡眠质量</a>
+          <a href="#section-3-1" class="toc-link level-2">3.1 环境优化</a>
+          <a href="#section-3-2" class="toc-link level-2">3.2 睡眠监测</a>
+          <a href="#section-3-3" class="toc-link level-2">3.3 舒适体验</a>
+          <a href="#section-4" class="toc-link">4. 增加生活乐趣</a>
+          <a href="#section-4-1" class="toc-link level-2">4.1 沉浸娱乐</a>
+          <a href="#section-4-2" class="toc-link level-2">4.2 氛围营造</a>
+          <a href="#section-4-3" class="toc-link level-2">4.3 健康烹饪</a>
+          <a href="#section-5" class="toc-link">5. 减轻家务负担</a>
+          <a href="#section-5-1" class="toc-link level-2">5.1 地面清洁</a>
+          <a href="#section-5-2" class="toc-link level-2">5.2 深度清洁</a>
+          <a href="#section-5-3" class="toc-link level-2">5.3 衣物护理</a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Mobile TOC Toggle -->
+    <button id="toc-toggle" class="lg:hidden fixed top-4 left-4 z-50 bg-sage text-white p-2 rounded-full shadow-lg">
+      <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Main Content -->
+    <main class="content-main">
+      <!-- Hero Section -->
+      <section class="relative min-h-screen bg-gradient-to-br from-cream to-soft-white">
+        <div class="container mx-auto px-4 md:px-8 py-12 md:py-16">
+          <div class="bento-grid max-w-7xl mx-auto">
+            <!-- Main Hero Content -->
+            <div class="bento-main relative overflow-hidden rounded-2xl bg-gradient-to-br from-sage to-forest">
+              <div class="hero-overlay absolute inset-0"></div>
+              <img src="https://kimi-web-img.moonshot.cn/img/qhrenderpicoss.kujiale.com/a76ff0db0b5b66b91aa6ab651c66f986999758fd.jpg" alt="温馨明亮的现代家居环境" class="absolute inset-0 w-full h-full object-cover opacity-30" size="large" aspect="wide" style="photo" query="温馨现代家居" referrerpolicy="no-referrer" data-modified="1" data-score="0.00"/>
+              <div class="relative z-10 p-6 md:p-8 lg:p-12 h-full flex flex-col justify-center">
+                <h1 class="font-serif font-bold text-3xl md:text-4xl lg:text-5xl xl:text-6xl text-soft-white mb-4 md:mb-6 text-shadow italic leading-tight">
+                  提升幸福感的
+                  <br/>家居用品
+                  <br/>深度研究报告
+                </h1>
+                <p class="text-lg md:text-xl lg:text-2xl text-soft-white/90 font-light leading-relaxed text-shadow">
+                  基于消费心理学与实证研究，探索真正能够提升生活质量的智能家居解决方案
+                </p>
+              </div>
+            </div>
+
+            <!-- Executive Summary Card -->
+            <div id="executive-summary" class="bg-white rounded-xl p-4 md:p-6 shadow-lg border border-sage/20">
+              <h2 class="font-serif font-bold text-xl md:text-2xl text-forest mb-3 md:mb-4">执行摘要</h2>
+              <div class="space-y-2 md:space-y-3 text-sm md:text-base text-gray-700">
+                <p>能够极大提升幸福感的家居用品，其核心在于<strong class="text-forest">优化时间分配、改善身心健康、增加生活乐趣和减轻重复性劳动负担</strong>。</p>
+                <p>研究表明，<a href="https://journal.psych.ac.cn/xlkxjz/article/2019/1671-3710/1671-3710-27-12-2133.shtml" class="citation">&#34;如何花钱&#34;比&#34;花多少钱&#34;更能决定消费带来的持久幸福感</a>。</p>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 md:gap-3 mt-3 md:mt-4">
+                  <div class="bg-sage/10 p-2 md:p-3 rounded-lg">
+                    <i class="fas fa-clock text-sage mb-1 md:mb-2"></i>
+                    <div class="font-semibold text-xs md:text-sm">时间优化</div>
+                    <div class="text-xs">智能门锁、洗碗机、扫地机器人</div>
+                  </div>
+                  <div class="bg-sage/10 p-2 md:p-3 rounded-lg">
+                    <i class="fas fa-heart text-sage mb-1 md:mb-2"></i>
+                    <div class="font-semibold text-xs md:text-sm">健康改善</div>
+                    <div class="text-xs">人体工学椅、高品质床垫、智能灯泡</div>
+                  </div>
+                  <div class="bg-sage/10 p-2 md:p-3 rounded-lg">
+                    <i class="fas fa-sparkles text-sage mb-1 md:mb-2"></i>
+                    <div class="font-semibold text-xs md:text-sm">生活乐趣</div>
+                    <div class="text-xs">智能投影仪、料理锅、室内绿植</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Key Insight Card -->
+            <div class="bg-gradient-to-r from-forest to-sage rounded-xl p-4 md:p-6 text-soft-white">
+              <h3 class="font-serif font-bold text-lg md:text-xl mb-2 md:mb-3">核心洞察</h3>
+              <blockquote class="text-base md:text-lg italic leading-relaxed">
+                &#34;物质产品能够产生更多频次的&#39;瞬间幸福感&#39;，这种高频次的累积效应对日常情绪状态有着不可忽视的积极影响。&#34;
+              </blockquote>
+              <div class="mt-2 md:mt-3 text-xs md:text-sm opacity-80">— 基于消费心理学研究</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Main Content Sections -->
+      <div class="container mx-auto px-8 py-16 max-w-4xl">
+
+        <!-- Section 1 -->
+        <section id="section-1" class="mb-20">
+          <h2 class="font-serif font-bold text-4xl text-forest mb-8">1. 核心发现：物质消费与幸福感的关系</h2>
+
+          <div class="prose prose-lg max-w-none">
+            <p class="text-xl text-gray-700 leading-relaxed mb-6">
+              在探讨哪些生活用品能够提升幸福感之前，必须首先理解消费行为与主观幸福感之间的复杂关系。传统经济学观点曾认为，在满足基本生活需求之后，消费与幸福感之间不存在显著的正相关关系。然而，近年来的心理学和消费行为学研究对此提出了挑战，指出<a href="https://journal.psych.ac.cn/xlkxjz/article/2019/1671-3710/1671-3710-27-12-2133.shtml" class="citation">&#34;如何花钱&#34;比&#34;花多少钱&#34;更能决定一个人能否从消费中获得持久的幸福感</a>。
+            </p>
+
+            <div id="section-1-1" class="mb-12">
+              <h3 class="font-serif font-bold text-2xl text-forest mb-6">1.1 体验购买 vs. 物质购买：哪个更幸福？</h3>
+
+              <div class="insight-highlight">
+                <p class="font-semibold text-forest mb-2">研究发现</p>
+                <p>过去十五年的大量实证研究普遍表明，相较于物质购买，体验购买更能有效提升个体的幸福感水平。这一结论基于享乐适应理论，并通过多种实验设计和跨文化研究得到了反复验证。</p>
+              </div>
+
+              <p>学术界对消费类型与幸福感关系的研究，主要将购买行为划分为体验购买（Experiential Purchase）和物质购买（Material Purchase）两大类。体验购买指的是消费者通过金钱换取一系列生活体验，如旅行、观看演唱会、享受美食等；而物质购买则是指购买有形的、可长期保存的物品，如家具、电子产品、服装等。</p>
+
+              <div class="grid md:grid-cols-2 gap-8 my-8">
+                <div class="bg-sage/10 p-6 rounded-xl">
+                  <h4 class="font-serif font-bold text-lg text-forest mb-3">体验购买优势</h4>
+                  <ul class="space-y-2 text-gray-700">
+                    <li class="flex items-start"><i class="fas fa-check text-sage mr-2 mt-1"></i>更持久、更深刻的幸福感</li>
+                    <li class="flex items-start"><i class="fas fa-check text-sage mr-2 mt-1"></i>与社会互动紧密相连</li>
+                    <li class="flex items-start"><i class="fas fa-check text-sage mr-2 mt-1"></i>独特的、不可复制的特性</li>
+                    <li class="flex items-start"><i class="fas fa-check text-sage mr-2 mt-1"></i>与个人身份认同相关</li>
+                  </ul>
+                </div>
+                <div class="bg-forest/10 p-6 rounded-xl">
+                  <h4 class="font-serif font-bold text-lg text-forest mb-3">物质购买价值</h4>
+                  <ul class="space-y-2 text-gray-700">
+                    <li class="flex items-start"><i class="fas fa-star text-forest mr-2 mt-1"></i>高频次的&#34;瞬间幸福感&#34;</li>
+                    <li class="flex items-start"><i class="fas fa-star text-forest mr-2 mt-1"></i>即时满足的愉悦体验</li>
+                    <li class="flex items-start"><i class="fas fa-star text-forest mr-2 mt-1"></i>个人身份和品味的延伸</li>
+                    <li class="flex items-start"><i class="fas fa-star text-forest mr-2 mt-1"></i>满足自我表达需求</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="quote-elegant">
+                &#34;每一次使用一件心仪的物品，都可能触发一次短暂而愉悦的情绪体验。这种由物质产品带来的即时满足感，虽然单次强度不高，但其高频次的累积效应同样对个体的日常情绪状态有着不可忽视的积极影响。&#34;
+              </div>
+            </div>
+
+            <div id="section-1-2" class="mb-12">
+              <h3 class="font-serif font-bold text-2xl text-forest mb-6">1.2 物质购买提升幸福感的边界条件</h3>
+
+              <p>既然物质购买同样具有提升幸福感的潜力，那么关键问题就在于，在何种条件下，这种潜力能够被最大化地激发。研究揭示了多个影响物质购买与幸福感的边界条件：</p>
+
+              <div class="mermaid-container">
+                <div class="mermaid-controls">
+                  <button class="mermaid-control-btn zoom-in" title="放大">
+                    <i class="fas fa-search-plus"></i>
+                  </button>
+                  <button class="mermaid-control-btn zoom-out" title="缩小">
+                    <i class="fas fa-search-minus"></i>
+                  </button>
+                  <button class="mermaid-control-btn reset-zoom" title="重置">
+                    <i class="fas fa-expand-arrows-alt"></i>
+                  </button>
+                  <button class="mermaid-control-btn fullscreen" title="全屏查看">
+                    <i class="fas fa-expand"></i>
+                  </button>
+                </div>
+                <div class="mermaid">
+                  flowchart TD
+                  A[&#34;物质购买提升幸福感&#34;] --&gt; B[&#34;个体因素&#34;]
+                  A --&gt; C[&#34;情境因素&#34;]
+
+                  B --&gt; D[&#34;自我差异程度&#34;]
+                  B --&gt; E[&#34;性格匹配度&#34;]
+
+                  C --&gt; F[&#34;购买情境&#34;]
+                  C --&gt; G[&#34;日常生活改善&#34;]
+
+                  D --&gt; H[&#34;高自我差异者更受益于身份产品&#34;]
+                  E --&gt; I[&#34;性格匹配的购买带来更高满意度&#34;]
+                  F --&gt; J[&#34;特殊情境增加情感价值&#34;]
+                  G --&gt; K[&#34;解决生活痛点提升幸福感&#34;]
+
+                  style A fill:#9CAF88,stroke:#2D5016,stroke-width:3px,color:#2D5016,font-weight:bold
+                  style B fill:#2D5016,stroke:#9CAF88,stroke-width:2px,color:#FEFCFA,font-weight:bold
+                  style C fill:#2D5016,stroke:#9CAF88,stroke-width:2px,color:#FEFCFA,font-weight:bold
+                  style D fill:#F7F5F3,stroke:#8B7355,stroke-width:2px,color:#2D5016
+                  style E fill:#F7F5F3,stroke:#8B7355,stroke-width:2px,color:#2D5016
+                  style F fill:#F7F5F3,stroke:#8B7355,stroke-width:2px,color:#2D5016
+                  style G fill:#F7F5F3,stroke:#8B7355,stroke-width:2px,color:#2D5016
+                  style H fill:#9CAF88,stroke:#2D5016,stroke-width:2px,color:#2D5016,font-weight:600
+                  style I fill:#9CAF88,stroke:#2D5016,stroke-width:2px,color:#2D5016,font-weight:600
+                  style J fill:#9CAF88,stroke:#2D5016,stroke-width:2px,color:#2D5016,font-weight:600
+                  style K fill:#9CAF88,stroke:#2D5016,stroke-width:2px,color:#2D5016,font-weight:600
+                </div>
+              </div>
+
+              <div class="insight-highlight">
+                <p class="font-semibold text-forest mb-2">关键发现</p>
+                <p>研究表明，<a href="https://m.renrendoc.com/paper/336458926.html" class="citation">通过自动化日常任务、简化家务劳动，智能家居系统能够显著减少用户的体力消耗和压力水平，从而提升整体的幸福感和生活质量</a>。</p>
+              </div>
+            </div>
+
+            <div id="section-1-3">
+              <h3 class="font-serif font-bold text-2xl text-forest mb-6">1.3 消费与幸福感的科学证据</h3>
+
+              <p>尽管消费与幸福感的关系在直觉上似乎显而易见，但要科学地证实其因果关系却并非易事。近年来，随着心理学研究方法的进步，学术界对主流的幸福感提升策略进行了更为严格的审视。</p>
+
+              <div class="bg-warm-gray/10 p-6 rounded-xl my-6">
+                <h4 class="font-serif font-bold text-lg text-forest mb-3">研究挑战</h4>
+                <p class="text-gray-700">
+                  一篇发表于<a href="http://health.people.com.cn/n1/2023/0724/c14739-40041978.html" class="citation">《自然·人类行为》的系统性综述指出</a>，包括正念、锻炼、亲近自然等在内的五种最常被媒体推荐的提升幸福感策略，其背后的实证证据相对薄弱。该研究回顾了494篇论文中的532项研究，发现近95%的实验缺乏足够的统计功效来检测出这些策略带来的显著益处。
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 2 -->
+        <section id="section-2" class="mb-20">
+          <h2 class="font-serif font-bold text-4xl text-forest mb-8">2. 提升日常便利性的家居用品</h2>
+
+          <div class="prose prose-lg max-w-none">
+            <p class="text-xl text-gray-700 leading-relaxed mb-6">
+              日常生活的便利性是构成幸福感的重要基石。繁琐、重复的家务劳动和不便的生活设施会持续消耗个体的精力与耐心，成为压力的来源。反之，能够简化流程、节省时间和体力的家居用品，则能有效降低日常生活中的摩擦与负担。
+            </p>
+
+            <div id="section-2-1" class="mb-12">
+              <h3 class="font-serif font-bold text-2xl text-forest mb-6">2.1 智能安防与出入</h3>
+
+              <div class="grid md:grid-cols-2 gap-8 mb-8">
+                <div class="bg-white p-6 rounded-xl shadow-lg border border-sage/20">
+                  <div class="flex items-center mb-4">
+                    <i class="fas fa-key text-sage text-2xl mr-3"></i>
+                    <h4 class="font-serif font-bold text-lg text-forest">智能门锁</h4>
+                  </div>
+                  <p class="text-gray-700 mb-4">彻底解决了传统机械钥匙带来的诸多烦恼：忘带钥匙、丢失钥匙、出门倒垃圾被锁在门外等尴尬情况一去不复返。</p>
+                  <ul class="text-sm text-gray-600 space-y-1">
+                    <li>• 多种开锁方式：指纹、密码、手机App</li>
+                    <li>• 远程授权临时进入</li>
+                    <li>• 防撬报警和虚位密码</li>
+                    <li>• 随时查看门锁状态</li>
+                  </ul>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-lg border border-sage/20">
+                  <div class="flex items-center mb-4">
+                    <i class="fas fa-video text-sage text-2xl mr-3"></i>
+                    <h4 class="font-serif font-bold text-lg text-forest">智能监控</h4>
+                  </div>
+                  <p class="text-gray-700 mb-4">为家庭安全提供了全天候、无死角的守护，用户无论身在何处，都可以通过手机实时查看家中的情况。</p>
+                  <ul class="text-sm text-gray-600 space-y-1">
+                    <li>• 实时远程查看</li>
+                    <li>• 异常移动检测报警</li>
+                    <li>• 记录家庭温馨瞬间</li>
+                    <li>• 减少独居不安全感</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div id="section-2-2" class="mb-12">
+              <h3 class="font-serif font-bold text-2xl text-forest mb-6">2.2 厨房高效助手</h3>
+
+              <div class="insight-highlight mb-6">
+                <p class="font-semibold text-forest mb-2">幸福感提升机制</p>
+                <p>洗碗机被誉为&#34;家庭和谐神器&#34;，其价值远不止于将餐具洗净。它最核心的贡献在于，<strong>将一项枯燥、重复且容易引发家庭矛盾的家务劳动——洗碗——彻底自动化</strong>。</p>
+              </div>
+
+              <div class="grid md:grid-cols-3 gap-6">
+                <div class="bg-gradient-to-br from-sage/20 to-sage/10 p-6 rounded-xl">
+                  <i class="fas fa-tint text-sage text-2xl mb-3"></i>
+                  <h4 class="font-serif font-bold text-lg text-forest mb-2">洗碗机</h4>
+                  <p class="text-sm text-gray-700">每天节省30分钟-1小时，高温杀菌，减少家庭矛盾</p>
+                </div>
+
+                <div class="bg-gradient-to-br from-forest/20 to-forest/10 p-6 rounded-xl">
+                  <i class="fas fa-recycle text-forest text-2xl mb-3"></i>
+                  <h4 class="font-serif font-bold text-lg text-forest mb-2">垃圾处理器</h4>
+                  <p class="text-sm text-gray-700">告别厨房异味和蚊虫，简化垃圾分类流程</p>
+                </div>
+
+                <div class="bg-gradient-to-br from-warm-gray/20 to-warm-gray/10 p-6 rounded-xl">
+                  <i class="fas fa-coffee text-warm-gray text-2xl mb-3"></i>
+                  <h4 class="font-serif font-bold text-lg text-forest mb-2">胶囊咖啡机</h4>
+                  <p class="text-sm text-gray-700">一键享受高品质咖啡，提供确定的&#34;即时满足&#34;</p>
+                </div>
+              </div>
+            </div>
+
+            <div id="section-2-3">
+              <h3 class="font-serif font-bold text-2xl text-forest mb-6">2.3 工作与学习辅助</h3>
+
+              <div class="bg-white p-8 rounded-xl shadow-lg border border-sage/20 mb-6">
+                <div class="flex items-start mb-4">
+                  <img src="https://kimi-web-img.moonshot.cn/img/gw.alicdn.com/bb7dbbe4e925fb9f62be92939603fad645df216b.webp" alt="人体工学椅" class="w-32 h-32 object-cover rounded-lg mr-6" size="small" aspect="square" style="photo" query="人体工学椅" referrerpolicy="no-referrer" data-modified="1" data-score="0.00"/>
+                  <div>
+                    <h4 class="font-serif font-bold text-xl text-forest mb-2">人体工学椅</h4>
+                    <p class="text-gray-700 mb-4">
+                      对于每天需要在书桌前伏案工作、学习或娱乐数小时的人群来说，<a href="https://post.smzdm.com/p/adzn8g8k" class="citation">一把优秀的人体工学椅是对自身健康最重要、最值得的投资之一</a>。
+                    </p>
+                    <div class="grid md:grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <strong class="text-forest">健康益处：</strong>
+                        <ul class="mt-1 space-y-1 text-gray-600">
+                          <li>• 缓解和预防久坐健康问题</li>
+                          <li>• 维持脊柱自然生理曲度</li>
+                          <li>• 减轻腰部和颈部压力</li>
+                        </ul>
+                      </div>
+                      <div>
+                        <strong class="text-forest">舒适特性：</strong>
+                        <ul class="mt-1 space-y-1 text-gray-600">
+                          <li>• 可调节腰托和头枕</li>
+                          <li>• 透气网布材质</li>
+                          <li>• 降低长时间坐姿疲劳感</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 3 -->
+        <section id="section-3" class="mb-20">
+          <h2 class="font-serif font-bold text-4xl text-forest mb-8">3. 改善睡眠质量的家居用品</h2>
+
+          <div class="prose prose-lg max-w-none">
+            <p class="text-xl text-gray-700 leading-relaxed mb-6">
+              睡眠是维持身心健康、恢复精力的基石，其质量直接影响着白天的情绪、工作效率和整体生活满意度。通过引入一系列专业的家居用品，可以系统性地解决影响睡眠的各种问题，从光线、声音、气味到寝具的触感，全方位打造一个有利于深度睡眠的&#34;庇护所&#34;。
+            </p>
+
+            <div id="section-3-1" class="mb-12">
+              <h3 class="font-serif font-bold text-2xl text-forest mb-6">3.1 睡眠环境优化</h3>
+
+              <div class="grid md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-gradient-to-br from-indigo-50 to-blue-50 p-6 rounded-xl border border-indigo-200">
+                  <i class="fas fa-moon text-indigo-600 text-2xl mb-3"></i>
+                  <h4 class="font-serif font-bold text-lg text-forest mb-2">智能遮光窗帘</h4>
+                  <p class="text-sm text-gray-700">通过卓越的遮光性能，创造近乎完全黑暗的睡眠环境，与日出日落同步的自动化控制</p>
+                </div>
+
+                <div class="bg-gradient-to-br from-purple-50 to-pink-50 p-6 rounded-xl border border-purple-200">
+                  <i class="fas fa-volume-down text-purple-600 text-2xl mb-3"></i>
+                  <h4 class="font-serif font-bold text-lg text-forest mb-2">白噪音机器</h4>
+                  <p class="text-sm text-gray-700">通过均匀、持续的声音掩盖干扰性噪音，帮助进入并保持深度睡眠状态</p>
+                </div>
+
+                <div class="bg-gradient-to-br from-yellow-50 to-orange-50 p-6 rounded-xl border border-yellow-200">
+                  <i class="fas fa-lightbulb text-yellow-600 text-2xl mb-3"></i>
+                  <h4 class="font-serif font-bold text-lg text-forest mb-2">智能灯泡</h4>
+                  <p class="text-sm text-gray-700">根据时间自动调节色温和亮度，减少对褪黑素分泌的干扰</p>
+                </div>
+              </div>
+
+              <div class="insight-highlight">
+                <p class="font-semibold text-forest mb-2">科学原理</p>
+                <p>
+                  <a href="https://m.renrendoc.com/paper/336458926.html" class="citation">智能灯泡可以根据一天中的不同时间，自动调节其色温和亮度。在傍晚和夜间，则可以自动切换为低亮度、低色温的光线，最大限度地减少对褪黑素分泌的干扰</a>，向身体发出&#34;该休息了&#34;的信号。
+                </p>
+              </div>
+            </div>
+
+            <div id="section-3-2" class="mb-12">
+              <h3 class="font-serif font-bold text-2xl text-forest mb-6">3.2 睡眠监测与辅助</h3>
+
+              <div class="bg-white p-8 rounded-xl shadow-lg border border-sage/20">
+                <h4 class="font-serif font-bold text-xl text-forest mb-4">智能床垫/枕头的革命</h4>
+                <div class="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <p class="text-gray-700 mb-4">
+                      传统的床垫和枕头是静态的，无法适应人体在睡眠中的不同姿势和压力变化。而智能床垫和枕头则通过内置的传感器和可调节结构，实现了动态、个性化的支撑。
+                    </p>
+                    <ul class="text-sm text-gray-600 space-y-2">
+                      <li class="flex items-start"><i class="fas fa-check text-sage mr-2 mt-1"></i>实时监测睡姿和压力分布</li>
+                      <li class="flex items-start"><i class="fas fa-check text-sage mr-2 mt-1"></i>自动调整硬度和高度</li>
+                      <li class="flex items-start"><i class="fas fa-check text-sage mr-2 mt-1"></i>温度调节功能</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <img src="https://kimi-web-img.moonshot.cn/img/cloud.hhh.com.tw/286ab60a595f221550b3bbd39743f23a58d7dcc2.jpg" alt="智能床垫和枕头" class="w-full h-48 object-cover rounded-lg" size="medium" aspect="wide" style="photo" query="智能床垫 智能枕头" referrerpolicy="no-referrer" data-modified="1" data-score="0.00"/>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div id="section-3-3">
+              <h3 class="font-serif font-bold text-2xl text-forest mb-6">3.3 舒适睡眠体验</h3>
+
+              <div class="quote-elegant mb-6">
+                &#34;人的一生中有三分之一的时间是在床上度过的，因此，投资于高品质的床品是提升幸福感最直接的方式之一。&#34;
+              </div>
+
+              <div class="grid md:grid-cols-2 gap-8">
+                <div class="bg-gradient-to-br from-cream to-soft-white p-6 rounded-xl border border-sage/20">
+                  <h4 class="font-serif font-bold text-lg text-forest mb-3">高品质床品</h4>
+                  <p class="text-gray-700 mb-4">一套优质的床品，包括床垫、床单、被套和枕头，其核心价值在于提供无与伦比的舒适感。</p>
+                  <div class="space-y-2 text-sm text-gray-600">
+                    <div class="flex items-center"><i class="fas fa-cloud text-sage mr-2"></i>高支数长绒棉床单</div>
+                    <div class="flex items-center"><i class="fas fa-pillow text-sage mr-2"></i>人体工学记忆棉枕头</div>
+                    <div class="flex items-center"><i class="fas fa-snowflake text-sage mr-2"></i>恒温调节羽绒被</div>
+                  </div>
+                </div>
+
+                <div class="bg-gradient-to-br from-lavender-50 to-purple-50 p-6 rounded-xl border border-lavender-200">
+                  <h4 class="font-serif font-bold text-lg text-forest mb-3">香薰机</h4>
+                  <p class="text-gray-700 mb-4">
+                    嗅觉是人类最原始、最本能的感官之一，它与大脑中负责情绪和记忆的边缘系统紧密相连。特定的气味能够直接触发情绪反应，帮助人们放松身心。
+                  </p>
+                  <div class="text-sm text-gray-600">
+                    <strong>推荐精油：</strong>薰衣草、洋甘菊、檀香
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 4 -->
+        <section id="section-4" class="mb-20">
+          <h2 class="font-serif font-bold text-4xl text-forest mb-8">4. 增加生活乐趣的家居用品</h2>
+
+          <div class="prose prose-lg max-w-none">
+            <p class="text-xl text-gray-700 leading-relaxed mb-6">
+              幸福感不仅来源于生活的便利与舒适，更源于内心的愉悦与满足。能够为日常生活注入乐趣、创造美好体验、营造温馨氛围的家居用品，是提升幸福感不可或缺的&#34;调味剂&#34;。
+            </p>
+
+            <div id="section-4-1" class="mb-12">
+              <h3 class="font-serif font-bold text-2xl text-forest mb-6">4.1 沉浸式娱乐体验</h3>
+
+              <div class="grid md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-xl border border-blue-200">
+                  <i class="fas fa-music text-blue-600 text-2xl mb-3"></i>
+                  <h4 class="font-serif font-bold text-lg text-forest mb-2">高品质蓝牙音箱</h4>
+                  <p class="text-sm text-gray-700">将音乐的感染力发挥到极致，呈现宽广声场和丰富细节，随时随地改变空间氛围</p>
+                </div>
+
+                <div class="bg-gradient-to-br from-red-50 to-pink-50 p-6 rounded-xl border border-red-200">
+                  <i class="fas fa-film text-red-600 text-2xl mb-3"></i>
+                  <h4 class="font-serif font-bold text-lg text-forest mb-2">智能投影仪</h4>
+                  <p class="text-sm text-gray-700">100英寸以上巨幕体验，媲美商业影院的观影效果，灵活的移动性和丰富的资源</p>
+                </div>
+
+                <div class="bg-gradient-to-br from-green-50 to-teal-50 p-6 rounded-xl border border-green-200">
+                  <i class="fas fa-gamepad text-green-600 text-2xl mb-3"></i>
+                  <h4 class="font-serif font-bold text-lg text-forest mb-2">游戏主机</h4>
+                  <p class="text-sm text-gray-700">主动、互动的娱乐体验，绝佳的亲子互动和伴侣互动平台，增进情感联系</p>
+                </div>
+              </div>
+
+              <div class="insight-highlight">
+                <p class="font-semibold text-forest mb-2">社交价值</p>
+                <p>游戏主机将娱乐从一种个人化的消遣，转变为一种社交化的、充满欢声笑语的集体活动，为家庭生活注入了源源不断的活力与乐趣。</p>
+              </div>
+            </div>
+
+            <div id="section-4-2" class="mb-12">
+              <h3 class="font-serif font-bold text-2xl text-forest mb-6">4.2 营造生活氛围</h3>
+
+              <div class="bg-white p-8 rounded-xl shadow-lg border border-sage/20 mb-6">
+                <div class="grid md:grid-cols-2 gap-8 items-center">
+                  <div>
+                    <h4 class="font-serif font-bold text-xl text-forest mb-4">智能氛围灯</h4>
+                    <p class="text-gray-700 mb-4">
+                      光线是营造空间氛围的灵魂。智能氛围灯彻底颠覆了传统灯具只能提供单一、静态照明的模式。用户可以通过手机App或语音助手，随心所欲地调节灯光的亮度、色温和颜色。
+                    </p>
+                    <div class="space-y-2 text-sm text-gray-600">
+                      <div class="flex items-center"><i class="fas fa-palette text-sage mr-2"></i>1600万种颜色选择</div>
+                      <div class="flex items-center"><i class="fas fa-clock text-sage mr-2"></i>定时和情景模式</div>
+                      <div class="flex items-center"><i class="fas fa-music text-sage mr-2"></i>音乐同步律动效果</div>
+                    </div>
+                  </div>
+                  <div>
+                    <img src="https://kimi-web-img.moonshot.cn/img/img.alicdn.com/7134d74b27dd4fff0fe2ed7fed07311f199c9184.jpg" alt="智能氛围灯变色效果" class="w-full h-64 object-cover rounded-lg" size="medium" aspect="wide" style="photo" query="智能氛围灯变色效果" referrerpolicy="no-referrer" data-modified="1" data-score="0.00"/>
+                  </div>
+                </div>
+              </div>
+
+              <div class="grid md:grid-cols-2 gap-8">
+                <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-xl border border-green-200">
+                  <h4 class="font-serif font-bold text-lg text-forest mb-3">室内绿植</h4>
+                  <p class="text-gray-700 mb-4">
+                    将大自然引入室内，是提升居家幸福感的经典且有效的方法。绿色植物不仅能美化环境，还能净化空气，改善微气候。
+                  </p>
+                  <div class="text-sm text-gray-600">
+                    <strong>推荐植物：</strong>琴叶榕、龟背竹、多肉植物、绿萝
+                  </div>
+                </div>
+
+                <div class="bg-gradient-to-br from-pink-50 to-rose-50 p-6 rounded-xl border border-pink-200">
+                  <h4 class="font-serif font-bold text-lg text-forest mb-3">护衣留香珠</h4>
+                  <p class="text-gray-700 mb-4">
+                    <a href="https://zhuanlan.zhihu.com/p/258948813" class="citation">护衣留香珠在洗衣时加入，其蕴含的香氛微胶囊会附着在衣物纤维上，让衣物在长达数天甚至数周的时间里都保持清新芬芳</a>。
+                  </p>
+                  <div class="text-sm text-gray-600">
+                    <strong>效果：</strong>无形的&#34;第二层肌肤&#34;，随时带来愉悦感官享受
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div id="section-4-3">
+              <h3 class="font-serif font-bold text-2xl text-forest mb-6">4.3 便捷健康烹饪</h3>
+
+              <div class="grid md:grid-cols-2 gap-8">
+                <div class="bg-gradient-to-br from-orange-50 to-red-50 p-6 rounded-xl border border-orange-200">
+                  <i class="fas fa-fire text-orange-600 text-2xl mb-3"></i>
+                  <h4 class="font-serif font-bold text-lg text-forest mb-3">空气炸锅</h4>
+                  <p class="text-gray-700 mb-4">
+                    提供了一种&#34;无油&#34;或&#34;少油&#34;的烹饪方式，让人们可以相对健康地享受油炸食品的香脆口感。
+                  </p>
+                  <ul class="text-sm text-gray-600 space-y-1">
+                    <li>• 高速空气循环技术</li>
+                    <li>• 减少70%油脂摄入</li>
+                    <li>• 一键操作，简单便捷</li>
+                  </ul>
+                </div>
+
+                <div class="bg-gradient-to-br from-yellow-50 to-amber-50 p-6 rounded-xl border border-yellow-200">
+                  <i class="fas fa-utensils text-yellow-600 text-2xl mb-3"></i>
+                  <h4 class="font-serif font-bold text-lg text-forest mb-3">多功能料理锅</h4>
+                  <p class="text-gray-700 mb-4">
+                    以其&#34;一锅多用&#34;的特性，极大地激发了人们的烹饪热情和创造力。配备多种烤盘和配件，实现煎、烤、炖、煮、蒸、炒等多种烹饪方式。
+                  </p>
+                  <div class="text-sm text-gray-600">
+                    <strong>社交价值：</strong>&#34;围炉而食&#34;增加家庭互动乐趣
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 5 -->
+        <section id="section-5" class="mb-20">
+          <h2 class="font-serif font-bold text-4xl text-forest mb-8">5. 减轻家务负担的家居用品</h2>
+
+          <div class="prose prose-lg max-w-none">
+            <p class="text-xl text-gray-700 leading-relaxed mb-6">
+              家务劳动是家庭生活中不可避免的一部分，但繁重、重复的家务往往会消耗大量的时间和精力，成为导致家庭成员疲惫、烦躁甚至引发矛盾的根源。能够有效减轻家务负担、将人们从琐碎劳动中解放出来的家居用品，对于提升家庭幸福感具有极其重要的现实意义。
+            </p>
+
+            <div id="section-5-1" class="mb-12">
+              <h3 class="font-serif font-bold text-2xl text-forest mb-6">5.1 地面清洁自动化</h3>
+
+              <div class="grid md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-gradient-to-br from-blue-50 to-cyan-50 p-6 rounded-xl border border-blue-200">
+                  <i class="fas fa-robot text-blue-600 text-2xl mb-3"></i>
+                  <h4 class="font-serif font-bold text-lg text-forest mb-2">扫地机器人</h4>
+                  <p class="text-sm text-gray-700">通过自主导航和路径规划，自动完成地面吸尘和清扫，真正实现&#34;解放双手&#34;</p>
+                </div>
+
+                <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-xl border border-green-200">
+                  <i class="fas fa-mop text-green-600 text-2xl mb-3"></i>
+                  <h4 class="font-serif font-bold text-lg text-forest mb-2">洗地机</h4>
+                  <p class="text-sm text-gray-700">集吸尘、拖地、洗地功能于一体，一次性完成对干湿垃圾的清理</p>
+                </div>
+
+                <div class="bg-gradient-to-br from-purple-50 to-pink-50 p-6 rounded-xl border border-purple-200">
+                  <i class="fas fa-wind text-purple-600 text-2xl mb-3"></i>
+                  <h4 class="font-serif font-bold text-lg text-forest mb-2">无线吸尘器</h4>
+                  <p class="text-sm text-gray-700">
+                    <a href="https://zhuanlan.zhihu.com/p/258948813" class="citation">戴森等品牌的无绳吸尘器，凭借强大的数码马达和先进过滤系统，提供持久强劲的吸力</a>
+                  </p>
+                </div>
+              </div>
+
+              <div class="insight-highlight">
+                <p class="font-semibold text-forest mb-2">自动化效益</p>
+                <p>扫地机器人的存在，让家庭地面能够长期保持在一个基本的洁净状态，用户只需在周末进行一次简单的深度清洁即可，极大地降低了日常家务的强度和频率。</p>
+              </div>
+            </div>
+
+            <div id="section-5-2" class="mb-12">
+              <h3 class="font-serif font-bold text-2xl text-forest mb-6">5.2 深度清洁工具</h3>
+
+              <div class="grid md:grid-cols-2 gap-8">
+                <div class="bg-white p-8 rounded-xl shadow-lg border border-sage/20">
+                  <h4 class="font-serif font-bold text-xl text-forest mb-4">蒸汽拖把</h4>
+                  <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                      <p class="text-gray-700 mb-4">
+                        利用高温蒸汽进行清洁和消毒的深度清洁工具，其核心优势在于强大的去污能力和物理杀菌效果。
+                      </p>
+                      <ul class="text-sm text-gray-600 space-y-2">
+                        <li class="flex items-start"><i class="fas fa-thermometer-full text-sage mr-2 mt-1"></i>100℃以上高温蒸汽</li>
+                        <li class="flex items-start"><i class="fas fa-shield-virus text-sage mr-2 mt-1"></i>物理方式深度消毒</li>
+                        <li class="flex items-start"><i class="fas fa-leaf text-sage mr-2 mt-1"></i>无需化学清洁剂</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <img src="https://kimi-web-img.moonshot.cn/img/img4.pconline.com.cn/785263864ad95b8b59699db1938ef561c2ce98ed.jpg" alt="蒸汽拖把清洁场景" class="w-full h-48 object-cover rounded-lg" size="medium" aspect="wide" style="photo" query="蒸汽拖把" referrerpolicy="no-referrer" data-modified="1" data-score="0.00"/>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="bg-gradient-to-br from-sky-50 to-blue-50 p-6 rounded-xl border border-sky-200">
+                  <h4 class="font-serif font-bold text-lg text-forest mb-3">自动擦窗机器人</h4>
+                  <p class="text-gray-700 mb-4">
+                    <a href="https://blog.ziba-property.com/smart-home-gadgets-household-chores/" class="citation">自动擦窗机器人采用真空吸附技术，能够牢固地吸附在玻璃表面，并通过内置的智能导航系统，自动规划并执行擦拭路径</a>，确保窗户的每一个角落都被清洁到位。
+                  </p>
+                  <div class="text-sm text-gray-600">
+                    <strong>安全特性：</strong>配备安全绳，防止吸附失效意外
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div id="section-5-3">
+              <h3 class="font-serif font-bold text-2xl text-forest mb-6">5.3 衣物护理升级</h3>
+
+              <div class="grid md:grid-cols-2 gap-8">
+                <div class="bg-gradient-to-br from-indigo-50 to-purple-50 p-6 rounded-xl border border-indigo-200">
+                  <i class="fas fa-tshirt text-indigo-600 text-2xl mb-3"></i>
+                  <h4 class="font-serif font-bold text-lg text-forest mb-3">智能洗衣机/烘干机</h4>
+                  <p class="text-gray-700 mb-4">
+                    洗烘套装或洗烘一体机实现了&#34;即洗即穿&#34;的便捷体验，彻底摆脱了传统晾晒方式对天气和空间的依赖。
+                  </p>
+                  <div class="text-sm text-gray-600">
+                    <strong>幸福感提升：</strong>解放阳台空间，打造休闲区域
+                  </div>
+                </div>
+
+                <div class="bg-gradient-to-br from-teal-50 to-cyan-50 p-6 rounded-xl border border-teal-200">
+                  <i class="fas fa-iron text-teal-600 text-2xl mb-3"></i>
+                  <h4 class="font-serif font-bold text-lg text-forest mb-3">挂烫机</h4>
+                  <p class="text-gray-700 mb-4">
+                    手持式蒸汽挂烫机无需使用熨衣板，只需将衣物挂在衣架上，即可通过高温蒸汽轻松抚平褶皱，操作更加简单、安全。
+                  </p>
+                  <div class="text-sm text-gray-600">
+                    <strong>适用场景：</strong>各种材质衣物、窗帘、床单、沙发套
+                  </div>
+                </div>
+              </div>
+
+              <div class="quote-elegant mt-8">
+                &#34;通过将繁琐、重复的家务劳动自动化，这些&#39;家务神器&#39;为用户节省出宝贵的时间，去从事更有价值的活动，享受更高质量的生活。&#34;
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Conclusion -->
+        <section class="mb-20">
+          <div class="bg-gradient-to-br from-sage/20 to-forest/20 p-12 rounded-2xl">
+            <h2 class="font-serif font-bold text-3xl text-forest mb-6">研究结论</h2>
+            <div class="grid md:grid-cols-2 gap-8">
+              <div>
+                <h3 class="font-serif font-bold text-xl text-forest mb-4">核心发现</h3>
+                <ul class="space-y-3 text-gray-700">
+                  <li class="flex items-start">
+                    <i class="fas fa-check-circle text-sage mr-3 mt-1"></i>
+                    <span>物质消费能够有效提升幸福感，关键在于选择合适的品类和使用方式</span>
+                  </li>
+                  <li class="flex items-start">
+                    <i class="fas fa-check-circle text-sage mr-3 mt-1"></i>
+                    <span>能够优化时间分配、改善健康状况、减轻劳动负担的产品最具幸福感提升潜力</span>
+                  </li>
+                  <li class="flex items-start">
+                    <i class="fas fa-check-circle text-sage mr-3 mt-1"></i>
+                    <span>产品的幸福感效果与使用者的个体特征和生活情境密切相关</span>
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <h3 class="font-serif font-bold text-xl text-forest mb-4">实践建议</h3>
+                <ul class="space-y-3 text-gray-700">
+                  <li class="flex items-start">
+                    <i class="fas fa-lightbulb text-forest mr-3 mt-1"></i>
+                    <span>优先投资能够解决生活&#34;痛点&#34;的智能家电</span>
+                  </li>
+                  <li class="flex items-start">
+                    <i class="fas fa-lightbulb text-forest mr-3 mt-1"></i>
+                    <span>选择与个人性格和生活方式相匹配的产品</span>
+                  </li>
+                  <li class="flex items-start">
+                    <i class="fas fa-lightbulb text-forest mr-3 mt-1"></i>
+                    <span>注重产品的高频使用价值而非炫耀性价值</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <script>
+        // Initialize Mermaid
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'base',
+            themeVariables: {
+                primaryColor: '#9CAF88',
+                primaryTextColor: '#2D5016',
+                primaryBorderColor: '#2D5016',
+                lineColor: '#8B7355',
+                secondaryColor: '#F7F5F3',
+                tertiaryColor: '#FEFCFA',
+                background: '#FEFCFA',
+                mainBkg: '#FEFCFA',
+                secondBkg: '#F7F5F3',
+                tertiaryBkg: '#9CAF88',
+                primaryTextColor: '#2D5016',
+                secondaryTextColor: '#2D5016',
+                tertiaryTextColor: '#FEFCFA',
+                textColor: '#2D5016',
+                nodeBkg: '#FEFCFA',
+                nodeBorder: '#2D5016',
+                clusterBkg: '#F7F5F3',
+                clusterBorder: '#9CAF88',
+                defaultLinkColor: '#8B7355',
+                titleColor: '#2D5016',
+                edgeLabelBackground: '#F7F5F3',
+                nodeTextColor: '#2D5016',
+                fontFamily: 'Inter, sans-serif',
+                fontSize: '14px'
+            },
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'basis',
+                padding: 20
+            }
+        });
+
+        // Initialize Mermaid Controls for zoom and pan
+        function initializeMermaidControls() {
+            const containers = document.querySelectorAll('.mermaid-container');
+
+            containers.forEach(container => {
+            const mermaidElement = container.querySelector('.mermaid');
+            let scale = 1;
+            let isDragging = false;
+            let startX, startY, translateX = 0, translateY = 0;
+
+            // 触摸相关状态
+            let isTouch = false;
+            let touchStartTime = 0;
+            let initialDistance = 0;
+            let initialScale = 1;
+            let isPinching = false;
+
+            // Zoom controls
+            const zoomInBtn = container.querySelector('.zoom-in');
+            const zoomOutBtn = container.querySelector('.zoom-out');
+            const resetBtn = container.querySelector('.reset-zoom');
+            const fullscreenBtn = container.querySelector('.fullscreen');
+
+            function updateTransform() {
+                mermaidElement.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+
+                if (scale > 1) {
+                container.classList.add('zoomed');
+                } else {
+                container.classList.remove('zoomed');
+                }
+
+                mermaidElement.style.cursor = isDragging ? 'grabbing' : 'grab';
+            }
+
+            if (zoomInBtn) {
+                zoomInBtn.addEventListener('click', () => {
+                scale = Math.min(scale * 1.25, 4);
+                updateTransform();
+                });
+            }
+
+            if (zoomOutBtn) {
+                zoomOutBtn.addEventListener('click', () => {
+                scale = Math.max(scale / 1.25, 0.3);
+                if (scale <= 1) {
+                    translateX = 0;
+                    translateY = 0;
+                }
+                updateTransform();
+                });
+            }
+
+            if (resetBtn) {
+                resetBtn.addEventListener('click', () => {
+                scale = 1;
+                translateX = 0;
+                translateY = 0;
+                updateTransform();
+                });
+            }
+
+            if (fullscreenBtn) {
+                fullscreenBtn.addEventListener('click', () => {
+                if (container.requestFullscreen) {
+                    container.requestFullscreen();
+                } else if (container.webkitRequestFullscreen) {
+                    container.webkitRequestFullscreen();
+                } else if (container.msRequestFullscreen) {
+                    container.msRequestFullscreen();
+                }
+                });
+            }
+
+            // Mouse Events
+            mermaidElement.addEventListener('mousedown', (e) => {
+                if (isTouch) return; // 如果是触摸设备，忽略鼠标事件
+
+                isDragging = true;
+                startX = e.clientX - translateX;
+                startY = e.clientY - translateY;
+                mermaidElement.style.cursor = 'grabbing';
+                updateTransform();
+                e.preventDefault();
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (isDragging && !isTouch) {
+                translateX = e.clientX - startX;
+                translateY = e.clientY - startY;
+                updateTransform();
+                }
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (isDragging && !isTouch) {
+                isDragging = false;
+                mermaidElement.style.cursor = 'grab';
+                updateTransform();
+                }
+            });
+
+            document.addEventListener('mouseleave', () => {
+                if (isDragging && !isTouch) {
+                isDragging = false;
+                mermaidElement.style.cursor = 'grab';
+                updateTransform();
+                }
+            });
+
+            // 获取两点之间的距离
+            function getTouchDistance(touch1, touch2) {
+                return Math.hypot(
+                touch2.clientX - touch1.clientX,
+                touch2.clientY - touch1.clientY
+                );
+            }
+
+            // Touch Events - 触摸事件处理
+            mermaidElement.addEventListener('touchstart', (e) => {
+                isTouch = true;
+                touchStartTime = Date.now();
+
+                if (e.touches.length === 1) {
+                // 单指拖动
+                isPinching = false;
+                isDragging = true;
+
+                const touch = e.touches[0];
+                startX = touch.clientX - translateX;
+                startY = touch.clientY - translateY;
+
+                } else if (e.touches.length === 2) {
+                // 双指缩放
+                isPinching = true;
+                isDragging = false;
+
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                initialDistance = getTouchDistance(touch1, touch2);
+                initialScale = scale;
+                }
+
+                e.preventDefault();
+            }, { passive: false });
+
+            mermaidElement.addEventListener('touchmove', (e) => {
+                if (e.touches.length === 1 && isDragging && !isPinching) {
+                // 单指拖动
+                const touch = e.touches[0];
+                translateX = touch.clientX - startX;
+                translateY = touch.clientY - startY;
+                updateTransform();
+
+                } else if (e.touches.length === 2 && isPinching) {
+                // 双指缩放
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                const currentDistance = getTouchDistance(touch1, touch2);
+
+                if (initialDistance > 0) {
+                    const newScale = Math.min(Math.max(
+                    initialScale * (currentDistance / initialDistance),
+                    0.3
+                    ), 4);
+                    scale = newScale;
+                    updateTransform();
+                }
+                }
+
+                e.preventDefault();
+            }, { passive: false });
+
+            mermaidElement.addEventListener('touchend', (e) => {
+                // 重置状态
+                if (e.touches.length === 0) {
+                isDragging = false;
+                isPinching = false;
+                initialDistance = 0;
+
+                // 延迟重置isTouch，避免鼠标事件立即触发
+                setTimeout(() => {
+                    isTouch = false;
+                }, 100);
+                } else if (e.touches.length === 1 && isPinching) {
+                // 从双指变为单指，切换为拖动模式
+                isPinching = false;
+                isDragging = true;
+
+                const touch = e.touches[0];
+                startX = touch.clientX - translateX;
+                startY = touch.clientY - translateY;
+                }
+
+                updateTransform();
+            });
+
+            mermaidElement.addEventListener('touchcancel', (e) => {
+                isDragging = false;
+                isPinching = false;
+                initialDistance = 0;
+
+                setTimeout(() => {
+                isTouch = false;
+                }, 100);
+
+                updateTransform();
+            });
+
+            // Enhanced wheel zoom with better center point handling
+            container.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                const rect = container.getBoundingClientRect();
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+
+                const delta = e.deltaY > 0 ? 0.9 : 1.1;
+                const newScale = Math.min(Math.max(scale * delta, 0.3), 4);
+
+                // Adjust translation to zoom towards center
+                if (newScale !== scale) {
+                const scaleDiff = newScale / scale;
+                translateX = translateX * scaleDiff;
+                translateY = translateY * scaleDiff;
+                scale = newScale;
+
+                if (scale <= 1) {
+                    translateX = 0;
+                    translateY = 0;
+                }
+
+                updateTransform();
+                }
+            });
+
+            // Initialize display
+            updateTransform();
+            });
+        }
+
+        // TOC functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const tocLinks = document.querySelectorAll('.toc-link');
+            const sections = document.querySelectorAll('section[id], div[id]');
+            const tocToggle = document.getElementById('toc-toggle');
+            const tocFixed = document.querySelector('.toc-fixed');
+
+            // Mobile TOC toggle
+            tocToggle.addEventListener('click', function() {
+                tocFixed.classList.toggle('open');
+            });
+
+            // Smooth scrolling for TOC links
+            tocLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href').substring(1);
+                    const targetElement = document.getElementById(targetId);
+                    if (targetElement) {
+                        const offsetTop = targetElement.offsetTop - 20;
+                        window.scrollTo({
+                            top: offsetTop,
+                            behavior: 'smooth'
+                        });
+                    }
+                    // Close mobile TOC
+                    if (window.innerWidth <= 1024) {
+                        tocFixed.classList.remove('open');
+                    }
+                });
+            });
+
+            // Active section highlighting
+            function updateActiveSection() {
+                let currentSection = '';
+                const scrollPosition = window.scrollY + 100;
+
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    const sectionHeight = section.offsetHeight;
+                    if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
+                        currentSection = section.getAttribute('id');
+                    }
+                });
+
+                tocLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === '#' + currentSection) {
+                        link.classList.add('active');
+                    }
+                });
+            }
+
+            // Update active section on scroll
+            window.addEventListener('scroll', updateActiveSection);
+            updateActiveSection(); // Initial call
+
+            // Close mobile TOC when clicking outside
+            document.addEventListener('click', function(e) {
+                if (window.innerWidth <= 1024 && 
+                    !tocFixed.contains(e.target) && 
+                    !tocToggle.contains(e.target)) {
+                    tocFixed.classList.remove('open');
+                }
+            });
+
+            // Initialize Mermaid controls
+            initializeMermaidControls();
+        });
+    </script>
+  
+
+</body></html>

@@ -1,0 +1,122 @@
+{
+  "pageTitle": "报告索引",
+  "quoteNote": "本索引汇总若干 AI 生成的高质量专题报告，报告用于快速从 0 到 1 了解实际问题的成体系解决方案。使用 Ctrl + F 可快速查找报告。",
+  "reports": [
+    {
+      "title": "26岁男性生活指南：全面挑战与解决方案.html",
+      "href": "content\\26岁男性生活指南：全面挑战与解决方案.html"
+    },
+    {
+      "title": "26岁男性生活指南：问题与解决方案.pdf",
+      "href": "content\\26岁男性生活指南：问题与解决方案.pdf"
+    },
+    {
+      "title": "bestpractice-dcs-hk-pdf.pdf",
+      "href": "content\\bestpractice-dcs-hk-pdf.pdf"
+    },
+    {
+      "title": "Lucene 核心组成与周遭生态调研.pdf",
+      "href": "content\\Lucene 核心组成与周遭生态调研.pdf"
+    },
+    {
+      "title": "MySQL与Doris大数据量Excel导出方案.html",
+      "href": "content\\MySQL与Doris大数据量Excel导出方案.html"
+    },
+    {
+      "title": "MySQL与Doris大数据量Excel导出方案.pdf",
+      "href": "content\\MySQL与Doris大数据量Excel导出方案.pdf"
+    },
+    {
+      "title": "Python JSON 序列化器深度调研：开箱即用与多类型支持.pdf",
+      "href": "content\\Python JSON 序列化器深度调研：开箱即用与多类型支持.pdf"
+    },
+    {
+      "title": "Python JSON序列化器深度调研：开箱即用与多类型支持.html",
+      "href": "content\\Python JSON序列化器深度调研：开箱即用与多类型支持.html"
+    },
+    {
+      "title": "Python企业级邮件发送库深度研究.html",
+      "href": "content\\Python企业级邮件发送库深度研究.html"
+    },
+    {
+      "title": "Python算法竞赛库深度调研.html",
+      "href": "content\\Python算法竞赛库深度调研.html"
+    },
+    {
+      "title": "TOB业务后台数据列表个性化配置存储与管理方案.html",
+      "href": "content\\TOB业务后台数据列表个性化配置存储与管理方案.html"
+    },
+    {
+      "title": "TOB业务后台数据列表个性化配置存储与管理方案.pdf",
+      "href": "content\\TOB业务后台数据列表个性化配置存储与管理方案.pdf"
+    },
+    {
+      "title": "Web开发基础库深度选型指南.html",
+      "href": "content\\Web开发基础库深度选型指南.html"
+    },
+    {
+      "title": "互联网产品发版流程：解决研发与运维的协作困境.html",
+      "href": "content\\互联网产品发版流程：解决研发与运维的协作困境.html"
+    },
+    {
+      "title": "保证接口调用成功后本地事务可靠执行的机制分析与实现.html",
+      "href": "content\\保证接口调用成功后本地事务可靠执行的机制分析与实现.html"
+    },
+    {
+      "title": "分布式锁实现方案深度对比与业务场景适用性分析.html",
+      "href": "content\\分布式锁实现方案深度对比与业务场景适用性分析.html"
+    },
+    {
+      "title": "国内大厂算法面试真题分析：2023-2024年度报告.html",
+      "href": "content\\国内大厂算法面试真题分析：2023-2024年度报告.html"
+    },
+    {
+      "title": "国内大厂（BAT、TMD）算法面试真题分析（2023-2024）：类型与难度.pdf",
+      "href": "content\\国内大厂（BAT、TMD）算法面试真题分析（2023-2024）：类型与难度.pdf"
+    },
+    {
+      "title": "寻找靠谱女朋友渠道指南.html",
+      "href": "content\\寻找靠谱女朋友渠道指南.html"
+    },
+    {
+      "title": "寻找靠谱女朋友渠道指南.pdf",
+      "href": "content\\寻找靠谱女朋友渠道指南.pdf"
+    },
+    {
+      "title": "提升幸福感的家居用品深度研究报告.html",
+      "href": "content\\提升幸福感的家居用品深度研究报告.html"
+    },
+    {
+      "title": "本地消息表：分布式事务的最终一致性解决方案.html",
+      "href": "content\\本地消息表：分布式事务的最终一致性解决方案.html"
+    },
+    {
+      "title": "算法竞赛平台深度分析与核心算法思想研究.html",
+      "href": "content\\算法竞赛平台深度分析与核心算法思想研究.html"
+    },
+    {
+      "title": "跨国跨时区系统时间处理方案设计.pdf",
+      "href": "content\\跨国跨时区系统时间处理方案设计.pdf"
+    },
+    {
+      "title": "跨国跨时区系统时间处理最佳实践-附加信息.html",
+      "href": "content\\跨国跨时区系统时间处理最佳实践-附加信息.html"
+    },
+    {
+      "title": "跨国跨时区系统时间处理最佳实践.html",
+      "href": "content\\跨国跨时区系统时间处理最佳实践.html"
+    },
+    {
+      "title": "近两年后端面试高频100题深度解析.html",
+      "href": "content\\近两年后端面试高频100题深度解析.html"
+    },
+    {
+      "title": "高级 Python Web 开发者的 AI 转型之路：大模型与 AI 应用开发学习路线图.pdf",
+      "href": "content\\高级 Python Web 开发者的 AI 转型之路：大模型与 AI 应用开发学习路线图.pdf"
+    },
+    {
+      "title": "高级Python Web开发者的AI转型之路：大模型与AI应用开发学习路线图.html",
+      "href": "content\\高级Python Web开发者的AI转型之路：大模型与AI应用开发学习路线图.html"
+    }
+  ]
+}

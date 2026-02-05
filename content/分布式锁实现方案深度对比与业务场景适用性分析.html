@@ -1,0 +1,1664 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>分布式锁实现方案深度对比与业务场景适用性分析</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        :root {
+            --primary: #1e40af;
+            --secondary: #64748b;
+            --accent: #3b82f6;
+            --surface: #f8fafc;
+            --text: #0f172a;
+            --muted: #64748b;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            overflow-x: hidden;
+            word-wrap: break-word;
+        }
+        
+        .serif-italic {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+        }
+        
+        .toc-fixed {
+            position: fixed;
+            top: 2rem;
+            left: 2rem;
+            width: 280px;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border: 1px solid #e2e8f0;
+            z-index: 50;
+            padding: 1.5rem;
+        }
+        
+        @media (max-width: 1024px) {
+            .toc-fixed {
+                position: relative;
+                width: 100%;
+                margin-bottom: 2rem;
+                box-shadow: none;
+                border: 1px solid #e2e8f0;
+            }
+        }
+        
+        .main-content {
+            margin-left: 320px;
+            max-width: 900px;
+            padding: 2rem;
+        }
+        
+        @media (max-width: 1024px) {
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+        }
+        
+        .bento-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        @media (max-width: 768px) {
+            .bento-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .hero-text {
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .highlight-box {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border-left: 4px solid var(--accent);
+        }
+        
+        .performance-metric {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+        }
+        
+        .comparison-table {
+            overflow-x: auto;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            margin: 2rem 0;
+        }
+        
+        .comparison-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .comparison-table th {
+            background: #f8fafc;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        
+        .comparison-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+            vertical-align: top;
+        }
+        
+        .comparison-table tr:hover {
+            background: #f8fafc;
+        }
+        
+        .citation {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .citation:hover {
+            text-decoration: underline;
+        }
+        
+        .section-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #e2e8f0, transparent);
+            margin: 3rem 0;
+        }
+        
+        /* Mermaid diagram styling */
+        .mermaid-container {
+            display: flex;
+            justify-content: center;
+            min-height: 300px;
+            max-height: 800px;
+            background: #ffffff;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 30px;
+            margin: 30px 0;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mermaid-container .mermaid {
+            width: 100%;
+            max-width: 100%;
+            height: 100%;
+            cursor: grab;
+            transition: transform 0.3s ease;
+            transform-origin: center center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            touch-action: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        .mermaid-container .mermaid svg {
+            max-width: 100%;
+            height: 100%;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .mermaid-container .mermaid:active {
+            cursor: grabbing;
+        }
+
+        .mermaid-container.zoomed .mermaid {
+            height: 100%;
+            width: 100%;
+            cursor: grab;
+        }
+
+        .mermaid-controls {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            display: flex;
+            gap: 10px;
+            z-index: 20;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 8px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .mermaid-control-btn {
+            background: #ffffff;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #374151;
+            font-size: 14px;
+            min-width: 36px;
+            height: 36px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mermaid-control-btn:hover {
+            background: #f8fafc;
+            border-color: #3b82f6;
+            color: #3b82f6;
+            transform: translateY(-1px);
+        }
+
+        .mermaid-control-btn:active {
+            transform: scale(0.95);
+        }
+        
+        /* Enhanced mermaid theme with better contrast for all node types */
+        .mermaid .node rect,
+        .mermaid .node circle,
+        .mermaid .node polygon,
+        .mermaid .node ellipse {
+            stroke-width: 2px;
+            filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+        }
+        
+        .mermaid .node .label {
+            color: #1f2937 !important;
+            font-family: 'Inter', sans-serif !important;
+            font-size: 13px !important;
+            font-weight: 600 !important;
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+        }
+        
+        .mermaid .edgePath .path {
+            stroke: #64748b;
+            stroke-width: 2px;
+            filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.1));
+        }
+        
+        .mermaid .edgeLabel {
+            background-color: white !important;
+            color: #374151 !important;
+            font-family: 'Inter', sans-serif !important;
+            font-size: 11px !important;
+            font-weight: 500 !important;
+            padding: 4px 8px !important;
+            border-radius: 4px !important;
+            border: 1px solid #d1d5db !important;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+        }
+        
+        /* Primary nodes (blue theme) */
+        .mermaid .node.primary rect,
+        .mermaid .node.primary circle,
+        .mermaid .node.primary polygon,
+        .mermaid .node.primary ellipse {
+            fill: #dbeafe !important;
+            stroke: #2563eb !important;
+        }
+        
+        .mermaid .node.primary .label {
+            color: #1e40af !important;
+        }
+        
+        /* Secondary nodes (green theme) */
+        .mermaid .node.secondary rect,
+        .mermaid .node.secondary circle,
+        .mermaid .node.secondary polygon,
+        .mermaid .node.secondary ellipse {
+            fill: #dcfce7 !important;
+            stroke: #16a34a !important;
+        }
+        
+        .mermaid .node.secondary .label {
+            color: #166534 !important;
+        }
+        
+        /* Tertiary nodes (amber theme) */
+        .mermaid .node.tertiary rect,
+        .mermaid .node.tertiary circle,
+        .mermaid .node.tertiary polygon,
+        .mermaid .node.tertiary ellipse {
+            fill: #fef3c7 !important;
+            stroke: #d97706 !important;
+        }
+        
+        .mermaid .node.tertiary .label {
+            color: #92400e !important;
+        }
+        
+        /* Warning nodes (red theme) */
+        .mermaid .node.warning rect,
+        .mermaid .node.warning circle,
+        .mermaid .node.warning polygon,
+        .mermaid .node.warning ellipse {
+            fill: #fee2e2 !important;
+            stroke: #dc2626 !important;
+        }
+        
+        .mermaid .node.warning .label {
+            color: #991b1b !important;
+        }
+        
+        /* Default nodes (slate theme) */
+        .mermaid .node:not(.primary):not(.secondary):not(.tertiary):not(.warning) rect,
+        .mermaid .node:not(.primary):not(.secondary):not(.tertiary):not(.warning) circle,
+        .mermaid .node:not(.primary):not(.secondary):not(.tertiary):not(.warning) polygon,
+        .mermaid .node:not(.primary):not(.secondary):not(.tertiary):not(.warning) ellipse {
+            fill: #f1f5f9 !important;
+            stroke: #475569 !important;
+        }
+        
+        .mermaid .node:not(.primary):not(.secondary):not(.tertiary):not(.warning) .label {
+            color: #334155 !important;
+        }
+        
+        @media (max-width: 1024px) {
+            .mermaid-control-btn:not(.reset-zoom) {
+                display: none;
+            }
+            .mermaid-controls {
+                top: auto;
+                bottom: 15px;
+                right: 15px;
+            }
+        }
+
+        /* Responsive fixes for small screens */
+        @media (max-width: 768px) {
+            .toc-fixed {
+                margin-bottom: 1rem;
+            }
+            .main-content {
+                padding: 0.5rem;
+            }
+        }
+    </style>
+  </head>
+
+  <body class="bg-gray-50">
+    <!-- Table of Contents -->
+    <nav class="toc-fixed">
+      <h3 class="text-lg font-semibold mb-4 text-gray-800">目录</h3>
+      <ul class="space-y-2 text-sm">
+        <li>
+          <a href="#overview" class="citation block py-1">概述与核心观点</a>
+        </li>
+        <li>
+          <a href="#core-concepts" class="citation block py-1">1. 分布式锁核心概念</a>
+        </li>
+        <li>
+          <a href="#implementations" class="citation block py-1">2. 主流实现方案对比</a>
+        </li>
+        <li>
+          <a href="#detailed-analysis" class="citation block py-1">3. 详细对比分析</a>
+        </li>
+        <li>
+          <a href="#business-scenarios" class="citation block py-1">4. 业务场景适用性</a>
+        </li>
+        <li>
+          <a href="#tech-stacks" class="citation block py-1">5. 技术栈实现差异</a>
+        </li>
+        <li>
+          <a href="#best-practices" class="citation block py-1">6. 最佳实践与陷阱</a>
+        </li>
+        <li>
+          <a href="#conclusion" class="citation block py-1">7. 总结与展望</a>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Hero Section -->
+      <div class="bento-grid mb-12">
+        <div class="space-y-6">
+          <div class="space-y-4">
+            <h1 class="text-4xl lg:text-5xl font-bold serif-italic hero-text leading-tight">
+              分布式锁实现方案
+              <br>
+              <span class="text-3xl lg:text-4xl">深度对比与业务场景适用性分析</span>
+            </h1>
+            <p class="text-xl text-gray-600 leading-relaxed">
+              探索Redis、ZooKeeper、etcd和数据库在分布式锁实现中的优缺点，为不同业务场景提供科学的技术选型指导
+            </p>
+          </div>
+        </div>
+
+        <div class="space-y-4">
+          <div class="highlight-box p-6 rounded-lg">
+            <h3 class="text-lg font-semibold mb-3 text-blue-800">核心观点</h3>
+            <p class="text-sm text-gray-700 leading-relaxed">
+              <strong>Redis以其高性能著称，适用于对性能要求高、可容忍小概率锁失效的场景（如秒杀），但需注意其AP模型下的数据一致性风险。ZooKeeper和etcd则提供强一致性（CP模型），适用于对数据准确性要求极高的场景（如分布式任务调度、库存核心扣减）。</strong>
+            </p>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div class="performance-metric text-center">
+              <div class="text-2xl font-bold text-blue-600">100,000+</div>
+              <div class="text-xs text-gray-600">Redis QPS</div>
+            </div>
+            <div class="performance-metric text-center">
+              <div class="text-2xl font-bold text-green-600">&lt;1ms</div>
+              <div class="text-xs text-gray-600">Redis 延迟</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Overview Section -->
+      <section id="overview" class="mb-16">
+        <h2 class="text-3xl font-bold mb-6 serif-italic">分布式锁：现代分布式系统的关键协调机制</h2>
+
+        <div class="prose max-w-none">
+          <p class="text-lg leading-relaxed mb-6">
+            在分布式系统架构中，协调多个节点对共享资源的并发访问是一个根本性挑战。分布式锁作为一种关键的同步机制，通过提供互斥访问保证，成为解决这一挑战的核心工具。随着微服务架构和云原生应用的普及，分布式锁的重要性日益凸显。
+          </p>
+
+          <!-- Mermaid Diagram: Distributed Lock Architecture -->
+          <div class="my-8">
+            <h4 class="text-lg font-semibold mb-4 text-center">分布式锁架构概览</h4>
+            <div class="mermaid-container">
+              <div class="mermaid-controls">
+                <button class="mermaid-control-btn zoom-in" title="放大">
+                  <i class="fas fa-search-plus"></i>
+                </button>
+                <button class="mermaid-control-btn zoom-out" title="缩小">
+                  <i class="fas fa-search-minus"></i>
+                </button>
+                <button class="mermaid-control-btn reset-zoom" title="重置">
+                  <i class="fas fa-expand-arrows-alt"></i>
+                </button>
+                <button class="mermaid-control-btn fullscreen" title="全屏查看">
+                  <i class="fas fa-expand"></i>
+                </button>
+              </div>
+              <div class="mermaid">
+                graph TD
+                A["客户端应用"] --> B{"选择锁服务"}
+                B --> C["Redis
+                <br />AP模型
+                <br />高性能"]
+                B --> D["ZooKeeper
+                <br />CP模型
+                <br />强一致性"]
+                B --> E["etcd
+                <br />CP模型
+                <br />云原生友好"]
+                B --> F["数据库
+                <br />简单实现
+                <br />性能较低"]
+
+                C --> G["电商秒杀
+                <br />高并发场景"]
+                D --> H["分布式调度
+                <br />金融交易"]
+                E --> I["Kubernetes
+                <br />服务发现"]
+                F --> J["简单业务
+                <br />低并发场景"]
+
+                style A fill:#e0f2fe,stroke:#1e40af,stroke-width:2px
+                style C fill:#dbeafe,stroke:#2563eb,stroke-width:2px
+                style D fill:#dcfce7,stroke:#16a34a,stroke-width:2px
+                style E fill:#fef3c7,stroke:#d97706,stroke-width:2px
+                style F fill:#fee2e2,stroke:#dc2626,stroke-width:2px
+                style G fill:#f0f9ff,stroke:#0ea5e9,stroke-width:2px
+                style H fill:#f0fdf4,stroke:#22c55e,stroke-width:2px
+                style I fill:#fffbeb,stroke:#f59e0b,stroke-width:2px
+                style J fill:#fef2f2,stroke:#ef4444,stroke-width:2px
+              </div>
+            </div>
+          </div>
+
+          <p class="mb-6">
+            根据对主流实现方案的深入分析，我们发现每种技术都有其独特的优势和适用场景。<a href="https://redis.io/glossary/redis-lock/" class="citation">Redis凭借其内存操作特性，在性能方面表现卓越</a>，特别适合高并发场景。而<a href="https://javaguide.cn/distributed-system/distributed-process-coordination/zookeeper/zookeeper-intro.html" class="citation">ZooKeeper和etcd通过其强一致性协议，提供了更高的可靠性保证</a>。
+          </p>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <!-- Core Concepts -->
+      <section id="core-concepts" class="mb-16">
+        <h2 class="text-3xl font-bold mb-8 serif-italic">1. 分布式锁核心概念与挑战</h2>
+
+        <div class="space-y-8">
+          <div>
+            <h3 class="text-xl font-semibold mb-4">1.1 分布式锁的定义与重要性</h3>
+            <p class="mb-4">
+              分布式锁是一种在分布式系统中协调多个进程或节点对共享资源进行互斥访问的机制。<a href="https://milvus.io/ai-quick-reference/what-is-a-distributed-lock-and-why-is-it-important-in-distributed-systems" class="citation">在由多个独立服务或节点组成的系统中，某些资源需要被严格控制访问，以避免并发操作导致的数据不一致或错误</a>。
+            </p>
+
+            <div class="bg-blue-50 p-6 rounded-lg border-l-4 border-blue-400 mb-6">
+              <h4 class="font-semibold mb-2">实际业务价值案例</h4>
+              <p class="text-sm">
+                <a href="https://blog.csdn.net/2401_88760782/article/details/146221443" class="citation">一个大型物流公司的配送系统通过引入分布式锁，成功解决了订单重复分配的问题，将配送错误率从5%大幅降低至0.1%，每年节省了数千万的运营成本</a>。
+              </p>
+            </div>
+          </div>
+
+          <div>
+            <h3 class="text-xl font-semibold mb-4">1.2 理想分布式锁的特性</h3>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div class="bg-white p-6 rounded-lg shadow-sm border">
+                <h4 class="font-semibold text-blue-600 mb-3">核心特性</h4>
+                <ul class="space-y-2 text-sm">
+                  <li><strong>互斥性 (Mutual Exclusion):</strong> 任意时刻最多一个客户端能持有锁</li>
+                  <li><strong>避免死锁 (Deadlock Free):</strong> 锁必须能自动释放，防止系统僵局</li>
+                  <li><strong>高可用性 (High Availability):</strong> 锁服务本身不能成为单点故障</li>
+                  <li><strong>高性能 (High Performance):</strong> 锁操作应具有低延迟和高吞吐量</li>
+                </ul>
+              </div>
+
+              <div class="bg-white p-6 rounded-lg shadow-sm border">
+                <h4 class="font-semibold text-green-600 mb-3">高级特性</h4>
+                <ul class="space-y-2 text-sm">
+                  <li><strong>可重入性 (Reentrancy):</strong> 同一客户端可多次获取同一把锁</li>
+                  <li><strong>公平性 (Fairness):</strong> 按请求顺序分配锁，避免饥饿</li>
+                  <li><strong>CP/AP权衡:</strong> 在一致性和可用性间做出合理选择</li>
+                  <li><strong>自动释放:</strong> 客户端故障时能自动释放锁资源</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h3 class="text-xl font-semibold mb-4">1.3 面临的挑战与常见问题</h3>
+
+            <div class="comparison-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>挑战类型</th>
+                    <th>具体表现</th>
+                    <th>解决方案</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>网络延迟与分区</td>
+                    <td>锁请求延迟、丢失或重复，可能违反互斥性</td>
+                    <td>租约机制、多数派协议</td>
+                  </tr>
+                  <tr>
+                    <td>时钟漂移</td>
+                    <td>锁的提前或延迟释放</td>
+                    <td>NTP时间同步、避免过度依赖绝对时间</td>
+                  </tr>
+                  <tr>
+                    <td>锁粒度控制</td>
+                    <td>过粗限制并发，过细增加复杂度</td>
+                    <td>根据业务场景选择合适粒度</td>
+                  </tr>
+                  <tr>
+                    <td>死锁和活锁</td>
+                    <td>循环等待或持续竞争</td>
+                    <td>超时机制、退避算法</td>
+                  </tr>
+                  <tr>
+                    <td>客户端故障</td>
+                    <td>锁无法及时释放</td>
+                    <td>TTL自动过期、租约机制</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <!-- Implementation Comparison -->
+      <section id="implementations" class="mb-16">
+        <h2 class="text-3xl font-bold mb-8 serif-italic">2. 主流分布式锁实现方案对比</h2>
+
+        <div class="space-y-12">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="bg-white p-8 rounded-lg shadow-sm border">
+              <div class="flex items-center mb-4">
+                <div class="w-3 h-3 bg-blue-500 rounded-full mr-3"></div>
+                <h3 class="text-xl font-semibold">基于数据库的实现</h3>
+              </div>
+              <p class="mb-4 text-sm text-gray-700">
+                <a href="https://medium.com/@wyr95626_29886/how-to-implement-a-distribue-lock-6d951a53e938" class="citation">利用关系型数据库的唯一约束或乐观锁/悲观锁机制实现</a>。常见方式包括创建锁表利用唯一索引、使用SELECT FOR UPDATE悲观锁或版本号乐观锁。
+              </p>
+              <div class="space-y-3">
+                <div class="text-xs">
+                  <span class="font-medium text-green-600">优点:</span> 实现简单，无需引入新组件
+                </div>
+                <div class="text-xs">
+                  <span class="font-medium text-red-600">缺点:</span> 性能较差，易成为系统瓶颈
+                </div>
+                <div class="text-xs">
+                  <span class="font-medium text-blue-600">适用场景:</span> 简单业务，低并发环境
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white p-8 rounded-lg shadow-sm border">
+              <div class="flex items-center mb-4">
+                <div class="w-3 h-3 bg-red-500 rounded-full mr-3"></div>
+                <h3 class="text-xl font-semibold">基于Redis的实现</h3>
+              </div>
+              <p class="mb-4 text-sm text-gray-700">
+                <a href="https://github.com/pengMaster/BestNote/blob/master/docs/database/Redis/Redlock%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81.md" class="citation">利用Redis的SETNX命令或带NX/PX选项的SET命令实现</a>。Redlock算法通过在多个独立Redis实例上获取锁来提高可靠性。
+              </p>
+              <div class="space-y-3">
+                <div class="text-xs">
+                  <span class="font-medium text-green-600">优点:</span> 性能极高，客户端库丰富
+                </div>
+                <div class="text-xs">
+                  <span class="font-medium text-red-600">缺点:</span> AP模型可能存在数据不一致
+                </div>
+                <div class="text-xs">
+                  <span class="font-medium text-blue-600">适用场景:</span> 高并发，对性能要求高
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white p-8 rounded-lg shadow-sm border">
+              <div class="flex items-center mb-4">
+                <div class="w-3 h-3 bg-yellow-500 rounded-full mr-3"></div>
+                <h3 class="text-xl font-semibold">基于ZooKeeper的实现</h3>
+              </div>
+              <p class="mb-4 text-sm text-gray-700">
+                <a href="https://asrathore08.medium.com/system-design-distributed-lock-821da42054db" class="citation">利用临时顺序节点和Watch机制实现</a>。通过ZAB协议保证强一致性，天然支持公平锁和自动锁释放。
+              </p>
+              <div class="space-y-3">
+                <div class="text-xs">
+                  <span class="font-medium text-green-600">优点:</span> 强一致性保证，可靠性高
+                </div>
+                <div class="text-xs">
+                  <span class="font-medium text-red-600">缺点:</span> 性能相对较低，运维复杂
+                </div>
+                <div class="text-xs">
+                  <span class="font-medium text-blue-600">适用场景:</span> 强一致性要求的核心业务
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white p-8 rounded-lg shadow-sm border">
+              <div class="flex items-center mb-4">
+                <div class="w-3 h-3 bg-purple-500 rounded-full mr-3"></div>
+                <h3 class="text-xl font-semibold">基于etcd的实现</h3>
+              </div>
+              <p class="mb-4 text-sm text-gray-700">
+                <a href="https://medium.com/@felipedutratine/distributed-lock-with-etcd-in-go-d21e7df145bc" class="citation">利用租约机制和事务功能实现</a>。基于Raft协议保证强一致性，特别适合云原生环境。
+              </p>
+              <div class="space-y-3">
+                <div class="text-xs">
+                  <span class="font-medium text-green-600">优点:</span> 强一致性，云原生友好
+                </div>
+                <div class="text-xs">
+                  <span class="font-medium text-red-600">缺点:</span> 运维复杂度高，API相对底层
+                </div>
+                <div class="text-xs">
+                  <span class="font-medium text-blue-600">适用场景:</span> Kubernetes生态，服务发现
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <!-- Detailed Analysis -->
+      <section id="detailed-analysis" class="mb-16">
+        <h2 class="text-3xl font-bold mb-8 serif-italic">3. 分布式锁实现方案详细对比分析</h2>
+
+        <div class="space-y-12">
+          <div>
+            <h3 class="text-2xl font-semibold mb-6">3.1 实现原理对比</h3>
+
+            <div class="comparison-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>方案</th>
+                    <th>核心原理</th>
+                    <th>互斥性保证</th>
+                    <th>死锁避免</th>
+                    <th>性能特点</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>数据库</strong></td>
+                    <td>唯一约束、SELECT FOR UPDATE、版本号</td>
+                    <td>数据库约束或事务隔离级别</td>
+                    <td>需手动实现超时删除</td>
+                    <td>较低，受数据库IO限制</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Redis</strong></td>
+                    <td>SETNX、SET NX/PX、Lua脚本、Redlock</td>
+                    <td>Redis单点或Redlock多数派成功</td>
+                    <td>依赖过期时间，看门狗续期</td>
+                    <td>非常高，内存操作</td>
+                  </tr>
+                  <tr>
+                    <td><strong>ZooKeeper</strong></td>
+                    <td>临时顺序节点、Watch机制、ZAB协议</td>
+                    <td>节点唯一性和顺序性，强一致性</td>
+                    <td>临时节点自动删除</td>
+                    <td>较高（读），较低（写）</td>
+                  </tr>
+                  <tr>
+                    <td><strong>etcd</strong></td>
+                    <td>租约、版本号、Watch、Raft协议、事务</td>
+                    <td>键的唯一性，强一致性，事务原子性</td>
+                    <td>租约到期自动删除键</td>
+                    <td>较高（读），中等（写）</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div>
+            <h3 class="text-2xl font-semibold mb-6">3.2 性能对比 (吞吐量、延迟)</h3>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+              <div class="performance-metric text-center">
+                <div class="text-lg font-bold text-red-600">100,000+</div>
+                <div class="text-xs text-gray-600">Redis QPS</div>
+                <div class="text-xs text-gray-500 mt-1">&lt;1ms 延迟</div>
+              </div>
+              <div class="performance-metric text-center">
+                <div class="text-lg font-bold text-yellow-600">10,000+</div>
+                <div class="text-xs text-gray-600">ZooKeeper QPS</div>
+                <div class="text-xs text-gray-500 mt-1">10-30ms 延迟</div>
+              </div>
+              <div class="performance-metric text-center">
+                <div class="text-lg font-bold text-purple-600">10,000+</div>
+                <div class="text-xs text-gray-600">etcd QPS</div>
+                <div class="text-xs text-gray-500 mt-1">5-15ms 延迟</div>
+              </div>
+              <div class="performance-metric text-center">
+                <div class="text-lg font-bold text-gray-600">数百-数千</div>
+                <div class="text-xs text-gray-600">数据库 QPS</div>
+                <div class="text-xs text-gray-500 mt-1">较高延迟</div>
+              </div>
+            </div>
+
+            <div class="bg-yellow-50 p-4 rounded-lg border-l-4 border-yellow-400">
+              <p class="text-sm">
+                <strong>性能说明:</strong>
+                <a href="https://blog.csdn.net/2401_88760782/article/details/146221443" class="citation">性能数据为理论参考值，实际性能受网络条件、硬件配置、集群规模等因素影响</a>。Redis在内存操作优势下表现最佳，而CP系统（ZooKeeper/etcd）因共识协议开销性能相对较低。
+              </p>
+            </div>
+          </div>
+
+          <div>
+            <h3 class="text-2xl font-semibold mb-6">3.3 一致性模型对比 (CP vs AP)</h3>
+
+            <div class="comparison-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>方案</th>
+                    <th>一致性模型</th>
+                    <th>分区容错性</th>
+                    <th>C vs A (分区时)</th>
+                    <th>对锁一致性的影响</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>数据库</strong></td>
+                    <td>依赖数据库架构 (通常偏向CA)</td>
+                    <td>取决于部署</td>
+                    <td>可能牺牲C或A</td>
+                    <td>锁一致性可能较弱，异步复制时可能出现不一致</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Redis</strong></td>
+                    <td>AP (单实例/主从), Redlock试图CP</td>
+                    <td>是 (集群模式)</td>
+                    <td>偏向A (标准模式), Redlock偏向C</td>
+                    <td>标准模式锁一致性弱，可能存在脑裂风险</td>
+                  </tr>
+                  <tr>
+                    <td><strong>ZooKeeper</strong></td>
+                    <td>CP</td>
+                    <td>是</td>
+                    <td>优先C</td>
+                    <td>强一致性锁，不会出现脑裂</td>
+                  </tr>
+                  <tr>
+                    <td><strong>etcd</strong></td>
+                    <td>CP</td>
+                    <td>是</td>
+                    <td>优先C</td>
+                    <td>强一致性锁，不会出现脑裂</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div>
+            <h3 class="text-2xl font-semibold mb-6">3.4 可靠性对比 (故障恢复、数据持久化)</h3>
+
+            <div class="comparison-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>方案</th>
+                    <th>故障恢复机制</th>
+                    <th>数据持久化方式</th>
+                    <th>可靠性特点</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>数据库</strong></td>
+                    <td>主从复制、故障切换（可能丢数据）</td>
+                    <td>磁盘存储，事务日志</td>
+                    <td>依赖数据库HA方案，单点可靠性低</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Redis</strong></td>
+                    <td>Sentinel主从切换、Cluster分片切换</td>
+                    <td>RDB快照、AOF日志</td>
+                    <td>单点可靠性差，Sentinel/Cluster提高可用性</td>
+                  </tr>
+                  <tr>
+                    <td><strong>ZooKeeper</strong></td>
+                    <td>ZAB协议，多数派存活即可服务</td>
+                    <td>事务日志 + 内存快照</td>
+                    <td>高可靠性，强一致性保证</td>
+                  </tr>
+                  <tr>
+                    <td><strong>etcd</strong></td>
+                    <td>Raft协议，多数派存活即可服务</td>
+                    <td>WAL (Write-Ahead Logging)</td>
+                    <td>高可靠性，强一致性保证</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <!-- Business Scenarios -->
+      <section id="business-scenarios" class="mb-16">
+        <h2 class="text-3xl font-bold mb-8 serif-italic">4. 典型业务场景下的适用性分析</h2>
+
+        <div class="space-y-12">
+          <div class="bg-white p-8 rounded-lg shadow-sm border">
+            <h3 class="text-xl font-semibold mb-4 flex items-center">
+              <i class="fas fa-bolt text-yellow-500 mr-3"></i>
+              电商秒杀场景
+            </h3>
+            <p class="mb-4 text-gray-700">
+              高并发、高竞争的典型场景，需要在极短时间内处理大量用户请求，保证库存扣减的准确性和订单创建的原子性。
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div class="bg-green-50 p-4 rounded-lg">
+                <h4 class="font-semibold text-green-800 mb-2">推荐方案: Redis</h4>
+                <p class="text-sm text-green-700">
+                  <a href="https://dzone.com/articles/distributed-locking-and-race-condition-prevention" class="citation">Redis卓越的性能能够应对高并发冲击</a>，但需结合其他手段（如分层过滤、异步处理）来弥补一致性风险。
+                </p>
+              </div>
+              <div class="bg-blue-50 p-4 rounded-lg">
+                <h4 class="font-semibold text-blue-800 mb-2">替代方案</h4>
+                <p class="text-sm text-blue-700">
+                  ZooKeeper/etcd能更好保证数据准确性，但性能可能成为瓶颈。可采用混合方案：Redis快速过滤 + 强一致性系统最终校验。
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white p-8 rounded-lg shadow-sm border">
+            <h3 class="text-xl font-semibold mb-4 flex items-center">
+              <i class="fas fa-boxes text-blue-500 mr-3"></i>
+              库存扣减场景
+            </h3>
+            <p class="mb-4 text-gray-700">
+              核心要求是保证库存数据的准确性和一致性，避免超卖或少卖。需要严格保证对同一商品库存进行扣减操作的原子性和互斥性。
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div class="bg-blue-50 p-4 rounded-lg">
+                <h4 class="font-semibold text-blue-800 mb-2">推荐方案: 多级缓存+最终一致性</h4>
+                <p class="text-sm text-blue-700">
+                  Redis进行库存快速扣减缓存，数据库层面采用乐观锁或版本控制进行最终校验。对核心库存操作可引入ZooKeeper/etcd进行更严格控制。
+                </p>
+              </div>
+              <div class="bg-yellow-50 p-4 rounded-lg">
+                <h4 class="font-semibold text-yellow-800 mb-2">注意事项</h4>
+                <p class="text-sm text-yellow-700">
+                  <a href="https://dzone.com/articles/distributed-locking-and-race-condition-prevention" class="citation">需仔细评估Redis锁在极端情况下的可靠性风险</a>，并设计相应的补偿机制。
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white p-8 rounded-lg shadow-sm border">
+            <h3 class="text-xl font-semibold mb-4 flex items-center">
+              <i class="fas fa-clock text-purple-500 mr-3"></i>
+              分布式任务调度场景
+            </h3>
+            <p class="mb-4 text-gray-700">
+              需要协调多个节点上的任务执行，确保任务按照预定策略正确、可靠地运行，避免任务的重复执行或遗漏。
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div class="bg-purple-50 p-4 rounded-lg">
+                <h4 class="font-semibold text-purple-800 mb-2">推荐方案: ZooKeeper/etcd</h4>
+                <p class="text-sm text-purple-700">
+                  <a href="https://dev.to/jones_charles_ad50858dbc0/building-a-distributed-task-scheduler-with-etcd-a-hands-on-guide-1eld" class="citation">强一致性、可靠通知机制和临时节点特性非常适合构建分布式任务调度系统</a>，能有效保证任务调度的准确性、可靠性和高可用性。
+                </p>
+              </div>
+              <div class="bg-gray-50 p-4 rounded-lg">
+                <h4 class="font-semibold text-gray-800 mb-2">核心功能</h4>
+                <p class="text-sm text-gray-700">
+                  任务互斥执行（确保同一任务只由一个节点执行）和选主（从多个调度节点中选举主节点）是分布式任务调度的两个核心需求。
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <!-- Tech Stacks -->
+      <section id="tech-stacks" class="mb-16">
+        <h2 class="text-3xl font-bold mb-8 serif-italic">5. 不同技术栈下的实现差异与选型建议</h2>
+
+        <div class="space-y-8">
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="bg-white p-6 rounded-lg shadow-sm border">
+              <h3 class="text-lg font-semibold mb-4 flex items-center">
+                <i class="fab fa-java text-red-500 mr-2"></i>
+                Java技术栈
+              </h3>
+              <div class="space-y-3 text-sm">
+                <div>
+                  <strong>Redis:</strong>
+                  <a href="https://tech.licious.com/from-chaos-to-control-harnessing-distributed-locking-in-concurrent-systems-93d158a8c62a" class="citation">Redisson提供了丰富的分布式对象和同步器</a>，包括RLock、RReadWriteLock等，支持自动续期和RedLock算法。
+                </div>
+                <div>
+                  <strong>ZooKeeper:</strong>
+                  <a href="https://medium.com/@dibyajyotidhar/implement-distributed-locking-in-spring-boot-microservices-using-zookeeper-ff7c02b90478" class="citation">Apache Curator提供了高级抽象</a>，如InterProcessMutex，简化了ZooKeeper的使用。
+                </div>
+                <div>
+                  <strong>etcd:</strong> jetcd（官方客户端库）或etcd4j等第三方库，提供了对etcd v3 API的完整支持。
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-sm border">
+              <h3 class="text-lg font-semibold mb-4 flex items-center">
+                <i class="fab fa-golang text-blue-500 mr-2"></i>
+                Go技术栈
+              </h3>
+              <div class="space-y-3 text-sm">
+                <div>
+                  <strong>Redis:</strong>
+                  <a href="https://jianghushinian.cn/2025/03/02/redsync/" class="citation">Redsync实现了Redis分布式锁和RedLock算法</a>，提供了简单的API来获取和释放锁。
+                </div>
+                <div>
+                  <strong>etcd:</strong>
+                  <a href="https://medium.com/@felipedutratine/distributed-lock-with-etcd-in-go-d21e7df145bc" class="citation">go.etcd.io/etcd/client/v3是官方客户端库</a>，其中的concurrency包提供了高级的并发原语如Mutex。
+                </div>
+                <div>
+                  <strong>ZooKeeper:</strong> go-zookeeper/zk库，API相对底层，实现分布式锁需要开发者自行处理更多细节。
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-sm border">
+              <h3 class="text-lg font-semibold mb-4 flex items-center">
+                <i class="fab fa-python text-yellow-500 mr-2"></i>
+                Python技术栈
+              </h3>
+              <div class="space-y-3 text-sm">
+                <div>
+                  <strong>Redis:</strong> redis-py提供了对Redis命令的完整支持，可结合Lua脚本实现分布式锁。也有redlock-py等第三方库。
+                </div>
+                <div>
+                  <strong>ZooKeeper:</strong> kazoo是一个流行的ZooKeeper客户端库，提供了连接状态监听、重试机制等高级特性。
+                </div>
+                <div>
+                  <strong>etcd:</strong> python-etcd或etcd3 (etcd3-py) 等库，提供了对etcd v3 API的gRPC接口的Python绑定。
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h3 class="text-2xl font-semibold mb-6">5.4 技术选型考量因素</h3>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div class="space-y-4">
+                <div class="bg-white p-6 rounded-lg shadow-sm border">
+                  <h4 class="font-semibold text-blue-600 mb-3">核心考量因素</h4>
+                  <ul class="space-y-2 text-sm">
+                    <li><strong>业务需求:</strong> 一致性要求、性能要求、可靠性要求</li>
+                    <li><strong>团队熟悉度:</strong> 选择团队熟悉的技术栈降低开发和维护成本</li>
+                    <li><strong>生态集成:</strong> 考虑系统中已使用的中间件和技术</li>
+                    <li><strong>性能需求:</strong> 根据实际并发量和响应时间要求选择</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="space-y-4">
+                <div class="bg-white p-6 rounded-lg shadow-sm border">
+                  <h4 class="font-semibold text-green-600 mb-3">辅助考量因素</h4>
+                  <ul class="space-y-2 text-sm">
+                    <li><strong>运维复杂度:</strong> 部署、监控、维护和故障处理难度</li>
+                    <li><strong>社区支持:</strong> 文档、问题解答和第三方库的完善程度</li>
+                    <li><strong>成本:</strong> 硬件成本、软件许可成本和人力成本</li>
+                    <li><strong>未来扩展:</strong> 技术方案的长期适用性和扩展性</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <!-- Best Practices -->
+      <section id="best-practices" class="mb-16">
+        <h2 class="text-3xl font-bold mb-8 serif-italic">6. 分布式锁最佳实践与常见陷阱</h2>
+
+        <div class="space-y-8">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="bg-white p-6 rounded-lg shadow-sm border">
+              <h3 class="text-lg font-semibold mb-4 text-blue-600">最佳实践</h3>
+              <div class="space-y-4">
+                <div class="border-l-4 border-blue-400 pl-4">
+                  <h4 class="font-medium mb-2">锁的过期时间与续约机制</h4>
+                  <p class="text-sm text-gray-700">
+                    设置合理的TTL防止死锁，实现锁续约机制（如Redisson的看门狗）避免业务执行时间超过锁有效期。
+                  </p>
+                </div>
+
+                <div class="border-l-4 border-green-400 pl-4">
+                  <h4 class="font-medium mb-2">正确释放锁与异常处理</h4>
+                  <p class="text-sm text-gray-700">
+                    确保只有锁持有者才能释放锁，在finally块中释放锁，对获取、执行、释放过程中的异常进行妥善处理。
+                  </p>
+                </div>
+
+                <div class="border-l-4 border-purple-400 pl-4">
+                  <h4 class="font-medium mb-2">避免死锁与活锁</h4>
+                  <p class="text-sm text-gray-700">
+                    设置合理的TTL，使用可重入锁，避免嵌套锁，采用公平锁或随机退避算法。
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-sm border">
+              <h3 class="text-lg font-semibold mb-4 text-red-600">常见陷阱</h3>
+              <div class="space-y-4">
+                <div class="border-l-4 border-red-400 pl-4">
+                  <h4 class="font-medium mb-2">时钟同步问题</h4>
+                  <p class="text-sm text-gray-700">
+                    <a href="https://medium.com/@edabbdcfcabbcf/redis-is-the-distributed-lock-based-on-redis-safe-cc2f65b361e3" class="citation">许多分布式锁实现依赖于系统时钟，时钟漂移可能导致锁的提前释放或延迟释放</a>。应使用NTP服务保持时钟同步。
+                  </p>
+                </div>
+
+                <div class="border-l-4 border-yellow-400 pl-4">
+                  <h4 class="font-medium mb-2">网络分区与脑裂</h4>
+                  <p class="text-sm text-gray-700">
+                    <a href="https://leapcell.medium.com/10-hidden-pitfalls-of-using-redis-distributed-locks-b5234ddd6349" class="citation">网络分区可能导致多个客户端同时认为自己持有锁</a>。应理解所选方案的CP/AP特性，必要时实现fencing token机制。
+                  </p>
+                </div>
+
+                <div class="border-l-4 border-gray-400 pl-4">
+                  <h4 class="font-medium mb-2">锁粒度与性能</h4>
+                  <p class="text-sm text-gray-700">
+                    锁粒度过粗会限制并发，过细会增加复杂度。应根据业务场景选择合适的锁粒度，在保证一致性的前提下最大化并发性能。
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white p-8 rounded-lg shadow-sm border">
+            <h3 class="text-xl font-semibold mb-6">fencing token机制</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <h4 class="font-semibold mb-3">问题场景</h4>
+                <p class="text-sm text-gray-700 mb-4">
+                  客户端A持有锁期间发生长时间GC暂停或网络分区，锁服务在TTL到期后将锁分配给客户端B。当客户端A恢复后，仍认为持有锁并继续执行，导致A和B同时操作共享资源。
+                </p>
+                <div class="bg-red-50 p-3 rounded text-xs text-red-700">
+                  <strong>后果:</strong> 互斥性被破坏，数据一致性受损
+                </div>
+              </div>
+              <div>
+                <h4 class="font-semibold mb-3">解决方案</h4>
+                <p class="text-sm text-gray-700 mb-4">
+                  锁服务在授予锁时返回一个单调递增的fencing token。资源服务维护已处理的最大token，拒绝携带过时token的请求。
+                </p>
+                <div class="bg-green-50 p-3 rounded text-xs text-green-700">
+                  <strong>效果:</strong> 即使旧的锁持有者尝试操作资源，也会因token过时被拒绝
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <!-- Conclusion -->
+      <section id="conclusion" class="mb-16">
+        <h2 class="text-3xl font-bold mb-8 serif-italic">7. 总结与展望</h2>
+
+        <div class="space-y-8">
+          <div>
+            <h3 class="text-2xl font-semibold mb-6">7.1 各方案核心区别与适用场景回顾</h3>
+
+            <div class="comparison-table mb-8">
+              <table>
+                <thead>
+                  <tr>
+                    <th>特性</th>
+                    <th>数据库</th>
+                    <th>Redis</th>
+                    <th>ZooKeeper</th>
+                    <th>etcd</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>核心原理</strong></td>
+                    <td>唯一约束, 行锁</td>
+                    <td>SETNX, SET (NX/PX), Lua, Redlock</td>
+                    <td>临时顺序节点, Watch, ZAB</td>
+                    <td>租约, 事务, Watch, Raft</td>
+                  </tr>
+                  <tr>
+                    <td><strong>性能</strong></td>
+                    <td>低</td>
+                    <td>非常高</td>
+                    <td>中等 (写较低)</td>
+                    <td>中等偏高 (写中等)</td>
+                  </tr>
+                  <tr>
+                    <td><strong>一致性</strong></td>
+                    <td>依赖数据库 (偏CP)</td>
+                    <td>AP (Redlock 偏CP)</td>
+                    <td>CP</td>
+                    <td>CP</td>
+                  </tr>
+                  <tr>
+                    <td><strong>可靠性</strong></td>
+                    <td>依赖数据库HA</td>
+                    <td>依赖部署 (Redlock增强)</td>
+                    <td>高</td>
+                    <td>高</td>
+                  </tr>
+                  <tr>
+                    <td><strong>易用性</strong></td>
+                    <td>中等 (原生SQL)</td>
+                    <td>高 (高级库如Redisson)</td>
+                    <td>中等 (Curator简化)</td>
+                    <td>中等 (官方库)</td>
+                  </tr>
+                  <tr>
+                    <td><strong>运维复杂度</strong></td>
+                    <td>中等至高</td>
+                    <td>中等 (Cluster/Redlock较高)</td>
+                    <td>高</td>
+                    <td>高</td>
+                  </tr>
+                  <tr>
+                    <td><strong>典型场景</strong></td>
+                    <td>简单, 低并发</td>
+                    <td>高并发, 缓存, 秒杀 (需权衡)</td>
+                    <td>强一致, 任务调度, 配置管理</td>
+                    <td>强一致, 云原生, 服务发现</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="bg-blue-50 p-6 rounded-lg border-l-4 border-blue-400">
+              <p class="text-sm">
+                <strong>选择原则:</strong> 没有绝对的"最佳"，只有"最合适"。必须根据具体的业务需求、团队技术栈、性能容忍度、一致性要求、运维能力以及现有基础设施进行综合评估和权衡。
+              </p>
+            </div>
+          </div>
+
+          <div>
+            <h3 class="text-2xl font-semibold mb-6">7.2 分布式锁技术发展趋势</h3>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div class="space-y-4">
+                <div class="bg-white p-6 rounded-lg shadow-sm border">
+                  <h4 class="font-semibold text-purple-600 mb-3">技术演进方向</h4>
+                  <ul class="space-y-2 text-sm">
+                    <li><strong>更强的安全性与正确性:</strong> 对算法进行更严格的安全性和正确性证明</li>
+                    <li><strong>云原生深度融合:</strong> 与Kubernetes和Service Mesh等技术的深度集成</li>
+                    <li><strong>Serverless适配:</strong> 适应函数计算特性的轻量级锁实现</li>
+                  </ul>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow-sm border">
+                  <h4 class="font-semibold text-green-600 mb-3">架构创新</h4>
+                  <ul class="space-y-2 text-sm">
+                    <li><strong>多模式与可插拔设计:</strong> 提供多种锁模式和多种后端存储支持</li>
+                    <li><strong>智能化与自适应性:</strong> 根据负载自动调整锁策略和参数</li>
+                    <li><strong>新型硬件利用:</strong> 利用PMem、RDMA等硬件提升性能</li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- Mermaid Diagram: Future Trends -->
+              <div class="bg-white p-6 rounded-lg shadow-sm border">
+                <h4 class="font-semibold mb-4 text-center">分布式锁技术发展趋势</h4>
+                <div class="mermaid-container">
+                  <div class="mermaid-controls">
+                    <button class="mermaid-control-btn zoom-in" title="放大">
+                      <i class="fas fa-search-plus"></i>
+                    </button>
+                    <button class="mermaid-control-btn zoom-out" title="缩小">
+                      <i class="fas fa-search-minus"></i>
+                    </button>
+                    <button class="mermaid-control-btn reset-zoom" title="重置">
+                      <i class="fas fa-expand-arrows-alt"></i>
+                    </button>
+                    <button class="mermaid-control-btn fullscreen" title="全屏查看">
+                      <i class="fas fa-expand"></i>
+                    </button>
+                  </div>
+                  <div class="mermaid">
+                    graph LR
+                    A["当前状态"] --> B["未来发展趋势"]
+
+                    B --> C["更强安全性
+                    <br />形式化验证"]
+                    B --> D["云原生集成
+                    <br />K8s + Service Mesh"]
+                    B --> E["Serverless适配
+                    <br />轻量级短时锁"]
+                    B --> F["多模式可插拔
+                    <br />灵活配置"]
+                    B --> G["智能化管理
+                    <br />自适应调参"]
+                    B --> H["新硬件加速
+                    <br />PMem + RDMA"]
+
+                    C --> I["更可靠的分布式系统"]
+                    D --> I
+                    E --> I
+                    F --> I
+                    G --> I
+                    H --> I
+
+                    style A fill:#e0f2fe,stroke:#1e40af,stroke-width:2px
+                    style B fill:#fef3c7,stroke:#d97706,stroke-width:2px
+                    style I fill:#dcfce7,stroke:#16a34a,stroke-width:2px
+                    style C fill:#f8fafc,stroke:#475569,stroke-width:1px
+                    style D fill:#f8fafc,stroke:#475569,stroke-width:1px
+                    style E fill:#f8fafc,stroke:#475569,stroke-width:1px
+                    style F fill:#f8fafc,stroke:#475569,stroke-width:1px
+                    style G fill:#f8fafc,stroke:#475569,stroke-width:1px
+                    style H fill:#f8fafc,stroke:#475569,stroke-width:1px
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+        // Initialize Mermaid with enhanced theme and contrast
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'base',
+            themeVariables: {
+                // Primary colors with high contrast
+                primaryColor: '#dbeafe',
+                primaryTextColor: '#1e40af',
+                primaryBorderColor: '#2563eb',
+                
+                // Secondary colors with good contrast
+                secondaryColor: '#dcfce7',
+                secondaryTextColor: '#166534',
+                secondaryBorderColor: '#16a34a',
+                
+                // Tertiary colors
+                tertiaryColor: '#fef3c7',
+                tertiaryTextColor: '#92400e',
+                tertiaryBorderColor: '#d97706',
+                
+                // Background and lines
+                background: '#ffffff',
+                mainBkg: '#f8fafc',
+                lineColor: '#64748b',
+                
+                // Node backgrounds for different types with high contrast
+                primaryBorderColor: '#2563eb',
+                primaryTextColor: '#1e40af',
+                
+                secondaryBorderColor: '#16a34a',
+                secondaryTextColor: '#166534',
+                
+                tertiaryBorderColor: '#d97706',
+                tertiaryTextColor: '#92400e',
+                
+                // Additional node colors with proper contrast
+                cScale0: '#dbeafe',
+                cScale1: '#dcfce7',
+                cScale2: '#fef3c7',
+                cScale3: '#fee2e2',
+                cScale4: '#f3e8ff',
+                cScale5: '#f0f9ff',
+                
+                // Text colors for different scales
+                cScaleLabel0: '#1e40af',
+                cScaleLabel1: '#166534',
+                cScaleLabel2: '#92400e',
+                cScaleLabel3: '#991b1b',
+                cScaleLabel4: '#7c3aed',
+                cScaleLabel5: '#0ea5e9'
+            },
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'basis',
+                padding: 20
+            },
+            fontSize: 13,
+            fontFamily: 'Inter, sans-serif'
+        });
+
+        // Initialize Mermaid Controls for zoom and pan
+        function initializeMermaidControls() {
+            const containers = document.querySelectorAll('.mermaid-container');
+
+            containers.forEach(container => {
+            const mermaidElement = container.querySelector('.mermaid');
+            let scale = 1;
+            let isDragging = false;
+            let startX, startY, translateX = 0, translateY = 0;
+
+            // 触摸相关状态
+            let isTouch = false;
+            let touchStartTime = 0;
+            let initialDistance = 0;
+            let initialScale = 1;
+            let isPinching = false;
+
+            // Zoom controls
+            const zoomInBtn = container.querySelector('.zoom-in');
+            const zoomOutBtn = container.querySelector('.zoom-out');
+            const resetBtn = container.querySelector('.reset-zoom');
+            const fullscreenBtn = container.querySelector('.fullscreen');
+
+            function updateTransform() {
+                mermaidElement.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+
+                if (scale > 1) {
+                container.classList.add('zoomed');
+                } else {
+                container.classList.remove('zoomed');
+                }
+
+                mermaidElement.style.cursor = isDragging ? 'grabbing' : 'grab';
+            }
+
+            if (zoomInBtn) {
+                zoomInBtn.addEventListener('click', () => {
+                scale = Math.min(scale * 1.25, 4);
+                updateTransform();
+                });
+            }
+
+            if (zoomOutBtn) {
+                zoomOutBtn.addEventListener('click', () => {
+                scale = Math.max(scale / 1.25, 0.3);
+                if (scale <= 1) {
+                    translateX = 0;
+                    translateY = 0;
+                }
+                updateTransform();
+                });
+            }
+
+            if (resetBtn) {
+                resetBtn.addEventListener('click', () => {
+                scale = 1;
+                translateX = 0;
+                translateY = 0;
+                updateTransform();
+                });
+            }
+
+            if (fullscreenBtn) {
+                fullscreenBtn.addEventListener('click', () => {
+                if (container.requestFullscreen) {
+                    container.requestFullscreen();
+                } else if (container.webkitRequestFullscreen) {
+                    container.webkitRequestFullscreen();
+                } else if (container.msRequestFullscreen) {
+                    container.msRequestFullscreen();
+                }
+                });
+            }
+
+            // Mouse Events
+            mermaidElement.addEventListener('mousedown', (e) => {
+                if (isTouch) return; // 如果是触摸设备，忽略鼠标事件
+
+                isDragging = true;
+                startX = e.clientX - translateX;
+                startY = e.clientY - translateY;
+                mermaidElement.style.cursor = 'grabbing';
+                updateTransform();
+                e.preventDefault();
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (isDragging && !isTouch) {
+                translateX = e.clientX - startX;
+                translateY = e.clientY - startY;
+                updateTransform();
+                }
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (isDragging && !isTouch) {
+                isDragging = false;
+                mermaidElement.style.cursor = 'grab';
+                updateTransform();
+                }
+            });
+
+            document.addEventListener('mouseleave', () => {
+                if (isDragging && !isTouch) {
+                isDragging = false;
+                mermaidElement.style.cursor = 'grab';
+                updateTransform();
+                }
+            });
+
+            // 获取两点之间的距离
+            function getTouchDistance(touch1, touch2) {
+                return Math.hypot(
+                touch2.clientX - touch1.clientX,
+                touch2.clientY - touch1.clientY
+                );
+            }
+
+            // Touch Events - 触摸事件处理
+            mermaidElement.addEventListener('touchstart', (e) => {
+                isTouch = true;
+                touchStartTime = Date.now();
+
+                if (e.touches.length === 1) {
+                // 单指拖动
+                isPinching = false;
+                isDragging = true;
+
+                const touch = e.touches[0];
+                startX = touch.clientX - translateX;
+                startY = touch.clientY - translateY;
+
+                } else if (e.touches.length === 2) {
+                // 双指缩放
+                isPinching = true;
+                isDragging = false;
+
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                initialDistance = getTouchDistance(touch1, touch2);
+                initialScale = scale;
+                }
+
+                e.preventDefault();
+            }, { passive: false });
+
+            mermaidElement.addEventListener('touchmove', (e) => {
+                if (e.touches.length === 1 && isDragging && !isPinching) {
+                // 单指拖动
+                const touch = e.touches[0];
+                translateX = touch.clientX - startX;
+                translateY = touch.clientY - startY;
+                updateTransform();
+
+                } else if (e.touches.length === 2 && isPinching) {
+                // 双指缩放
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                const currentDistance = getTouchDistance(touch1, touch2);
+
+                if (initialDistance > 0) {
+                    const newScale = Math.min(Math.max(
+                    initialScale * (currentDistance / initialDistance),
+                    0.3
+                    ), 4);
+                    scale = newScale;
+                    updateTransform();
+                }
+                }
+
+                e.preventDefault();
+            }, { passive: false });
+
+            mermaidElement.addEventListener('touchend', (e) => {
+                // 重置状态
+                if (e.touches.length === 0) {
+                isDragging = false;
+                isPinching = false;
+                initialDistance = 0;
+
+                // 延迟重置isTouch，避免鼠标事件立即触发
+                setTimeout(() => {
+                    isTouch = false;
+                }, 100);
+                } else if (e.touches.length === 1 && isPinching) {
+                // 从双指变为单指，切换为拖动模式
+                isPinching = false;
+                isDragging = true;
+
+                const touch = e.touches[0];
+                startX = touch.clientX - translateX;
+                startY = touch.clientY - translateY;
+                }
+
+                updateTransform();
+            });
+
+            mermaidElement.addEventListener('touchcancel', (e) => {
+                isDragging = false;
+                isPinching = false;
+                initialDistance = 0;
+
+                setTimeout(() => {
+                isTouch = false;
+                }, 100);
+
+                updateTransform();
+            });
+
+            // Enhanced wheel zoom with better center point handling
+            container.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                const rect = container.getBoundingClientRect();
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+
+                const delta = e.deltaY > 0 ? 0.9 : 1.1;
+                const newScale = Math.min(Math.max(scale * delta, 0.3), 4);
+
+                // Adjust translation to zoom towards center
+                if (newScale !== scale) {
+                const scaleDiff = newScale / scale;
+                translateX = translateX * scaleDiff;
+                translateY = translateY * scaleDiff;
+                scale = newScale;
+
+                if (scale <= 1) {
+                    translateX = 0;
+                    translateY = 0;
+                }
+
+                updateTransform();
+                }
+            });
+
+            // Initialize display
+            updateTransform();
+            });
+        }
+
+        // Initialize Mermaid Diagram
+        document.addEventListener('DOMContentLoaded', function() {
+            // Wait for mermaid to render
+            setTimeout(() => {
+                initializeMermaidControls();
+            }, 1500);
+        });
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Highlight current section in TOC
+        const sections = document.querySelectorAll('section[id]');
+        const tocLinks = document.querySelectorAll('.toc-fixed a[href^="#"]');
+
+        function updateActiveTocLink() {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (scrollY >= sectionTop - 100) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            tocLinks.forEach(link => {
+                link.classList.remove('font-semibold', 'text-blue-600');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('font-semibold', 'text-blue-600');
+                }
+            });
+        }
+
+        window.addEventListener('scroll', updateActiveTocLink);
+        updateActiveTocLink(); // Initialize on load
+    </script>
+  </body>
+
+</html>

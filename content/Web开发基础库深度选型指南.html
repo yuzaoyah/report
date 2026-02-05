@@ -1,0 +1,2020 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web开发基础库深度选型指南</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        :root {
+            --primary: #8b5cf6;
+            --secondary: #ec4899;
+            --accent: #06b6d4;
+            --neutral: #374151;
+            --base-100: #ffffff;
+            --base-200: #f8fafc;
+            --base-300: #e2e8f0;
+        }
+        
+        body {
+            overflow-x: hidden;
+        }
+        
+        .font-display { font-family: 'Playfair Display', serif; }
+        .font-body { font-family: 'Inter', sans-serif; }
+        
+        .toc-fixed {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 280px;
+            height: 100vh;
+            background: var(--base-100);
+            border-right: 1px solid var(--base-300);
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 2rem 1.5rem;
+        }
+        
+        .main-content {
+            margin-left: 280px;
+            min-height: 100vh;
+        }
+        
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            align-items: center;
+        }
+        
+        .hero-text {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .tech-card {
+            background: var(--base-100);
+            border: 1px solid var(--base-300);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .tech-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+        
+        .tech-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .citation {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+            border-bottom: 1px solid transparent;
+            transition: border-color 0.2s;
+        }
+        
+        .citation:hover {
+            border-bottom-color: var(--primary);
+        }
+        
+        .section-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--base-300), transparent);
+            margin: 4rem 0;
+        }
+        
+        .pullquote {
+            border-left: 4px solid var(--primary);
+            padding-left: 2rem;
+            margin: 2rem 0;
+            font-style: italic;
+            color: var(--neutral);
+        }
+        
+/* Mermaid Chart Styles */
+.mermaid-container {
+    display: flex;
+    justify-content: center;
+    min-height: 300px;
+    max-height: 800px;
+    background: #ffffff;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 30px;
+    margin: 30px 0;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+    position: relative;
+    overflow: hidden;
+}
+
+.mermaid-container .mermaid {
+    width: 100%;
+    max-width: 100%;
+    height: 100%;
+    cursor: grab;
+    transition: transform 0.3s ease;
+    transform-origin: center center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    touch-action: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.mermaid-container .mermaid svg {
+    max-width: 100%;
+    height: 100%;
+    display: block;
+    margin: 0 auto;
+}
+
+.mermaid-container .mermaid:active {
+    cursor: grabbing;
+}
+
+.mermaid-container.zoomed .mermaid {
+    height: 100%;
+    width: 100%;
+    cursor: grab;
+}
+
+.mermaid-controls {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    display: flex;
+    gap: 10px;
+    z-index: 20;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 8px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.mermaid-control-btn {
+    background: #ffffff;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    padding: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #374151;
+    font-size: 14px;
+    min-width: 36px;
+    height: 36px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mermaid-control-btn:hover {
+    background: #f8fafc;
+    border-color: #3b82f6;
+    color: #3b82f6;
+    transform: translateY(-1px);
+}
+
+    .mermaid-control-btn:active {
+        transform: scale(0.95);
+    }
+
+    @media (max-width: 1024px) {
+        .mermaid-control-btn:not(.reset-zoom) {
+            display: none;
+        }
+        .mermaid-controls {
+            top: auto;
+            bottom: 15px;
+            right: 15px;
+        }
+    }
+
+    /* Responsive adjustments for mermaid controls */
+    @media (max-width: 768px) {
+        .toc-fixed {
+            display: none;
+        }
+        .main-content {
+            margin-left: 0;
+        }
+        .mermaid-control-btn {
+            padding: 8px;
+            min-width: 30px;
+            height: 30px;
+        }
+    }
+
+        /* TOC active state */
+        .toc-link.active {
+            color: var(--primary);
+            font-weight: 600;
+        }
+        
+        @media (max-width: 1024px) {
+            .toc-fixed {
+                display: none;
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .mermaid-control-btn:not(.reset-zoom) {
+                display: none;
+            }
+            .mermaid-controls {
+                top: auto;
+                bottom: 15px;
+                right: 15px;
+            }
+        }
+    </style>
+  </head>
+
+  <body class="font-body bg-gray-50">
+    <!-- Table of Contents -->
+    <nav class="toc-fixed">
+      <div class="mb-8">
+        <h3 class="font-display text-lg font-semibold text-gray-900 mb-4">目录导航</h3>
+        <div class="space-y-2">
+          <a href="#hero" class="toc-link block text-sm text-gray-600 hover:text-purple-600 transition-colors py-1">概述</a>
+          <a href="#dimensions" class="toc-link block text-sm text-gray-600 hover:text-purple-600 transition-colors py-1">1. 核心选型维度</a>
+          <a href="#app-types" class="toc-link block text-sm text-gray-600 hover:text-purple-600 transition-colors py-1 pl-4">1.1 应用类型</a>
+          <a href="#tech-stacks" class="toc-link block text-sm text-gray-600 hover:text-purple-600 transition-colors py-1 pl-4">1.2 技术栈偏好</a>
+          <a href="#project-scale" class="toc-link block text-sm text-gray-600 hover:text-purple-600 transition-colors py-1 pl-4">1.3 项目规模</a>
+          <a href="#core-features" class="toc-link block text-sm text-gray-600 hover:text-purple-600 transition-colors py-1 pl-4">1.4 核心功能</a>
+          <a href="#recommendations" class="toc-link block text-sm text-gray-600 hover:text-purple-600 transition-colors py-1">2. 按应用类型推荐</a>
+          <a href="#content-apps" class="toc-link block text-sm text-gray-600 hover:text-purple-600 transition-colors py-1 pl-4">2.1 内容展示型</a>
+          <a href="#interactive-apps" class="toc-link block text-sm text-gray-600 hover:text-purple-600 transition-colors py-1 pl-4">2.2 交互型应用</a>
+          <a href="#data-viz" class="toc-link block text-sm text-gray-600 hover:text-purple-600 transition-colors py-1 pl-4">2.3 数据可视化</a>
+          <a href="#ecommerce" class="toc-link block text-sm text-gray-600 hover:text-purple-600 transition-colors py-1 pl-4">2.4 电商平台</a>
+          <a href="#by-stack" class="toc-link block text-sm text-gray-600 hover:text-purple-600 transition-colors py-1">3. 按技术栈推荐</a>
+          <a href="#python-eco" class="toc-link block text-sm text-gray-600 hover:text-purple-600 transition-colors py-1 pl-4">3.1 Python生态</a>
+          <a href="#js-eco" class="toc-link block text-sm text-gray-600 hover:text-purple-600 transition-colors py-1 pl-4">3.2 JS/Node生态</a>
+          <a href="#java-eco" class="toc-link block text-sm text-gray-600 hover:text-purple-600 transition-colors py-1 pl-4">3.3 Java生态</a>
+          <a href="#go-eco" class="toc-link block text-sm text-gray-600 hover:text-purple-600 transition-colors py-1 pl-4">3.4 Go生态</a>
+          <a href="#dotnet-eco" class="toc-link block text-sm text-gray-600 hover:text-purple-600 transition-colors py-1 pl-4">3.5 .NET生态</a>
+          <a href="#conclusion" class="toc-link block text-sm text-gray-600 hover:text-purple-600 transition-colors py-1">结论</a>
+        </div>
+      </div>
+
+      <div class="mt-8 p-4 bg-purple-50 rounded-lg">
+        <h4 class="font-semibold text-purple-900 text-sm mb-2">关键洞察</h4>
+        <p class="text-xs text-purple-700">选择Web开发基础库和框架是一个复杂的决策过程，需要综合考虑应用类型、技术栈偏好、项目规模和核心功能需求。</p>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Hero Section -->
+      <section id="hero" class="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white py-16">
+        <div class="max-w-7xl mx-auto px-6">
+          <div class="hero-grid">
+            <div>
+              <h1 class="font-display text-5xl md:text-6xl font-bold leading-tight mb-6">
+                <span class="hero-text">Web开发基础库</span>
+                <br>
+                <em class="text-4xl md:text-5xl text-purple-200">深度选型指南</em>
+              </h1>
+              <p class="text-xl text-purple-100 mb-8 leading-relaxed">
+                基于应用类型、技术栈与项目规模的全面分析，助您构建卓越的Web应用
+              </p>
+              <div class="flex items-center space-x-6 text-sm text-purple-200">
+                <span><i class="fas fa-code mr-2"></i>技术选型</span>
+                <span><i class="fas fa-chart-line mr-2"></i>性能优化</span>
+                <span><i class="fas fa-shield-alt mr-2"></i>最佳实践</span>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div class="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+                <div class="text-3xl font-bold text-purple-300 mb-2">5+</div>
+                <div class="text-sm text-purple-200">主流技术栈</div>
+              </div>
+              <div class="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+                <div class="text-3xl font-bold text-purple-300 mb-2">20+</div>
+                <div class="text-sm text-purple-200">框架对比</div>
+              </div>
+              <div class="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+                <div class="text-3xl font-bold text-purple-300 mb-2">4</div>
+                <div class="text-sm text-purple-200">应用类型</div>
+              </div>
+              <div class="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+                <div class="text-3xl font-bold text-purple-300 mb-2">3</div>
+                <div class="text-sm text-purple-200">项目规模</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Key Insights -->
+      <section class="py-12 bg-white">
+        <div class="max-w-7xl mx-auto px-6">
+          <div class="grid md:grid-cols-3 gap-8">
+            <div class="text-center">
+              <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-sitemap text-2xl text-purple-600"></i>
+              </div>
+              <h3 class="font-semibold text-lg text-gray-900 mb-2">应用类型驱动</h3>
+              <p class="text-gray-600 text-sm">根据内容展示、用户交互、数据可视化、电商平台等不同类型选择最适合的技术栈</p>
+            </div>
+            <div class="text-center">
+              <div class="w-16 h-16 bg-cyan-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-layer-group text-2xl text-cyan-600"></i>
+              </div>
+              <h3 class="font-semibold text-lg text-gray-900 mb-2">技术栈生态</h3>
+              <p class="text-gray-600 text-sm">Python生态的数据处理优势，Node.js的实时交互能力，Java的企业级稳定性</p>
+            </div>
+            <div class="text-center">
+              <div class="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-expand-arrows-alt text-2xl text-pink-600"></i>
+              </div>
+              <h3 class="font-semibold text-lg text-gray-900 mb-2">规模适配</h3>
+              <p class="text-gray-600 text-sm">从个人项目到大型高并发系统，选择与项目复杂度相匹配的技术方案</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Core Dimensions -->
+      <section id="dimensions" class="py-16 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-6">
+          <h2 class="font-display text-4xl font-bold text-gray-900 mb-12 text-center">核心选型维度与考量因素</h2>
+
+          <!-- Application Types -->
+          <div id="app-types" class="mb-16">
+            <h3 class="font-display text-2xl font-semibold text-gray-900 mb-8">1.1 应用类型与业务场景</h3>
+
+            <div class="grid md:grid-cols-2 gap-8 mb-8">
+              <div class="tech-card">
+                <div class="flex items-center mb-4">
+                  <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mr-4">
+                    <i class="fas fa-newspaper text-purple-600 text-xl"></i>
+                  </div>
+                  <h4 class="font-semibold text-lg text-gray-900">内容展示型应用</h4>
+                </div>
+                <p class="text-gray-600 mb-4">博客、新闻、企业官网等以内容为核心的应用，优先考虑SEO和加载速度。</p>
+                <div class="space-y-2">
+                  <div class="flex items-center text-sm text-gray-700">
+                    <i class="fas fa-check text-purple-500 mr-2"></i>
+                    服务器端渲染（SSR）或静态站点生成（SSG）
+                  </div>
+                  <div class="flex items-center text-sm text-gray-700">
+                    <i class="fas fa-check text-purple-500 mr-2"></i>
+                    <strong>推荐：</strong>Next.js, Nuxt.js, Hugo
+                  </div>
+                </div>
+              </div>
+
+              <div class="tech-card">
+                <div class="flex items-center mb-4">
+                  <div class="w-12 h-12 bg-cyan-100 rounded-lg flex items-center justify-center mr-4">
+                    <i class="fas fa-comments text-cyan-600 text-xl"></i>
+                  </div>
+                  <h4 class="font-semibold text-lg text-gray-900">用户交互型应用</h4>
+                </div>
+                <p class="text-gray-600 mb-4">社交、实时通讯、在线工具等需要实时交互的应用。</p>
+                <div class="space-y-2">
+                  <div class="flex items-center text-sm text-gray-700">
+                    <i class="fas fa-check text-cyan-500 mr-2"></i>
+                    非阻塞I/O模型，实时通信支持
+                  </div>
+                  <div class="flex items-center text-sm text-gray-700">
+                    <i class="fas fa-check text-cyan-500 mr-2"></i>
+                    <strong>推荐：</strong>Node.js, Express.js, Socket.IO
+                  </div>
+                </div>
+              </div>
+
+              <div class="tech-card">
+                <div class="flex items-center mb-4">
+                  <div class="w-12 h-12 bg-pink-100 rounded-lg flex items-center justify-center mr-4">
+                    <i class="fas fa-chart-bar text-pink-600 text-xl"></i>
+                  </div>
+                  <h4 class="font-semibold text-lg text-gray-900">数据可视化应用</h4>
+                </div>
+                <p class="text-gray-600 mb-4">数据分析平台、监控仪表盘等需要复杂数据可视化的应用。</p>
+                <div class="space-y-2">
+                  <div class="flex items-center text-sm text-gray-700">
+                    <i class="fas fa-check text-pink-500 mr-2"></i>
+                    强大的数据处理和可视化能力
+                  </div>
+                  <div class="flex items-center text-sm text-gray-700">
+                    <i class="fas fa-check text-pink-500 mr-2"></i>
+                    <strong>推荐：</strong>Python, D3.js, ECharts
+                  </div>
+                </div>
+              </div>
+
+              <div class="tech-card">
+                <div class="flex items-center mb-4">
+                  <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4">
+                    <i class="fas fa-shopping-cart text-green-600 text-xl"></i>
+                  </div>
+                  <h4 class="font-semibold text-lg text-gray-900">电商平台</h4>
+                </div>
+                <p class="text-gray-600 mb-4">在线购物、交易处理等需要高稳定性和安全性的应用。</p>
+                <div class="space-y-2">
+                  <div class="flex items-center text-sm text-gray-700">
+                    <i class="fas fa-check text-green-500 mr-2"></i>
+                    极高的稳定性和安全性要求
+                  </div>
+                  <div class="flex items-center text-sm text-gray-700">
+                    <i class="fas fa-check text-green-500 mr-2"></i>
+                    <strong>推荐：</strong>Java Spring Boot, Python Django
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tech Stack Preferences -->
+          <div id="tech-stacks" class="mb-16">
+            <h3 class="font-display text-2xl font-semibold text-gray-900 mb-8">1.2 技术栈偏好与生态</h3>
+
+            <div class="grid lg:grid-cols-2 gap-8">
+              <div class="space-y-6">
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                  <div class="flex items-center mb-4">
+                    <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                      <i class="fab fa-python text-blue-600 text-xl"></i>
+                    </div>
+                    <h4 class="font-semibold text-lg text-gray-900">Python生态</h4>
+                  </div>
+                  <p class="text-gray-600 mb-3">以简洁的语法和强大的数据处理能力著称，适合快速开发和数据分析。</p>
+                  <div class="space-y-2 text-sm">
+                    <div class="flex justify-between">
+                      <span class="text-gray-600">开发效率</span>
+                      <div class="flex space-x-1">
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                      </div>
+                    </div>
+                    <div class="flex justify-between">
+                      <span class="text-gray-600">性能表现</span>
+                      <div class="flex space-x-1">
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="far fa-star text-gray-300"></i>
+                        <i class="far fa-star text-gray-300"></i>
+                      </div>
+                    </div>
+                    <div class="flex justify-between">
+                      <span class="text-gray-600">社区支持</span>
+                      <div class="flex space-x-1">
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="mt-4 pt-4 border-t border-gray-100">
+                    <p class="text-xs text-gray-500"><strong>代表框架：</strong>Django, Flask, FastAPI</p>
+                    <p class="text-xs text-gray-500"><strong>适用场景：</strong>数据分析平台, CMS系统, API服务</p>
+                  </div>
+                </div>
+
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                  <div class="flex items-center mb-4">
+                    <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                      <i class="fab fa-node-js text-green-600 text-xl"></i>
+                    </div>
+                    <h4 class="font-semibold text-lg text-gray-900">JavaScript/Node.js</h4>
+                  </div>
+                  <p class="text-gray-600 mb-3">前后端统一的技术栈，拥有庞大的生态系统和社区支持。</p>
+                  <div class="space-y-2 text-sm">
+                    <div class="flex justify-between">
+                      <span class="text-gray-600">开发效率</span>
+                      <div class="flex space-x-1">
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="far fa-star text-gray-300"></i>
+                      </div>
+                    </div>
+                    <div class="flex justify-between">
+                      <span class="text-gray-600">性能表现</span>
+                      <div class="flex space-x-1">
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="far fa-star text-gray-300"></i>
+                      </div>
+                    </div>
+                    <div class="flex justify-between">
+                      <span class="text-gray-600">社区支持</span>
+                      <div class="flex space-x-1">
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="mt-4 pt-4 border-t border-gray-100">
+                    <p class="text-xs text-gray-500"><strong>代表框架：</strong>React, Vue.js, Express.js, NestJS</p>
+                    <p class="text-xs text-gray-500"><strong>适用场景：</strong>实时应用, 全栈开发, 微服务</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="space-y-6">
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                  <div class="flex items-center mb-4">
+                    <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center mr-3">
+                      <i class="fab fa-java text-red-600 text-xl"></i>
+                    </div>
+                    <h4 class="font-semibold text-lg text-gray-900">Java生态</h4>
+                  </div>
+                  <p class="text-gray-600 mb-3">企业级应用的稳定选择，以高性能和强大的类型系统著称。</p>
+                  <div class="space-y-2 text-sm">
+                    <div class="flex justify-between">
+                      <span class="text-gray-600">开发效率</span>
+                      <div class="flex space-x-1">
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="far fa-star text-gray-300"></i>
+                        <i class="far fa-star text-gray-300"></i>
+                      </div>
+                    </div>
+                    <div class="flex justify-between">
+                      <span class="text-gray-600">性能表现</span>
+                      <div class="flex space-x-1">
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                      </div>
+                    </div>
+                    <div class="flex justify-between">
+                      <span class="text-gray-600">社区支持</span>
+                      <div class="flex space-x-1">
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="mt-4 pt-4 border-t border-gray-100">
+                    <p class="text-xs text-gray-500"><strong>代表框架：</strong>Spring Boot, Hibernate</p>
+                    <p class="text-xs text-gray-500"><strong>适用场景：</strong>大型企业应用, 金融系统, 电商平台</p>
+                  </div>
+                </div>
+
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                  <div class="flex items-center mb-4">
+                    <div class="w-10 h-10 bg-cyan-100 rounded-lg flex items-center justify-center mr-3">
+                      <i class="fab fa-microsoft text-cyan-600 text-xl"></i>
+                    </div>
+                    <h4 class="font-semibold text-lg text-gray-900">Go生态</h4>
+                  </div>
+                  <p class="text-gray-600 mb-3">高性能并发编程语言，适合构建云原生应用和微服务。</p>
+                  <div class="space-y-2 text-sm">
+                    <div class="flex justify-between">
+                      <span class="text-gray-600">开发效率</span>
+                      <div class="flex space-x-1">
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="far fa-star text-gray-300"></i>
+                      </div>
+                    </div>
+                    <div class="flex justify-between">
+                      <span class="text-gray-600">性能表现</span>
+                      <div class="flex space-x-1">
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                      </div>
+                    </div>
+                    <div class="flex justify-between">
+                      <span class="text-gray-600">社区支持</span>
+                      <div class="flex space-x-1">
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="far fa-star text-gray-300"></i>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="mt-4 pt-4 border-t border-gray-100">
+                    <p class="text-xs text-gray-500"><strong>代表框架：</strong>Gin, Echo, Fiber</p>
+                    <p class="text-xs text-gray-500"><strong>适用场景：</strong>高并发服务, 微服务, API网关</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Project Scale -->
+          <div id="project-scale" class="mb-16">
+            <h3 class="font-display text-2xl font-semibold text-gray-900 mb-8">1.3 项目规模与复杂度</h3>
+
+            <div class="relative">
+              <div class="absolute left-4 top-0 bottom-0 w-0.5 bg-purple-200"></div>
+
+              <div class="space-y-8">
+                <div class="flex items-start">
+                  <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center mr-6 relative z-10">
+                    <i class="fas fa-user text-purple-600 text-sm"></i>
+                  </div>
+                  <div class="flex-1">
+                    <h4 class="font-semibold text-lg text-gray-900 mb-2">个人项目与小型应用</h4>
+                    <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+                      <p class="text-gray-600 mb-4">个人博客、待办事项列表、简单的信息展示网站等，核心目标是快速启动、易于上手和低维护成本。</p>
+                      <div class="grid md:grid-cols-2 gap-4">
+                        <div>
+                          <h5 class="font-medium text-gray-900 mb-2">后端选择</h5>
+                          <ul class="space-y-1 text-sm text-gray-600">
+                            <li>• <a href="https://flask.palletsprojects.com/" class="citation">Python Flask</a> - 极简微框架</li>
+                            <li>• <a href="https://expressjs.com/" class="citation">Express.js</a> - 灵活的Node.js框架</li>
+                            <li>• <a href="https://gohugo.io/" class="citation">Hugo</a> - 静态网站生成器</li>
+                          </ul>
+                        </div>
+                        <div>
+                          <h5 class="font-medium text-gray-900 mb-2">前端选择</h5>
+                          <ul class="space-y-1 text-sm text-gray-600">
+                            <li>• <a href="https://vuejs.org/" class="citation">Vue.js</a> - 渐进式框架</li>
+                            <li>• <a href="https://svelte.dev/" class="citation">Svelte</a> - 编译时框架</li>
+                            <li>• <a href="https://getbootstrap.com/" class="citation">Bootstrap</a> - CSS框架</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex items-start">
+                  <div class="w-8 h-8 bg-cyan-100 rounded-full flex items-center justify-center mr-6 relative z-10">
+                    <i class="fas fa-building text-cyan-600 text-sm"></i>
+                  </div>
+                  <div class="flex-1">
+                    <h4 class="font-semibold text-lg text-gray-900 mb-2">中小型企业级应用</h4>
+                    <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+                      <p class="text-gray-600 mb-4">CRM、ERP、内容管理系统等具有较复杂业务逻辑的应用，需要更好的可维护性和扩展性。</p>
+                      <div class="grid md:grid-cols-2 gap-4">
+                        <div>
+                          <h5 class="font-medium text-gray-900 mb-2">后端选择</h5>
+                          <ul class="space-y-1 text-sm text-gray-600">
+                            <li>• <a href="https://www.djangoproject.com/" class="citation">Python Django</a> - 全功能框架</li>
+                            <li>• <a href="https://spring.io/projects/spring-boot" class="citation">Java Spring Boot</a> - 企业级框架</li>
+                            <li>• <a href="https://nestjs.com/" class="citation">NestJS</a> - 结构化Node.js框架</li>
+                          </ul>
+                        </div>
+                        <div>
+                          <h5 class="font-medium text-gray-900 mb-2">前端选择</h5>
+                          <ul class="space-y-1 text-sm text-gray-600">
+                            <li>• <a href="https://reactjs.org/" class="citation">React</a> - 组件化UI库</li>
+                            <li>• <a href="https://vuejs.org/" class="citation">Vue.js</a> - 渐进式框架</li>
+                            <li>• <a href="https://nextjs.org/" class="citation">Next.js</a> - React框架</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex items-start">
+                  <div class="w-8 h-8 bg-pink-100 rounded-full flex items-center justify-center mr-6 relative z-10">
+                    <i class="fas fa-rocket text-pink-600 text-sm"></i>
+                  </div>
+                  <div class="flex-1">
+                    <h4 class="font-semibold text-lg text-gray-900 mb-2">大型/高并发复杂系统</h4>
+                    <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+                      <p class="text-gray-600 mb-4">大型电商平台、社交网络、金融交易系统等，需要极高的性能、可扩展性和稳定性。</p>
+                      <div class="grid md:grid-cols-2 gap-4">
+                        <div>
+                          <h5 class="font-medium text-gray-900 mb-2">后端选择</h5>
+                          <ul class="space-y-1 text-sm text-gray-600">
+                            <li>• <a href="https://go.dev/" class="citation">Go语言</a> - 高性能并发</li>
+                            <li>• <a href="https://spring.io/projects/spring-cloud" class="citation">Spring Cloud</a> - 微服务架构</li>
+                            <li>• <a href="https://dotnet.microsoft.com/" class="citation">.NET Core</a> - 跨平台框架</li>
+                          </ul>
+                        </div>
+                        <div>
+                          <h5 class="font-medium text-gray-900 mb-2">架构选择</h5>
+                          <ul class="space-y-1 text-sm text-gray-600">
+                            <li>• <a href="https://kubernetes.io/" class="citation">Kubernetes</a> - 容器编排</li>
+                            <li>• <a href="https://www.docker.com/" class="citation">Docker</a> - 容器化技术</li>
+                            <li>• <a href="https://kafka.apache.org/" class="citation">Kafka</a> - 消息队列</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Core Features -->
+          <div id="core-features" class="mb-16">
+            <h3 class="font-display text-2xl font-semibold text-gray-900 mb-8">1.4 核心功能需求</h3>
+
+            <div class="grid lg:grid-cols-2 gap-8">
+              <div class="space-y-6">
+                <div class="tech-card">
+                  <div class="flex items-center mb-4">
+                    <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center mr-3">
+                      <i class="fas fa-lock text-red-600 text-xl"></i>
+                    </div>
+                    <h4 class="font-semibold text-lg text-gray-900">用户认证与授权</h4>
+                  </div>
+                  <p class="text-gray-600 mb-4">验证用户身份和权限管理的安全功能，是Web应用的基础。</p>
+                  <div class="space-y-3">
+                    <div class="bg-gray-50 rounded-lg p-3">
+                      <div class="font-medium text-sm text-gray-900 mb-1">内置认证系统</div>
+                      <div class="text-xs text-gray-600">Django Authentication, Spring Security, ASP.NET Core Identity</div>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-3">
+                      <div class="font-medium text-sm text-gray-900 mb-1">第三方认证库</div>
+                      <div class="text-xs text-gray-600">
+                        <a href="https://www.passportjs.org/" class="citation">Passport.js</a>,
+                        <a href="https://auth0.com/" class="citation">Auth0</a>,
+                        <a href="https://firebase.google.com/docs/auth" class="citation">Firebase Authentication</a>
+                      </div>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-3">
+                      <div class="font-medium text-sm text-gray-900 mb-1">JWT认证</div>
+                      <div class="text-xs text-gray-600">无状态令牌认证，适合RESTful API</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="tech-card">
+                  <div class="flex items-center mb-4">
+                    <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                      <i class="fas fa-database text-blue-600 text-xl"></i>
+                    </div>
+                    <h4 class="font-semibold text-lg text-gray-900">数据库操作与ORM</h4>
+                  </div>
+                  <p class="text-gray-600 mb-4">通过对象关系映射简化数据库操作，提高开发效率。</p>
+                  <div class="space-y-3">
+                    <div class="bg-gray-50 rounded-lg p-3">
+                      <div class="font-medium text-sm text-gray-900 mb-1">Python生态</div>
+                      <div class="text-xs text-gray-600">
+                        <a href="https://docs.djangoproject.com/en/stable/topics/db/" class="citation">Django ORM</a>,
+                        <a href="https://www.sqlalchemy.org/" class="citation">SQLAlchemy</a>
+                      </div>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-3">
+                      <div class="font-medium text-sm text-gray-900 mb-1">JavaScript生态</div>
+                      <div class="text-xs text-gray-600">
+                        <a href="https://mongoosejs.com/" class="citation">Mongoose</a>,
+                        <a href="https://sequelize.org/" class="citation">Sequelize</a>,
+                        <a href="https://typeorm.io/" class="citation">TypeORM</a>
+                      </div>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-3">
+                      <div class="font-medium text-sm text-gray-900 mb-1">Java生态</div>
+                      <div class="text-xs text-gray-600">
+                        <a href="https://hibernate.org/orm/" class="citation">Hibernate</a>,
+                        <a href="https://spring.io/projects/spring-data-jpa" class="citation">Spring Data JPA</a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="space-y-6">
+                <div class="tech-card">
+                  <div class="flex items-center mb-4">
+                    <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                      <i class="fas fa-code text-green-600 text-xl"></i>
+                    </div>
+                    <h4 class="font-semibold text-lg text-gray-900">API开发</h4>
+                  </div>
+                  <p class="text-gray-600 mb-4">构建前后端分离应用和微服务的API接口。</p>
+                  <div class="space-y-3">
+                    <div class="bg-gray-50 rounded-lg p-3">
+                      <div class="font-medium text-sm text-gray-900 mb-1">RESTful API框架</div>
+                      <div class="text-xs text-gray-600">
+                        <a href="https://www.django-rest-framework.org/" class="citation">Django REST Framework</a>,
+                        <a href="https://expressjs.com/" class="citation">Express.js</a>,
+                        <a href="https://spring.io/projects/spring-web" class="citation">Spring Web</a>
+                      </div>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-3">
+                      <div class="font-medium text-sm text-gray-900 mb-1">GraphQL实现</div>
+                      <div class="text-xs text-gray-600">
+                        <a href="https://www.apollographql.com/" class="citation">Apollo Server</a>,
+                        <a href="https://graphene-python.org/" class="citation">Graphene</a>
+                      </div>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-3">
+                      <div class="font-medium text-sm text-gray-900 mb-1">API网关</div>
+                      <div class="text-xs text-gray-600">
+                        <a href="https://konghq.com/" class="citation">Kong</a>,
+                        <a href="https://www.krakend.io/" class="citation">KrakenD</a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="tech-card">
+                  <div class="flex items-center mb-4">
+                    <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
+                      <i class="fas fa-palette text-purple-600 text-xl"></i>
+                    </div>
+                    <h4 class="font-semibold text-lg text-gray-900">前端组件与UI库</h4>
+                  </div>
+                  <p class="text-gray-600 mb-4">提供可复用的UI组件，加速前端开发并保证设计一致性。</p>
+                  <div class="space-y-3">
+                    <div class="bg-gray-50 rounded-lg p-3">
+                      <div class="font-medium text-sm text-gray-900 mb-1">React生态</div>
+                      <div class="text-xs text-gray-600">
+                        <a href="https://ant.design/" class="citation">Ant Design</a>,
+                        <a href="https://mui.com/" class="citation">Material-UI</a>,
+                        <a href="https://chakra-ui.com/" class="citation">Chakra UI</a>
+                      </div>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-3">
+                      <div class="font-medium text-sm text-gray-900 mb-1">Vue生态</div>
+                      <div class="text-xs text-gray-600">
+                        <a href="https://element.eleme.io/" class="citation">Element UI</a>,
+                        <a href="https://vuetifyjs.com/" class="citation">Vuetify</a>,
+                        <a href="https://www.primefaces.org/primevue/" class="citation">PrimeVue</a>
+                      </div>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-3">
+                      <div class="font-medium text-sm text-gray-900 mb-1">通用CSS框架</div>
+                      <div class="text-xs text-gray-600">
+                        <a href="https://getbootstrap.com/" class="citation">Bootstrap</a>,
+                        <a href="https://tailwindcss.com/" class="citation">Tailwind CSS</a>,
+                        <a href="https://bulma.io/" class="citation">Bulma</a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <!-- Recommendations by Application Type -->
+      <section id="recommendations" class="py-16 bg-white">
+        <div class="max-w-7xl mx-auto px-6">
+          <h2 class="font-display text-4xl font-bold text-gray-900 mb-12 text-center">按应用类型推荐的基础库与框架</h2>
+
+          <!-- Content Display Apps -->
+          <div id="content-apps" class="mb-16">
+            <h3 class="font-display text-2xl font-semibold text-gray-900 mb-8">2.1 内容展示型应用</h3>
+
+            <div class="bg-gradient-to-r from-purple-50 to-blue-50 rounded-2xl p-8 mb-8">
+              <div class="flex items-center mb-6">
+                <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mr-4">
+                  <i class="fas fa-newspaper text-purple-600 text-xl"></i>
+                </div>
+                <div>
+                  <h4 class="font-semibold text-xl text-gray-900">核心需求</h4>
+                  <p class="text-gray-600">SEO友好、快速加载、内容管理</p>
+                </div>
+              </div>
+
+              <div class="grid lg:grid-cols-3 gap-6">
+                <div class="bg-white rounded-xl p-6 shadow-sm">
+                  <h5 class="font-semibold text-lg text-gray-900 mb-3">前端框架</h5>
+                  <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                      <span class="text-sm font-medium">Next.js (React)</span>
+                      <div class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">推荐</div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <span class="text-sm font-medium">Nuxt.js (Vue)</span>
+                      <div class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">推荐</div>
+                    </div>
+                    <div class="text-xs text-gray-600">支持SSR/SSG，优化SEO和加载速度</div>
+                  </div>
+                </div>
+
+                <div class="bg-white rounded-xl p-6 shadow-sm">
+                  <h5 class="font-semibold text-lg text-gray-900 mb-3">后端框架</h5>
+                  <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                      <span class="text-sm font-medium">Django (Python)</span>
+                      <div class="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">全功能</div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <span class="text-sm font-medium">Flask (Python)</span>
+                      <div class="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">轻量级</div>
+                    </div>
+                    <div class="text-xs text-gray-600">内置CMS，快速内容管理</div>
+                  </div>
+                </div>
+
+                <div class="bg-white rounded-xl p-6 shadow-sm">
+                  <h5 class="font-semibold text-lg text-gray-900 mb-3">静态生成器</h5>
+                  <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                      <span class="text-sm font-medium">Hugo (Go)</span>
+                      <div class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">极速</div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <span class="text-sm font-medium">Jekyll (Ruby)</span>
+                      <div class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">简单</div>
+                    </div>
+                    <div class="text-xs text-gray-600">纯静态站点，CDN友好</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="pullquote">
+              "对于内容展示型应用，优先考虑支持服务器端渲染（SSR）或静态站点生成（SSG）的框架，如Next.js或Nuxt.js，以获得最佳的SEO和加载速度。"
+            </div>
+          </div>
+
+          <!-- Interactive Apps -->
+          <div id="interactive-apps" class="mb-16">
+            <h3 class="font-display text-2xl font-semibold text-gray-900 mb-8">2.2 用户交互型应用</h3>
+
+            <div class="bg-gradient-to-r from-cyan-50 to-pink-50 rounded-2xl p-8 mb-8">
+              <div class="flex items-center mb-6">
+                <div class="w-12 h-12 bg-cyan-100 rounded-lg flex items-center justify-center mr-4">
+                  <i class="fas fa-comments text-cyan-600 text-xl"></i>
+                </div>
+                <div>
+                  <h4 class="font-semibold text-xl text-gray-900">核心需求</h4>
+                  <p class="text-gray-600">实时交互、动态更新、高并发</p>
+                </div>
+              </div>
+
+              <div class="grid lg:grid-cols-3 gap-6">
+                <div class="bg-white rounded-xl p-6 shadow-sm">
+                  <h5 class="font-semibold text-lg text-gray-900 mb-3">前端框架</h5>
+                  <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                      <span class="text-sm font-medium">React</span>
+                      <div class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">组件化</div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <span class="text-sm font-medium">Vue.js</span>
+                      <div class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">渐进式</div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <span class="text-sm font-medium">Angular</span>
+                      <div class="text-xs bg-red-100 text-red-800 px-2 py-1 rounded">全功能</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="bg-white rounded-xl p-6 shadow-sm">
+                  <h5 class="font-semibold text-lg text-gray-900 mb-3">后端框架</h5>
+                  <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                      <span class="text-sm font-medium">Express.js (Node)</span>
+                      <div class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">推荐</div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <span class="text-sm font-medium">NestJS (Node)</span>
+                      <div class="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">结构化</div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <span class="text-sm font-medium">Django Channels</span>
+                      <div class="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">Python</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="bg-white rounded-xl p-6 shadow-sm">
+                  <h5 class="font-semibold text-lg text-gray-900 mb-3">实时通信</h5>
+                  <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                      <span class="text-sm font-medium">Socket.IO</span>
+                      <div class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">首选</div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <span class="text-sm font-medium">WebSocket</span>
+                      <div class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">原生</div>
+                    </div>
+                    <div class="text-xs text-gray-600">支持房间、命名空间、自动重连</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="pullquote">
+              "对于用户交互型应用，Node.js凭借其非阻塞I/O模型成为后端首选，配合Express.js或NestJS框架，以及Socket.IO实现实时通信。"
+            </div>
+          </div>
+
+          <!-- Data Visualization -->
+          <div id="data-viz" class="mb-16">
+            <h3 class="font-display text-2xl font-semibold text-gray-900 mb-8">2.3 数据可视化应用</h3>
+
+            <div class="bg-gradient-to-r from-pink-50 to-purple-50 rounded-2xl p-8 mb-8">
+              <div class="flex items-center mb-6">
+                <div class="w-12 h-12 bg-pink-100 rounded-lg flex items-center justify-center mr-4">
+                  <i class="fas fa-chart-bar text-pink-600 text-xl"></i>
+                </div>
+                <div>
+                  <h4 class="font-semibold text-xl text-gray-900">核心需求</h4>
+                  <p class="text-gray-600">数据处理、可视化渲染、交互性</p>
+                </div>
+              </div>
+
+              <div class="grid lg:grid-cols-3 gap-6">
+                <div class="bg-white rounded-xl p-6 shadow-sm">
+                  <h5 class="font-semibold text-lg text-gray-900 mb-3">前端可视化库</h5>
+                  <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                      <span class="text-sm font-medium">D3.js</span>
+                      <div class="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">定制化</div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <span class="text-sm font-medium">ECharts</span>
+                      <div class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">推荐</div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <span class="text-sm font-medium">Highcharts</span>
+                      <div class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">商业</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="bg-white rounded-xl p-6 shadow-sm">
+                  <h5 class="font-semibold text-lg text-gray-900 mb-3">Python可视化</h5>
+                  <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                      <span class="text-sm font-medium">Plotly/Dash</span>
+                      <div class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">交互式</div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <span class="text-sm font-medium">Matplotlib</span>
+                      <div class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">基础</div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <span class="text-sm font-medium">Bokeh</span>
+                      <div class="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">Web</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="bg-white rounded-xl p-6 shadow-sm">
+                  <h5 class="font-semibold text-lg text-gray-900 mb-3">后端框架</h5>
+                  <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                      <span class="text-sm font-medium">Flask (Python)</span>
+                      <div class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">轻量</div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <span class="text-sm font-medium">Django (Python)</span>
+                      <div class="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">全功能</div>
+                    </div>
+                    <div class="text-xs text-gray-600">Pandas, NumPy数据处理</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="pullquote">
+              "对于数据可视化应用，Python生态是后端的不二之选，利用其强大的数据处理库（如Pandas）和可视化库（如Plotly、Dash）。前端则可选用D3.js或ECharts。"
+            </div>
+          </div>
+
+          <!-- E-commerce -->
+          <div id="ecommerce" class="mb-16">
+            <h3 class="font-display text-2xl font-semibold text-gray-900 mb-8">2.4 电商平台</h3>
+
+            <div class="bg-gradient-to-r from-green-50 to-blue-50 rounded-2xl p-8 mb-8">
+              <div class="flex items-center mb-6">
+                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4">
+                  <i class="fas fa-shopping-cart text-green-600 text-xl"></i>
+                </div>
+                <div>
+                  <h4 class="font-semibold text-xl text-gray-900">核心需求</h4>
+                  <p class="text-gray-600">高稳定性、安全性、性能、可扩展性</p>
+                </div>
+              </div>
+
+              <div class="grid lg:grid-cols-3 gap-6">
+                <div class="bg-white rounded-xl p-6 shadow-sm">
+                  <h5 class="font-semibold text-lg text-gray-900 mb-3">前端框架</h5>
+                  <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                      <span class="text-sm font-medium">Next.js (React)</span>
+                      <div class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">推荐</div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <span class="text-sm font-medium">Nuxt.js (Vue)</span>
+                      <div class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">推荐</div>
+                    </div>
+                    <div class="text-xs text-gray-600">SSR/SSG，SEO友好，性能优化</div>
+                  </div>
+                </div>
+
+                <div class="bg-white rounded-xl p-6 shadow-sm">
+                  <h5 class="font-semibold text-lg text-gray-900 mb-3">后端框架</h5>
+                  <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                      <span class="text-sm font-medium">Spring Boot (Java)</span>
+                      <div class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">企业级</div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <span class="text-sm font-medium">Django (Python)</span>
+                      <div class="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">全功能</div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <span class="text-sm font-medium">Go (Gin)</span>
+                      <div class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">高性能</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="bg-white rounded-xl p-6 shadow-sm">
+                  <h5 class="font-semibold text-lg text-gray-900 mb-3">电商专用</h5>
+                  <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                      <span class="text-sm font-medium">Django Oscar</span>
+                      <div class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">推荐</div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <span class="text-sm font-medium">Commerce.js</span>
+                      <div class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Headless</div>
+                    </div>
+                    <div class="text-xs text-gray-600">商品目录、购物车、订单处理</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="pullquote">
+              "对于电商平台，后端需要极高的稳定性和安全性，Java (Spring Boot) 或 Python (Django) 是主流选择。前端同样推荐使用Next.js或Nuxt.js以兼顾性能和SEO。"
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <!-- By Tech Stack -->
+      <section id="by-stack" class="py-16 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-6">
+          <h2 class="font-display text-4xl font-bold text-gray-900 mb-12 text-center">按技术栈推荐的基础库与框架</h2>
+
+          <!-- Python Ecosystem -->
+          <div id="python-eco" class="mb-16">
+            <h3 class="font-display text-2xl font-semibold text-gray-900 mb-8">3.1 Python生态</h3>
+
+            <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+              <div class="bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-6">
+                <div class="flex items-center">
+                  <i class="fab fa-python text-white text-3xl mr-4"></i>
+                  <div>
+                    <h4 class="text-white text-xl font-semibold">Python Web开发框架对比</h4>
+                    <p class="text-blue-100 text-sm">简洁与数据处理优势</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="p-8">
+                <div class="overflow-x-auto">
+                  <table class="w-full">
+                    <thead>
+                      <tr class="border-b border-gray-200">
+                        <th class="text-left py-3 px-4 font-semibold text-gray-900">特性</th>
+                        <th class="text-left py-3 px-4 font-semibold text-gray-900">Django</th>
+                        <th class="text-left py-3 px-4 font-semibold text-gray-900">Flask</th>
+                        <th class="text-left py-3 px-4 font-semibold text-gray-900">FastAPI</th>
+                      </tr>
+                    </thead>
+                    <tbody class="text-sm">
+                      <tr class="border-b border-gray-100">
+                        <td class="py-3 px-4 font-medium text-gray-900">框架类型</td>
+                        <td class="py-3 px-4 text-gray-600">全栈框架</td>
+                        <td class="py-3 px-4 text-gray-600">微框架</td>
+                        <td class="py-3 px-4 text-gray-600">微框架（API优先）</td>
+                      </tr>
+                      <tr class="border-b border-gray-100">
+                        <td class="py-3 px-4 font-medium text-gray-900">核心哲学</td>
+                        <td class="py-3 px-4 text-gray-600">Batteries-included, 约定优于配置</td>
+                        <td class="py-3 px-4 text-gray-600">极简主义，高度灵活</td>
+                        <td class="py-3 px-4 text-gray-600">高性能，现代化，基于类型提示</td>
+                      </tr>
+                      <tr class="border-b border-gray-100">
+                        <td class="py-3 px-4 font-medium text-gray-900">学习曲线</td>
+                        <td class="py-3 px-4 text-gray-600">中等</td>
+                        <td class="py-3 px-4 text-gray-600">平缓</td>
+                        <td class="py-3 px-4 text-gray-600">中等（需熟悉异步和类型提示）</td>
+                      </tr>
+                      <tr class="border-b border-gray-100">
+                        <td class="py-3 px-4 font-medium text-gray-900">性能</td>
+                        <td class="py-3 px-4 text-gray-600">中等</td>
+                        <td class="py-3 px-4 text-gray-600">中等</td>
+                        <td class="py-3 px-4 text-gray-600">非常高（原生异步支持）</td>
+                      </tr>
+                      <tr class="border-b border-gray-100">
+                        <td class="py-3 px-4 font-medium text-gray-900">内置功能</td>
+                        <td class="py-3 px-4 text-gray-600">ORM, 认证, 管理后台, 表单等</td>
+                        <td class="py-3 px-4 text-gray-600">路由, 请求处理（核心功能）</td>
+                        <td class="py-3 px-4 text-gray-600">数据验证, 序列化, 自动API文档</td>
+                      </tr>
+                      <tr class="border-b border-gray-100">
+                        <td class="py-3 px-4 font-medium text-gray-900">异步支持</td>
+                        <td class="py-3 px-4 text-gray-600">有限（可通过插件实现）</td>
+                        <td class="py-3 px-4 text-gray-600">通过插件实现</td>
+                        <td class="py-3 px-4 text-gray-600">原生支持</td>
+                      </tr>
+                      <tr class="border-b border-gray-100">
+                        <td class="py-3 px-4 font-medium text-gray-900">适用场景</td>
+                        <td class="py-3 px-4 text-gray-600">大型复杂应用, CMS, 电商平台</td>
+                        <td class="py-3 px-4 text-gray-600">小型应用, 微服务, API原型</td>
+                        <td class="py-3 px-4 text-gray-600">高性能API, 微服务, 实时应用</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div class="mt-6 grid md:grid-cols-2 gap-6">
+                  <div class="bg-blue-50 rounded-lg p-4">
+                    <h5 class="font-semibold text-blue-900 mb-2">数据库与ORM</h5>
+                    <ul class="space-y-1 text-sm text-blue-800">
+                      <li>• <a href="https://docs.djangoproject.com/en/stable/topics/db/" class="citation">Django ORM</a> - 内置ORM，与框架紧密集成</li>
+                      <li>• <a href="https://www.sqlalchemy.org/" class="citation">SQLAlchemy</a> - Python生态最强大的ORM</li>
+                      <li>• <a href="https://pypi.org/project/peewee/" class="citation">Peewee</a> - 轻量级ORM，简单易用</li>
+                    </ul>
+                  </div>
+
+                  <div class="bg-purple-50 rounded-lg p-4">
+                    <h5 class="font-semibold text-purple-900 mb-2">API开发</h5>
+                    <ul class="space-y-1 text-sm text-purple-800">
+                      <li>• <a href="https://www.django-rest-framework.org/" class="citation">Django REST Framework</a> - 功能强大的API工具包</li>
+                      <li>• <a href="https://fastapi.tiangolo.com/" class="citation">FastAPI</a> - 现代高性能API框架</li>
+                      <li>• <a href="https://graphene-python.org/" class="citation">Graphene</a> - GraphQL实现</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- JavaScript/Node.js Ecosystem -->
+          <div id="js-eco" class="mb-16">
+            <h3 class="font-display text-2xl font-semibold text-gray-900 mb-8">3.2 JavaScript/Node.js生态</h3>
+
+            <div class="grid lg:grid-cols-2 gap-8">
+              <div class="space-y-6">
+                <div class="tech-card">
+                  <div class="flex items-center mb-4">
+                    <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                      <i class="fab fa-react text-green-600 text-xl"></i>
+                    </div>
+                    <h4 class="font-semibold text-lg text-gray-900">前端框架</h4>
+                  </div>
+                  <div class="space-y-4">
+                    <div class="border-l-4 border-blue-500 pl-4">
+                      <div class="font-medium text-gray-900 mb-1">React</div>
+                      <p class="text-sm text-gray-600 mb-2">组件化、虚拟DOM，庞大生态系统</p>
+                      <div class="text-xs text-blue-600">
+                        <a href="https://nextjs.org/" class="citation">Next.js</a> (SSR/SSG) |
+                        <a href="https://redux.js.org/" class="citation">Redux</a> (状态管理)
+                      </div>
+                    </div>
+
+                    <div class="border-l-4 border-green-500 pl-4">
+                      <div class="font-medium text-gray-900 mb-1">Vue.js</div>
+                      <p class="text-sm text-gray-600 mb-2">渐进式、易学易用，适合中小型项目</p>
+                      <div class="text-xs text-green-600">
+                        <a href="https://nuxtjs.org/" class="citation">Nuxt.js</a> (SSR/SSG) |
+                        <a href="https://pinia.vuejs.org/" class="citation">Pinia</a> (状态管理)
+                      </div>
+                    </div>
+
+                    <div class="border-l-4 border-red-500 pl-4">
+                      <div class="font-medium text-gray-900 mb-1">Angular</div>
+                      <p class="text-sm text-gray-600 mb-2">完整框架，TypeScript，适合大型企业应用</p>
+                      <div class="text-xs text-red-600">
+                        内置路由、HTTP、表单、依赖注入
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="tech-card">
+                  <div class="flex items-center mb-4">
+                    <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                      <i class="fab fa-node-js text-blue-600 text-xl"></i>
+                    </div>
+                    <h4 class="font-semibold text-lg text-gray-900">后端框架</h4>
+                  </div>
+                  <div class="space-y-4">
+                    <div class="border-l-4 border-green-500 pl-4">
+                      <div class="font-medium text-gray-900 mb-1">Express.js</div>
+                      <p class="text-sm text-gray-600 mb-2">极简、灵活，庞大的中间件生态系统</p>
+                      <div class="text-xs text-green-600">
+                        Web应用和API的基石，学习曲线平缓
+                      </div>
+                    </div>
+
+                    <div class="border-l-4 border-purple-500 pl-4">
+                      <div class="font-medium text-gray-900 mb-1">NestJS</div>
+                      <p class="text-sm text-gray-600 mb-2">结构化、企业级，TypeScript支持</p>
+                      <div class="text-xs text-purple-600">
+                        模块化、依赖注入、微服务支持
+                      </div>
+                    </div>
+
+                    <div class="border-l-4 border-cyan-500 pl-4">
+                      <div class="font-medium text-gray-900 mb-1">Koa.js</div>
+                      <p class="text-sm text-gray-600 mb-2">下一代Web框架，async/await支持</p>
+                      <div class="text-xs text-cyan-600">
+                        洋葱模型中间件，更精细的控制流
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="space-y-6">
+                <div class="tech-card">
+                  <div class="flex items-center mb-4">
+                    <div class="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center mr-3">
+                      <i class="fas fa-database text-yellow-600 text-xl"></i>
+                    </div>
+                    <h4 class="font-semibold text-lg text-gray-900">数据库与ORM</h4>
+                  </div>
+                  <div class="space-y-4">
+                    <div class="border-l-4 border-green-500 pl-4">
+                      <div class="font-medium text-gray-900 mb-1">MongoDB + Mongoose</div>
+                      <p class="text-sm text-gray-600 mb-2">文档数据库，灵活的Schema</p>
+                      <div class="text-xs text-green-600">
+                        <a href="https://mongoosejs.com/" class="citation">Mongoose</a> - 模式验证、中间件、虚拟属性
+                      </div>
+                    </div>
+
+                    <div class="border-l-4 border-blue-500 pl-4">
+                      <div class="font-medium text-gray-900 mb-1">PostgreSQL + Knex.js</div>
+                      <p class="text-sm text-gray-600 mb-2">关系型数据库，强大的查询能力</p>
+                      <div class="text-xs text-blue-600">
+                        <a href="https://knexjs.org/" class="citation">Knex.js</a> - SQL查询构建器，轻量灵活
+                      </div>
+                    </div>
+
+                    <div class="border-l-4 border-purple-500 pl-4">
+                      <div class="font-medium text-gray-900 mb-1">其他ORM</div>
+                      <p class="text-sm text-gray-600 mb-2">完整的ORM解决方案</p>
+                      <div class="text-xs text-purple-600">
+                        <a href="https://sequelize.org/" class="citation">Sequelize</a> |
+                        <a href="https://typeorm.io/" class="citation">TypeORM</a> |
+                        <a href="https://prisma.io/" class="citation">Prisma</a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="tech-card">
+                  <div class="flex items-center mb-4">
+                    <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center mr-3">
+                      <i class="fas fa-code text-orange-600 text-xl"></i>
+                    </div>
+                    <h4 class="font-semibold text-lg text-gray-900">API开发</h4>
+                  </div>
+                  <div class="space-y-4">
+                    <div class="border-l-4 border-blue-500 pl-4">
+                      <div class="font-medium text-gray-900 mb-1">RESTful API</div>
+                      <p class="text-sm text-gray-600 mb-2">标准HTTP方法，资源导向</p>
+                      <div class="text-xs text-blue-600">
+                        Express.js, NestJS, Koa.js原生支持
+                      </div>
+                    </div>
+
+                    <div class="border-l-4 border-purple-500 pl-4">
+                      <div class="font-medium text-gray-900 mb-1">GraphQL</div>
+                      <p class="text-sm text-gray-600 mb-2">灵活的数据查询，精确获取所需数据</p>
+                      <div class="text-xs text-purple-600">
+                        <a href="https://www.apollographql.com/" class="citation">Apollo Server</a> - 完整的GraphQL解决方案
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Other Ecosystems Summary -->
+          <div class="grid lg:grid-cols-3 gap-8">
+            <div id="java-eco" class="tech-card">
+              <div class="flex items-center mb-4">
+                <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center mr-3">
+                  <i class="fab fa-java text-red-600 text-xl"></i>
+                </div>
+                <h4 class="font-semibold text-lg text-gray-900">Java生态</h4>
+              </div>
+              <p class="text-gray-600 mb-4">企业级稳定与高并发</p>
+              <div class="space-y-3">
+                <div class="bg-red-50 rounded-lg p-3">
+                  <div class="font-medium text-sm text-red-900 mb-1">Spring Boot</div>
+                  <div class="text-xs text-red-700">企业级应用事实标准</div>
+                </div>
+                <div class="bg-red-50 rounded-lg p-3">
+                  <div class="font-medium text-sm text-red-900 mb-1">Hibernate</div>
+                  <div class="text-xs text-red-700">功能最强大的ORM框架</div>
+                </div>
+                <div class="bg-red-50 rounded-lg p-3">
+                  <div class="font-medium text-sm text-red-900 mb-1">Spring Cloud</div>
+                  <div class="text-xs text-red-700">微服务架构完整解决方案</div>
+                </div>
+              </div>
+            </div>
+
+            <div id="go-eco" class="tech-card">
+              <div class="flex items-center mb-4">
+                <div class="w-10 h-10 bg-cyan-100 rounded-lg flex items-center justify-center mr-3">
+                  <i class="fab fa-google text-cyan-600 text-xl"></i>
+                </div>
+                <h4 class="font-semibold text-lg text-gray-900">Go生态</h4>
+              </div>
+              <p class="text-gray-600 mb-4">高性能与并发编程</p>
+              <div class="space-y-3">
+                <div class="bg-cyan-50 rounded-lg p-3">
+                  <div class="font-medium text-sm text-cyan-900 mb-1">Gin</div>
+                  <div class="text-xs text-cyan-700">高性能Web框架</div>
+                </div>
+                <div class="bg-cyan-50 rounded-lg p-3">
+                  <div class="font-medium text-sm text-cyan-900 mb-1">Echo</div>
+                  <div class="text-xs text-cyan-700">极简高性能框架</div>
+                </div>
+                <div class="bg-cyan-50 rounded-lg p-3">
+                  <div class="font-medium text-sm text-cyan-900 mb-1">GORM</div>
+                  <div class="text-xs text-cyan-700">开发者友好的ORM</div>
+                </div>
+              </div>
+            </div>
+
+            <div id="dotnet-eco" class="tech-card">
+              <div class="flex items-center mb-4">
+                <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
+                  <i class="fab fa-microsoft text-purple-600 text-xl"></i>
+                </div>
+                <h4 class="font-semibold text-lg text-gray-900">.NET生态</h4>
+              </div>
+              <p class="text-gray-600 mb-4">微软技术栈与跨平台能力</p>
+              <div class="space-y-3">
+                <div class="bg-purple-50 rounded-lg p-3">
+                  <div class="font-medium text-sm text-purple-900 mb-1">ASP.NET Core</div>
+                  <div class="text-xs text-purple-700">高性能跨平台框架</div>
+                </div>
+                <div class="bg-purple-50 rounded-lg p-3">
+                  <div class="font-medium text-sm text-purple-900 mb-1">Entity Framework</div>
+                  <div class="text-xs text-purple-700">官方ORM，LINQ支持</div>
+                </div>
+                <div class="bg-purple-50 rounded-lg p-3">
+                  <div class="font-medium text-sm text-purple-900 mb-1">Blazor</div>
+                  <div class="text-xs text-purple-700">WebAssembly前端框架</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <!-- Decision Framework -->
+      <section class="py-16 bg-white">
+        <div class="max-w-7xl mx-auto px-6">
+          <h2 class="font-display text-4xl font-bold text-gray-900 mb-12 text-center">决策框架与最佳实践</h2>
+
+          <div class="grid lg:grid-cols-2 gap-12">
+            <div>
+              <h3 class="font-display text-2xl font-semibold text-gray-900 mb-6">技术选型决策流程</h3>
+
+              <div class="mermaid-container">
+                <div class="mermaid-controls">
+                  <button class="mermaid-control-btn zoom-in" title="放大">
+                    <i class="fas fa-search-plus"></i>
+                  </button>
+                  <button class="mermaid-control-btn zoom-out" title="缩小">
+                    <i class="fas fa-search-minus"></i>
+                  </button>
+                  <button class="mermaid-control-btn reset-zoom" title="重置">
+                    <i class="fas fa-expand-arrows-alt"></i>
+                  </button>
+                  <button class="mermaid-control-btn fullscreen" title="全屏查看">
+                    <i class="fas fa-expand"></i>
+                  </button>
+                </div>
+                <div class="mermaid" id="mermaid-chart">
+                  flowchart TD
+                  A["项目启动"] --> B["分析应用类型"]
+                  B --> C["评估团队技能"]
+                  C --> D["确定项目规模"]
+                  D --> E["识别核心功能"]
+                  E --> F["技术栈筛选"]
+                  F --> G["原型验证"]
+                  G --> H["最终决策"]
+
+                  B --> B1["内容展示型"]
+                  B --> B2["用户交互型"]
+                  B --> B3["数据可视化"]
+                  B --> B4["电商平台"]
+
+                  D --> D1["个人/小型项目"]
+                  D --> D2["中大型企业应用"]
+                  D --> D3["高并发复杂系统"]
+
+                  style A fill:#e1f5fe,stroke:#01579b,stroke-width:2px,color:#000
+                  style H fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px,color:#000
+                  style B1 fill:#f3e5f5,stroke:#4a148c,stroke-width:2px,color:#000
+                  style B2 fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px,color:#000
+                  style B3 fill:#e3f2fd,stroke:#0d47a1,stroke-width:2px,color:#000
+                  style B4 fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#000
+                  style D1 fill:#fce4ec,stroke:#880e4f,stroke-width:2px,color:#000
+                  style D2 fill:#f1f8e9,stroke:#33691e,stroke-width:2px,color:#000
+                  style D3 fill:#e0f2f1,stroke:#004d40,stroke-width:2px,color:#000
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h3 class="font-display text-2xl font-semibold text-gray-900 mb-6">关键考量因素</h3>
+
+              <div class="space-y-6">
+                <div class="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-6">
+                  <h4 class="font-semibold text-lg text-gray-900 mb-3">开发效率</h4>
+                  <ul class="space-y-2 text-sm text-gray-700">
+                    <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>团队熟悉度和学习曲线</li>
+                    <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>框架的成熟度和文档质量</li>
+                    <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>代码生成和自动化工具</li>
+                    <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>开发环境和调试支持</li>
+                  </ul>
+                </div>
+
+                <div class="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-6">
+                  <h4 class="font-semibold text-lg text-gray-900 mb-3">性能要求</h4>
+                  <ul class="space-y-2 text-sm text-gray-700">
+                    <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>响应时间和吞吐量</li>
+                    <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>内存占用和资源消耗</li>
+                    <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>并发处理能力</li>
+                    <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>扩展性和负载均衡</li>
+                  </ul>
+                </div>
+
+                <div class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-6">
+                  <h4 class="font-semibold text-lg text-gray-900 mb-3">长期维护</h4>
+                  <ul class="space-y-2 text-sm text-gray-700">
+                    <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>社区活跃度和生态系统</li>
+                    <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>版本更新和向后兼容性</li>
+                    <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>测试和调试工具支持</li>
+                    <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>部署和运维复杂度</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Conclusion -->
+      <section id="conclusion" class="py-16 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white">
+        <div class="max-w-7xl mx-auto px-6">
+          <div class="text-center mb-12">
+            <h2 class="font-display text-4xl font-bold mb-6">结论与建议</h2>
+            <p class="text-xl text-purple-100 max-w-4xl mx-auto leading-relaxed">
+              选择Web开发基础库和框架是一个复杂的决策过程，需要综合考虑应用类型、技术栈偏好、项目规模和核心功能需求。
+              没有"一刀切"的最佳方案，关键在于找到最适合您特定项目的技术组合。
+            </p>
+          </div>
+
+          <div class="grid md:grid-cols-3 gap-8">
+            <div class="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+              <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4 mx-auto">
+                <i class="fas fa-lightbulb text-purple-600 text-xl"></i>
+              </div>
+              <h3 class="font-semibold text-lg text-center mb-3">核心原则</h3>
+              <p class="text-purple-100 text-sm text-center">
+                最佳技术栈是能够为您的特定项目提供最高开发效率、最佳性能和最低长期维护成本的组合。
+              </p>
+            </div>
+
+            <div class="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+              <div class="w-12 h-12 bg-cyan-100 rounded-lg flex items-center justify-center mb-4 mx-auto">
+                <i class="fas fa-route text-cyan-600 text-xl"></i>
+              </div>
+              <h3 class="font-semibold text-lg text-center mb-3">渐进式采用</h3>
+              <p class="text-purple-100 text-sm text-center">
+                不必一次性采用所有技术，可以从核心功能开始，根据项目发展逐步引入新的工具和框架。
+              </p>
+            </div>
+
+            <div class="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+              <div class="w-12 h-12 bg-pink-100 rounded-lg flex items-center justify-center mb-4 mx-auto">
+                <i class="fas fa-chart-line text-pink-600 text-xl"></i>
+              </div>
+              <h3 class="font-semibold text-lg text-center mb-3">持续优化</h3>
+              <p class="text-purple-100 text-sm text-center">
+                技术选型不是一次性的决定，随着项目发展和需求变化，应该持续评估和调整技术栈。
+              </p>
+            </div>
+          </div>
+
+          <div class="mt-12 text-center">
+            <div class="inline-flex items-center space-x-4 bg-white/10 rounded-full px-8 py-4 border border-white/20">
+              <i class="fas fa-rocket text-purple-300"></i>
+              <span class="text-purple-100">准备好开始您的Web开发之旅了吗？</span>
+              <i class="fas fa-arrow-right text-purple-300"></i>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+        // Initialize Mermaid
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'base',
+            themeVariables: {
+                // Primary colors with high contrast
+                primaryColor: '#8b5cf6',
+                primaryTextColor: '#1f2937',
+                primaryBorderColor: '#7c3aed',
+                lineColor: '#4b5563',
+                
+                // Secondary colors
+                secondaryColor: '#ec4899',
+                secondaryTextColor: '#1f2937',
+                secondaryBorderColor: '#db2777',
+                
+                // Tertiary colors
+                tertiaryColor: '#06b6d4',
+                tertiaryTextColor: '#1f2937',
+                tertiaryBorderColor: '#0891b2',
+                
+                // Additional colors for better contrast
+                primaryColorLight: '#c4b5fd',
+                primaryColorDark: '#5b21b6',
+                
+                // Background colors
+                background: '#ffffff',
+                mainBkg: '#f8fafc',
+                secondBkg: '#f1f5f9',
+                tertiaryBkg: '#e2e8f0',
+                
+                // Text colors for better readability
+                textColor: '#1f2937',
+                taskTextColor: '#1f2937',
+                activeTaskTextColor: '#1f2937',
+                
+                // Node colors for different types
+                cScale0: '#8b5cf6',
+                cScale1: '#ec4899', 
+                cScale2: '#06b6d4',
+                cScale3: '#f59e0b',
+                cScale4: '#10b981',
+                cScale5: '#ef4444',
+                
+                // Additional contrast improvements
+                darkMode: false,
+                fontFamily: 'Inter, sans-serif',
+                fontSize: '14px'
+            },
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'basis',
+                padding: 20,
+                nodeSpacing: 50,
+                rankSpacing: 80
+            },
+            securityLevel: 'loose'
+        });
+
+        // Initialize Mermaid Controls for zoom and pan
+        function initializeMermaidControls() {
+            const containers = document.querySelectorAll('.mermaid-container');
+
+            containers.forEach(container => {
+            const mermaidElement = container.querySelector('.mermaid');
+            let scale = 1;
+            let isDragging = false;
+            let startX, startY, translateX = 0, translateY = 0;
+
+            // 触摸相关状态
+            let isTouch = false;
+            let touchStartTime = 0;
+            let initialDistance = 0;
+            let initialScale = 1;
+            let isPinching = false;
+
+            // Zoom controls
+            const zoomInBtn = container.querySelector('.zoom-in');
+            const zoomOutBtn = container.querySelector('.zoom-out');
+            const resetBtn = container.querySelector('.reset-zoom');
+            const fullscreenBtn = container.querySelector('.fullscreen');
+
+            function updateTransform() {
+                mermaidElement.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+
+                if (scale > 1) {
+                container.classList.add('zoomed');
+                } else {
+                container.classList.remove('zoomed');
+                }
+
+                mermaidElement.style.cursor = isDragging ? 'grabbing' : 'grab';
+            }
+
+            if (zoomInBtn) {
+                zoomInBtn.addEventListener('click', () => {
+                scale = Math.min(scale * 1.25, 4);
+                updateTransform();
+                });
+            }
+
+            if (zoomOutBtn) {
+                zoomOutBtn.addEventListener('click', () => {
+                scale = Math.max(scale / 1.25, 0.3);
+                if (scale <= 1) {
+                    translateX = 0;
+                    translateY = 0;
+                }
+                updateTransform();
+                });
+            }
+
+            if (resetBtn) {
+                resetBtn.addEventListener('click', () => {
+                scale = 1;
+                translateX = 0;
+                translateY = 0;
+                updateTransform();
+                });
+            }
+
+            if (fullscreenBtn) {
+                fullscreenBtn.addEventListener('click', () => {
+                if (container.requestFullscreen) {
+                    container.requestFullscreen();
+                } else if (container.webkitRequestFullscreen) {
+                    container.webkitRequestFullscreen();
+                } else if (container.msRequestFullscreen) {
+                    container.msRequestFullscreen();
+                }
+                });
+            }
+
+            // Mouse Events
+            mermaidElement.addEventListener('mousedown', (e) => {
+                if (isTouch) return; // 如果是触摸设备，忽略鼠标事件
+
+                isDragging = true;
+                startX = e.clientX - translateX;
+                startY = e.clientY - translateY;
+                mermaidElement.style.cursor = 'grabbing';
+                updateTransform();
+                e.preventDefault();
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (isDragging && !isTouch) {
+                translateX = e.clientX - startX;
+                translateY = e.clientY - startY;
+                updateTransform();
+                }
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (isDragging && !isTouch) {
+                isDragging = false;
+                mermaidElement.style.cursor = 'grab';
+                updateTransform();
+                }
+            });
+
+            document.addEventListener('mouseleave', () => {
+                if (isDragging && !isTouch) {
+                isDragging = false;
+                mermaidElement.style.cursor = 'grab';
+                updateTransform();
+                }
+            });
+
+            // 获取两点之间的距离
+            function getTouchDistance(touch1, touch2) {
+                return Math.hypot(
+                touch2.clientX - touch1.clientX,
+                touch2.clientY - touch1.clientY
+                );
+            }
+
+            // Touch Events - 触摸事件处理
+            mermaidElement.addEventListener('touchstart', (e) => {
+                isTouch = true;
+                touchStartTime = Date.now();
+
+                if (e.touches.length === 1) {
+                // 单指拖动
+                isPinching = false;
+                isDragging = true;
+
+                const touch = e.touches[0];
+                startX = touch.clientX - translateX;
+                startY = touch.clientY - translateY;
+
+                } else if (e.touches.length === 2) {
+                // 双指缩放
+                isPinching = true;
+                isDragging = false;
+
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                initialDistance = getTouchDistance(touch1, touch2);
+                initialScale = scale;
+                }
+
+                e.preventDefault();
+            }, { passive: false });
+
+            mermaidElement.addEventListener('touchmove', (e) => {
+                if (e.touches.length === 1 && isDragging && !isPinching) {
+                // 单指拖动
+                const touch = e.touches[0];
+                translateX = touch.clientX - startX;
+                translateY = touch.clientY - startY;
+                updateTransform();
+
+                } else if (e.touches.length === 2 && isPinching) {
+                // 双指缩放
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                const currentDistance = getTouchDistance(touch1, touch2);
+
+                if (initialDistance > 0) {
+                    const newScale = Math.min(Math.max(
+                    initialScale * (currentDistance / initialDistance),
+                    0.3
+                    ), 4);
+                    scale = newScale;
+                    updateTransform();
+                }
+                }
+
+                e.preventDefault();
+            }, { passive: false });
+
+            mermaidElement.addEventListener('touchend', (e) => {
+                // 重置状态
+                if (e.touches.length === 0) {
+                isDragging = false;
+                isPinching = false;
+                initialDistance = 0;
+
+                // 延迟重置isTouch，避免鼠标事件立即触发
+                setTimeout(() => {
+                    isTouch = false;
+                }, 100);
+                } else if (e.touches.length === 1 && isPinching) {
+                // 从双指变为单指，切换为拖动模式
+                isPinching = false;
+                isDragging = true;
+
+                const touch = e.touches[0];
+                startX = touch.clientX - translateX;
+                startY = touch.clientY - translateY;
+                }
+
+                updateTransform();
+            });
+
+            mermaidElement.addEventListener('touchcancel', (e) => {
+                isDragging = false;
+                isPinching = false;
+                initialDistance = 0;
+
+                setTimeout(() => {
+                isTouch = false;
+                }, 100);
+
+                updateTransform();
+            });
+
+            // Enhanced wheel zoom with better center point handling
+            container.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                const rect = container.getBoundingClientRect();
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+
+                const delta = e.deltaY > 0 ? 0.9 : 1.1;
+                const newScale = Math.min(Math.max(scale * delta, 0.3), 4);
+
+                // Adjust translation to zoom towards center
+                if (newScale !== scale) {
+                const scaleDiff = newScale / scale;
+                translateX = translateX * scaleDiff;
+                translateY = translateY * scaleDiff;
+                scale = newScale;
+
+                if (scale <= 1) {
+                    translateX = 0;
+                    translateY = 0;
+                }
+
+                updateTransform();
+                }
+            });
+
+            // Initialize display
+            updateTransform();
+            });
+        }
+
+        // Table of Contents Active State
+        function updateActiveSection() {
+            const sections = document.querySelectorAll('section[id]');
+            const tocLinks = document.querySelectorAll('.toc-link');
+            
+            let currentSection = '';
+            sections.forEach(section => {
+                const rect = section.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    currentSection = section.id;
+                }
+            });
+
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + currentSection) {
+                    link.classList.add('active');
+                }
+            });
+        }
+
+        // Smooth scrolling for TOC links
+        document.querySelectorAll('.toc-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href').substring(1);
+                const targetElement = document.getElementById(targetId);
+                if (targetElement) {
+                    const offsetTop = targetElement.offsetTop - 20;
+                    window.scrollTo({
+                        top: offsetTop,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        // Event listeners
+        window.addEventListener('scroll', updateActiveSection);
+        window.addEventListener('load', () => {
+            updateActiveSection();
+            initializeMermaidControls();
+        });
+
+        // Initialize Mermaid on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Wait for mermaid to render
+            setTimeout(() => {
+                initializeMermaidControls();
+            }, 1000);
+        });
+    </script>
+  </body>
+
+</html>

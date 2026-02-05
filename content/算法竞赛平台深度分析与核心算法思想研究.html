@@ -1,0 +1,1912 @@
+<!DOCTYPE html><html lang="zh-CN"><head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>算法竞赛平台深度分析与核心算法思想研究</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=Noto+Serif+SC:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
+    <style>
+        :root {
+            --primary: #1e293b;
+            --secondary: #64748b;
+            --accent: #3b82f6;
+            --background: #f8fafc;
+            --surface: #ffffff;
+            --muted: #f1f5f9;
+            --border: #e2e8f0;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: var(--primary);
+            background-color: var(--background);
+        }
+        
+        .serif {
+            font-family: 'Noto Serif SC', serif;
+        }
+        
+        .toc-fixed {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 280px;
+            height: 100vh;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            z-index: 50;
+            overflow-y: auto;
+            padding: 1.5rem;
+        }
+        
+        .main-content {
+            margin-left: 280px;
+            min-height: 100vh;
+        }
+        
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            align-items: center;
+        }
+        
+        .bento-card {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(147, 51, 234, 0.05) 100%);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .bento-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .citation {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        
+        .citation:hover {
+            text-decoration: underline;
+        }
+        
+        .platform-comparison {
+            overflow-x: auto;
+        }
+        
+        .platform-comparison table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--surface);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .platform-comparison th {
+            background: var(--accent);
+            color: white;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        .platform-comparison td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            vertical-align: top;
+        }
+        
+        .platform-comparison tr:hover {
+            background: var(--muted);
+        }
+        
+        .mermaid-container {
+            display: flex;
+            justify-content: center;
+            min-height: 300px;
+            max-height: 800px;
+            background: var(--surface);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 30px;
+            margin: 30px 0;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mermaid-container .mermaid {
+            width: 100%;
+            max-width: 100%;
+            height: 100%;
+            cursor: grab;
+            transition: transform 0.3s ease;
+            transform-origin: center center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            touch-action: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        .mermaid-container .mermaid svg {
+            max-width: 100%;
+            height: 100%;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .mermaid-container .mermaid:active {
+            cursor: grabbing;
+        }
+
+        .mermaid-container.zoomed .mermaid {
+            height: 100%;
+            width: 100%;
+            cursor: grab;
+        }
+
+        .mermaid-controls {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            display: flex;
+            gap: 10px;
+            z-index: 20;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 8px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .mermaid-control-btn {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--primary);
+            font-size: 14px;
+            min-width: 36px;
+            height: 36px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mermaid-control-btn:hover {
+            background: var(--accent);
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .mermaid-control-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Mermaid theme customization for better contrast and unified styling */
+        .mermaid-container .mermaid svg {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .mermaid-container .mermaid .node rect,
+        .mermaid-container .mermaid .node circle,
+        .mermaid-container .mermaid .node ellipse,
+        .mermaid-container .mermaid .node polygon {
+            stroke-width: 2px;
+            stroke: var(--primary) !important;
+            filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+        }
+        
+        .mermaid-container .mermaid .node .label {
+            color: var(--primary) !important;
+            font-weight: 500;
+            font-size: 13px;
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+        }
+        
+        .mermaid-container .mermaid .edgePath .path {
+            stroke: var(--accent) !important;
+            stroke-width: 2px;
+            filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.1));
+        }
+        
+        .mermaid-container .mermaid .edgeLabel {
+            background-color: var(--surface) !important;
+            color: var(--primary) !important;
+            font-weight: 500;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-size: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Enhanced node styling for better contrast */
+        .mermaid-container .mermaid g.node[style*="fill:#e3f2fd"] .label {
+            color: #1565c0 !important;
+        }
+        .mermaid-container .mermaid g.node[style*="fill:#f3e5f5"] .label {
+            color: #6a1b9a !important;
+        }
+        .mermaid-container .mermaid g.node[style*="fill:#e8f5e8"] .label {
+            color: #2e7d32 !important;
+        }
+        .mermaid-container .mermaid g.node[style*="fill:#fff3e0"] .label {
+            color: #ef6c00 !important;
+        }
+        .mermaid-container .mermaid g.node[style*="fill:#ffebee"] .label {
+            color: #c62828 !important;
+        }
+        .mermaid-container .mermaid g.node[style*="fill:#f1f8e9"] .label {
+            color: #33691e !important;
+        }
+        .mermaid-container .mermaid g.node[style*="fill:#fce4ec"] .label {
+            color: #ad1457 !important;
+        }
+        
+        .algorithm-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            transition: all 0.3s ease;
+        }
+        
+        .algorithm-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .highlight-box {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%);
+            border-left: 4px solid var(--accent);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        @media (max-width: 1024px) {
+            .toc-fixed {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            
+            .toc-fixed.open {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .hero-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .mermaid-control-btn:not(.reset-zoom) {
+                display: none;
+            }
+            .mermaid-controls {
+                top: auto;
+                bottom: 15px;
+                right: 15px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero-grid {
+                grid-template-columns: 1fr;
+            }
+            .hero-grid h1 {
+                font-size: 2.5rem;
+            }
+            section {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+            .bento-card img {
+                height: auto;
+                max-height: 200px;
+            }
+            .platform-comparison table {
+                font-size: 0.875rem;
+            }
+            .platform-comparison th,
+            .platform-comparison td {
+                padding: 0.5rem;
+            }
+            .mermaid-container {
+                padding: 15px;
+            }
+            .algorithm-card,
+            .highlight-box {
+                padding: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero-grid h1 {
+                font-size: 2rem;
+            }
+        }
+        
+        .smooth-scroll {
+            scroll-behavior: smooth;
+        }
+    </style>
+  </head>
+
+  <body class="smooth-scroll">
+    <!-- Table of Contents - Fixed Left Sidebar -->
+    <nav class="toc-fixed">
+      <div class="mb-6">
+        <h3 class="text-lg font-semibold text-primary mb-4">目录导航</h3>
+        <ul class="space-y-2 text-sm">
+          <li>
+            <a href="#introduction" class="citation hover:text-accent transition-colors">平台概览与引言</a>
+          </li>
+          <li>
+            <a href="#platform-overview" class="citation hover:text-accent transition-colors">主流平台概述</a>
+          </li>
+          <li>
+            <a href="#leetcode" class="citation hover:text-accent transition-colors">1.1 LeetCode 面试准备</a>
+          </li>
+          <li>
+            <a href="#nowcoder" class="citation hover:text-accent transition-colors">1.2 牛客网国内求职</a>
+          </li>
+          <li>
+            <a href="#atcoder" class="citation hover:text-accent transition-colors">1.3 AtCoder 思维挑战</a>
+          </li>
+          <li>
+            <a href="#codeforces" class="citation hover:text-accent transition-colors">1.4 Codeforces 竞技对战</a>
+          </li>
+          <li>
+            <a href="#distribution-analysis" class="citation hover:text-accent transition-colors">题型分布分析</a>
+          </li>
+          <li>
+            <a href="#core-algorithms" class="citation hover:text-accent transition-colors">核心算法思想</a>
+          </li>
+          <li>
+            <a href="#dp" class="citation hover:text-accent transition-colors">3.1 动态规划</a>
+          </li>
+          <li>
+            <a href="#greedy" class="citation hover:text-accent transition-colors">3.2 贪心算法</a>
+          </li>
+          <li>
+            <a href="#divide-conquer" class="citation hover:text-accent transition-colors">3.3 分治算法</a>
+          </li>
+          <li>
+            <a href="#backtracking" class="citation hover:text-accent transition-colors">3.4 回溯算法</a>
+          </li>
+          <li>
+            <a href="#search" class="citation hover:text-accent transition-colors">3.5 搜索算法</a>
+          </li>
+          <li>
+            <a href="#graph" class="citation hover:text-accent transition-colors">3.6 图论算法</a>
+          </li>
+          <li>
+            <a href="#math" class="citation hover:text-accent transition-colors">3.7 数论组合</a>
+          </li>
+          <li>
+            <a href="#data-structures" class="citation hover:text-accent transition-colors">3.8 数据结构</a>
+          </li>
+          <li>
+            <a href="#other-techniques" class="citation hover:text-accent transition-colors">3.9 其他技巧</a>
+          </li>
+          <li>
+            <a href="#analysis" class="citation hover:text-accent transition-colors">算法应用与局限分析</a>
+          </li>
+          <li>
+            <a href="#platform-focus" class="citation hover:text-accent transition-colors">平台考察方式对比</a>
+          </li>
+          <li>
+            <a href="#conclusion" class="citation hover:text-accent transition-colors">总结与展望</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="mt-8 p-4 bg-muted rounded-lg">
+        <h4 class="font-medium text-primary mb-2">核心洞察</h4>
+        <p class="text-xs text-secondary">各平台题型侧重不同：LeetCode偏面试，牛客网重国内企业，AtCoder强调思维，Codeforces竞技性强</p>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Hero Section -->
+      <section class="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 px-4 md:px-8 py-16">
+        <div class="max-w-7xl mx-auto">
+          <div class="hero-grid">
+            <div class="space-y-8">
+              <div class="space-y-4">
+                <h1 class="text-3xl md:text-5xl font-bold serif text-primary leading-tight">
+                  <span class="italic text-accent">算法竞赛平台</span>
+                  <br/>
+                  深度分析与核心算法思想研究
+                </h1>
+                <p class="text-lg md:text-xl text-secondary max-w-2xl">
+                  全面解析 LeetCode、牛客网、AtCoder、Codeforces 等主流平台的题型分布特点，
+                  深入探讨动态规划、贪心、分治等核心算法思想的应用与局限
+                </p>
+              </div>
+
+              <div class="flex flex-wrap gap-4">
+                <div class="px-4 py-2 bg-accent text-white rounded-full text-sm font-medium">
+                  <i class="fas fa-code mr-2"></i>算法研究
+                </div>
+                <div class="px-4 py-2 bg-white border border-border rounded-full text-sm font-medium">
+                  <i class="fas fa-chart-line mr-2"></i>平台分析
+                </div>
+                <div class="px-4 py-2 bg-white border border-border rounded-full text-sm font-medium">
+                  <i class="fas fa-lightbulb mr-2"></i>思维范式
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-4">
+              <div class="bento-card">
+                <img src="https://kimi-web-img.moonshot.cn/img/pic3.zhimg.com/0968dbe58cfd708c378175de3bf1b905fd668ba1.jpg" alt="算法竞赛平台界面展示" class="w-full h-48 object-cover rounded-lg mb-4" size="medium" aspect="wide" style="photo" query="在线编程竞赛平台界面" referrerpolicy="no-referrer" data-modified="1" data-score="11497.00"/>
+                <h3 class="font-semibold text-primary mb-2">多平台对比研究</h3>
+                <p class="text-sm text-secondary">深入分析各大算法平台的定位差异与题型特点</p>
+              </div>
+
+              <div class="grid grid-cols-2 gap-4">
+                <div class="bento-card">
+                  <div class="text-2xl font-bold text-accent mb-1">2000+</div>
+                  <p class="text-xs text-secondary">LeetCode题目数量</p>
+                </div>
+                <div class="bento-card">
+                  <div class="text-2xl font-bold text-accent mb-1">8+</div>
+                  <p class="text-xs text-secondary">核心算法思想</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Platform Overview -->
+      <section id="introduction" class="px-8 py-16 bg-white">
+        <div class="max-w-4xl mx-auto">
+          <div class="text-center mb-12">
+            <h2 class="text-3xl font-bold serif text-primary mb-4">平台概览与核心发现</h2>
+            <p class="text-lg text-secondary max-w-3xl mx-auto">
+              算法竞赛和在线判题系统为程序员和算法爱好者提供了练习、竞赛和提升编程与算法能力的平台。
+              不同的平台在题目风格、难度梯度、竞赛形式以及社区文化等方面各有侧重。
+            </p>
+          </div>
+
+          <div class="highlight-box">
+            <h3 class="font-semibold text-primary mb-3">
+              <i class="fas fa-key text-accent mr-2"></i>核心发现
+            </h3>
+            <p class="text-secondary">
+              各大算法竞赛及算法题平台（如LeetCode、牛客网、AtCoder、Codeforces）的题型各有侧重：
+              LeetCode和牛客网更偏向面试准备，前者国际化且题库庞大，后者则聚焦国内企业真题及计算机基础；
+              AtCoder以思维挑战和趣味竞赛为主，题目设计精巧，强调数学和逻辑；
+              Codeforces则是竞技编程的殿堂，题目难度高、覆盖面广，强调实时对战和算法综合能力。
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Platform Comparison -->
+      <section id="platform-overview" class="px-8 py-16 bg-muted">
+        <div class="max-w-6xl mx-auto">
+          <h2 class="text-3xl font-bold serif text-primary mb-12 text-center">主流算法竞赛与算法题平台概述</h2>
+
+          <div class="grid md:grid-cols-2 gap-8 mb-12">
+            <div id="leetcode" class="algorithm-card">
+              <div class="flex items-center mb-4">
+                <i class="fas fa-briefcase text-2xl text-accent mr-3"></i>
+                <h3 class="text-xl font-semibold text-primary">LeetCode：面试准备与算法提升</h3>
+              </div>
+              <p class="text-secondary mb-4">
+                <strong>LeetCode 是全球范围内广受欢迎的在线判题平台，尤其以其在技术面试准备方面的卓越贡献而闻名</strong>
+                <a href="#ref-528" class="citation">[^528^]</a>。
+                该平台汇集了大量来自知名科技公司的真实面试题目，截至2025年，已拥有<strong>超过2000道编程问题</strong>
+                <a href="#ref-528" class="citation">[^528^]</a>。
+              </p>
+
+              <div class="space-y-2 text-sm">
+                <div class="flex justify-between">
+                  <span class="text-secondary">题目难度分布：</span>
+                  <span class="font-medium">40% Easy, 40% Medium, 20% Hard</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-secondary">核心特色：</span>
+                  <span class="font-medium">公司真题、模拟面试、社区讨论</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-secondary">目标用户：</span>
+                  <span class="font-medium">求职面试者、算法学习者</span>
+                </div>
+              </div>
+            </div>
+
+            <div id="nowcoder" class="algorithm-card">
+              <div class="flex items-center mb-4">
+                <i class="fas fa-building text-2xl text-accent mr-3"></i>
+                <h3 class="text-xl font-semibold text-primary">牛客网：国内求职与竞赛实践</h3>
+              </div>
+              <p class="text-secondary mb-4">
+                <strong>牛客网是中国领先的在线编程学习与求职平台，专注于为国内IT求职者提供全面的服务</strong>，
+                包括算法题库、在线编程练习、面试经验分享、企业招聘信息以及在线笔试面试系统
+                <a href="#ref-546" class="citation">[^546^]</a>。
+              </p>
+
+              <div class="space-y-2 text-sm">
+                <div class="flex justify-between">
+                  <span class="text-secondary">特色内容：</span>
+                  <span class="font-medium">国内企业真题、计算机基础</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-secondary">竞赛形式：</span>
+                  <span class="font-medium">周赛、月赛、练习赛</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-secondary">优势：</span>
+                  <span class="font-medium">贴近国内企业需求</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-8">
+            <div id="atcoder" class="algorithm-card">
+              <div class="flex items-center mb-4">
+                <i class="fas fa-brain text-2xl text-accent mr-3"></i>
+                <h3 class="text-xl font-semibold text-primary">AtCoder：思维挑战与趣味竞赛</h3>
+              </div>
+              <p class="text-secondary mb-4">
+                <strong>AtCoder 是一家源自日本的在线编程竞赛平台，以其独特的题目风格和高频的竞赛活动吸引了全球范围内的算法爱好者</strong>
+                <a href="#ref-532" class="citation">[^532^]</a>。
+                其题目以<strong>注重数学思维、逻辑推理和巧妙的算法设计</strong>而著称
+                <a href="#ref-546" class="citation">[^546^]</a>。
+              </p>
+
+              <div class="space-y-2 text-sm">
+                <div class="flex justify-between">
+                  <span class="text-secondary">竞赛级别：</span>
+                  <span class="font-medium">ABC、ARC、AGC</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-secondary">题目特点：</span>
+                  <span class="font-medium">思维性强、数学要求高</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-secondary">适合人群：</span>
+                  <span class="font-medium">算法思维训练者</span>
+                </div>
+              </div>
+            </div>
+
+            <div id="codeforces" class="algorithm-card">
+              <div class="flex items-center mb-4">
+                <i class="fas fa-trophy text-2xl text-accent mr-3"></i>
+                <h3 class="text-xl font-semibold text-primary">Codeforces：竞技编程与实时对战</h3>
+              </div>
+              <p class="text-secondary mb-4">
+                <strong>Codeforces 是一个享誉全球的在线编程竞赛和算法社区平台，由俄罗斯团队运营，以其高质量的题目、高频的竞赛和强大的社区功能而闻名</strong>
+                <a href="#ref-528" class="citation">[^528^]</a>
+                <a href="#ref-532" class="citation">[^532^]</a>。
+                竞赛通常采用即时反馈的模式，增加比赛的紧张感和策略性
+                <a href="#ref-552" class="citation">[^552^]</a>。
+              </p>
+
+              <div class="space-y-2 text-sm">
+                <div class="flex justify-between">
+                  <span class="text-secondary">竞赛级别：</span>
+                  <span class="font-medium">Div.1、Div.2、Div.3</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-secondary">题目质量：</span>
+                  <span class="font-medium">思维深度、算法多样性</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-secondary">社区特点：</span>
+                  <span class="font-medium">活跃、竞争激烈</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Platform Comparison Table -->
+      <section id="distribution-analysis" class="px-8 py-16 bg-white">
+        <div class="max-w-6xl mx-auto">
+          <h2 class="text-3xl font-bold serif text-primary mb-8 text-center">各平台题型分布特点分析</h2>
+
+          <div class="platform-comparison">
+            <table>
+              <thead>
+                <tr>
+                  <th class="w-1/6">平台</th>
+                  <th class="w-1/6">主要目标</th>
+                  <th class="w-1/4">题型核心特点</th>
+                  <th class="w-1/6">难度侧重</th>
+                  <th class="w-1/4">常见算法/知识点</th>
+                  <th class="w-1/6">备注</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="font-semibold">LeetCode</td>
+                  <td>面试准备、算法提升</td>
+                  <td>面试常见题型，数据结构与算法应用，题目描述清晰，输入输出规范</td>
+                  <td>Easy, Medium为主</td>
+                  <td>数组、字符串、链表、树、图、DP、贪心、回溯、搜索、双指针、滑动窗口</td>
+                  <td>公司题库，模拟面试</td>
+                </tr>
+                <tr>
+                  <td class="font-semibold">牛客网</td>
+                  <td>国内求职、竞赛实践</td>
+                  <td>贴近国内企业需求，题型多元（含计算机基础、工程实践）</td>
+                  <td>覆盖面广，难度梯度适中</td>
+                  <td>通用算法与数据结构，数据库、操作系统、网络、Shell，企业真题</td>
+                  <td>竞赛中心，在线笔试系统</td>
+                </tr>
+                <tr>
+                  <td class="font-semibold">AtCoder</td>
+                  <td>思维挑战、趣味竞赛</td>
+                  <td>数学思维，逻辑推理，DP设计巧妙，题目新颖，描述简洁</td>
+                  <td>思维难度高，尤其ARC/AGC级别</td>
+                  <td>动态规划（思维型），组合数学，数论，图论（建模与分析）</td>
+                  <td>竞赛频率高，题目更新快</td>
+                </tr>
+                <tr>
+                  <td class="font-semibold">Codeforces</td>
+                  <td>竞技编程、实时对战</td>
+                  <td>算法多样性，思维深度，数学要求高，题目质量高，即时反馈</td>
+                  <td>难度跨度极大，覆盖所有水平</td>
+                  <td>各类算法与数据结构（DP、图论、字符串、数论等），数学</td>
+                  <td>竞赛频率高，评分系统完善</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="mt-8 grid md:grid-cols-2 gap-6">
+            <div class="bento-card">
+              <h4 class="font-semibold text-primary mb-3">
+                <i class="fas fa-chart-pie text-accent mr-2"></i>共性特征
+              </h4>
+              <ul class="text-sm text-secondary space-y-1">
+                <li>• 都强调基础数据结构和核心算法的掌握</li>
+                <li>• 题目难度呈梯度分布，满足不同水平用户</li>
+                <li>• 拥有活跃的社区和讨论区</li>
+                <li>• 定期举办编程竞赛和活动</li>
+              </ul>
+            </div>
+
+            <div class="bento-card">
+              <h4 class="font-semibold text-primary mb-3">
+                <i class="fas fa-balance-scale text-accent mr-2"></i>差异性分析
+              </h4>
+              <ul class="text-sm text-secondary space-y-1">
+                <li>• <strong>LeetCode</strong>：侧重实用性和面试导向</li>
+                <li>• <strong>牛客网</strong>：聚焦国内求职，题型多元</li>
+                <li>• <strong>AtCoder</strong>：思维挑战为核心，数学要求高</li>
+                <li>• <strong>Codeforces</strong>：综合性竞技，难度广度突出</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Core Algorithms Overview -->
+      <section id="core-algorithms" class="px-8 py-16 bg-muted">
+        <div class="max-w-6xl mx-auto">
+          <h2 class="text-3xl font-bold serif text-primary mb-8 text-center">核心算法思想与范式总览</h2>
+
+          <div class="mb-8">
+            <p class="text-lg text-secondary text-center max-w-4xl mx-auto">
+              算法是计算机科学的核心，是解决问题的方法和步骤。在算法竞赛和算法题平台中，掌握核心的算法思想与范式至关重要。
+              这些思想不仅是解决特定问题的工具，更是培养计算思维和问题解决能力的基础。
+            </p>
+          </div>
+
+          <div class="mermaid-container">
+            <div class="mermaid-controls">
+              <button class="mermaid-control-btn zoom-in" title="放大">
+                <i class="fas fa-search-plus"></i>
+              </button>
+              <button class="mermaid-control-btn zoom-out" title="缩小">
+                <i class="fas fa-search-minus"></i>
+              </button>
+              <button class="mermaid-control-btn reset-zoom" title="重置">
+                <i class="fas fa-expand-arrows-alt"></i>
+              </button>
+              <button class="mermaid-control-btn fullscreen" title="全屏查看">
+                <i class="fas fa-expand"></i>
+              </button>
+            </div>
+            <div class="mermaid">
+              graph TD
+              A[&#34;核心算法思想&#34;] --&gt; B[&#34;动态规划&#34;]
+              A --&gt; C[&#34;贪心算法&#34;]
+              A --&gt; D[&#34;分治算法&#34;]
+              A --&gt; E[&#34;回溯算法&#34;]
+              A --&gt; F[&#34;搜索算法&#34;]
+              A --&gt; G[&#34;图论算法&#34;]
+              A --&gt; H[&#34;数论与组合数学&#34;]
+              A --&gt; I[&#34;数据结构应用&#34;]
+              A --&gt; J[&#34;其他思想&#34;]
+
+              B --&gt; B1[&#34;最优化问题&#34;]
+              B --&gt; B2[&#34;重叠子问题&#34;]
+              B --&gt; B3[&#34;状态转移&#34;]
+
+              C --&gt; C1[&#34;局部最优&#34;]
+              C --&gt; C2[&#34;全局最优&#34;]
+              C --&gt; C3[&#34;贪心选择性质&#34;]
+
+              D --&gt; D1[&#34;分解&#34;]
+              D --&gt; D2[&#34;解决&#34;]
+              D --&gt; D3[&#34;合并&#34;]
+
+              E --&gt; E1[&#34;解空间搜索&#34;]
+              E --&gt; E2[&#34;剪枝优化&#34;]
+              E --&gt; E3[&#34;递归实现&#34;]
+
+              F --&gt; F1[&#34;DFS深度优先&#34;]
+              F --&gt; F2[&#34;BFS广度优先&#34;]
+              F --&gt; F3[&#34;启发式搜索&#34;]
+
+              G --&gt; G1[&#34;最短路径&#34;]
+              G --&gt; G2[&#34;最小生成树&#34;]
+              G --&gt; G3[&#34;网络流&#34;]
+
+              H --&gt; H1[&#34;模运算&#34;]
+              H --&gt; H2[&#34;组合计数&#34;]
+              H --&gt; H3[&#34;数论定理&#34;]
+
+              I --&gt; I1[&#34;基础结构&#34;]
+              I --&gt; I2[&#34;高级结构&#34;]
+              I --&gt; I3[&#34;特殊结构&#34;]
+
+              J --&gt; J1[&#34;双指针&#34;]
+              J --&gt; J2[&#34;滑动窗口&#34;]
+              J --&gt; J3[&#34;位运算&#34;]
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Detailed Algorithm Sections -->
+      <section class="px-8 py-16 bg-white">
+        <div class="max-w-4xl mx-auto space-y-12">
+          <!-- Dynamic Programming -->
+          <div id="dp" class="algorithm-card">
+            <h3 class="text-2xl font-bold serif text-primary mb-4">
+              <i class="fas fa-sitemap text-accent mr-3"></i>动态规划 (Dynamic Programming)
+            </h3>
+
+            <p class="text-secondary mb-6">
+              <strong>动态规划（Dynamic Programming, DP）是一种用于解决具有重叠子问题和最优子结构性质的问题的算法思想</strong>。
+              其核心思想是将复杂问题分解为若干个子问题，通过求解并保存子问题的解，从而避免重复计算。
+            </p>
+
+            <div class="grid md:grid-cols-2 gap-6 mb-6">
+              <div>
+                <h4 class="font-semibold text-primary mb-3">核心要点</h4>
+                <ul class="text-sm text-secondary space-y-2">
+                  <li>• <strong>状态定义</strong>：定义合适的子问题</li>
+                  <li>• <strong>状态转移方程</strong>：描述子问题之间的关系</li>
+                  <li>• <strong>初始化条件</strong>：设定基本情况</li>
+                  <li>• <strong>备忘录</strong>：存储已解决的子问题</li>
+                </ul>
+              </div>
+
+              <div>
+                <h4 class="font-semibold text-primary mb-3">典型应用场景</h4>
+                <ul class="text-sm text-secondary space-y-2">
+                  <li>• 最长公共子序列 (LCS)</li>
+                  <li>• 最长递增子序列 (LIS)</li>
+                  <li>• 编辑距离</li>
+                  <li>• 背包问题</li>
+                  <li>• 矩阵链乘法</li>
+                  <li>• 硬币找零问题</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-6">
+              <div class="highlight-box">
+                <h4 class="font-semibold text-primary mb-2">优势</h4>
+                <ul class="text-sm text-secondary space-y-1">
+                  <li>• 将指数级复杂度优化到多项式级</li>
+                  <li>• 避免重复计算，显著提高效率</li>
+                  <li>• 适用于具有最优子结构的问题</li>
+                </ul>
+              </div>
+
+              <div class="highlight-box">
+                <h4 class="font-semibold text-primary mb-2">局限性</h4>
+                <ul class="text-sm text-secondary space-y-1">
+                  <li>• 并非所有问题都适用</li>
+                  <li>• 状态设计需要较高技巧</li>
+                  <li>• 空间复杂度可能较高</li>
+                  <li>• 思维难度较大</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Greedy Algorithms -->
+          <div id="greedy" class="algorithm-card">
+            <h3 class="text-2xl font-bold serif text-primary mb-4">
+              <i class="fas fa-coins text-accent mr-3"></i>贪心算法 (Greedy Algorithms)
+            </h3>
+
+            <p class="text-secondary mb-6">
+              <strong>贪心算法（Greedy Algorithms）是一种在每一步选择中都采取在当前状态下最好或最优的选择，从而希望导致结果是全局最好或最优的算法思想</strong>。
+              其核心在于&#34;贪心选择性质&#34;和&#34;最优子结构性质&#34;。
+            </p>
+
+            <div class="grid md:grid-cols-2 gap-6">
+              <div>
+                <h4 class="font-semibold text-primary mb-3">应用场景</h4>
+                <ul class="text-sm text-secondary space-y-2">
+                  <li>• 活动选择问题</li>
+                  <li>• 霍夫曼编码</li>
+                  <li>• 分数背包问题</li>
+                  <li>• 最小生成树算法（Prim, Kruskal）</li>
+                  <li>• Dijkstra最短路径算法</li>
+                  <li>• 特定面额的找零钱问题</li>
+                </ul>
+              </div>
+
+              <div>
+                <h4 class="font-semibold text-primary mb-3">性质要求</h4>
+                <ul class="text-sm text-secondary space-y-2">
+                  <li>• <strong>贪心选择性质</strong>：局部最优选择能导致全局最优</li>
+                  <li>• <strong>最优子结构</strong>：问题的最优解包含子问题的最优解</li>
+                  <li>• <strong>无后效性</strong>：当前选择不影响后续选择</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Divide and Conquer -->
+          <div id="divide-conquer" class="algorithm-card">
+            <h3 class="text-2xl font-bold serif text-primary mb-4">
+              <i class="fas fa-code-branch text-accent mr-3"></i>分治算法 (Divide and Conquer)
+            </h3>
+
+            <p class="text-secondary mb-6">
+              <strong>分治算法（Divide and Conquer）是一种重要的算法设计范式，其核心思想是将一个规模为N的复杂问题分解为K个规模较小的子问题，
+                这些子问题相互独立且与原问题形式相同，递归地解决这些子问题，然后将各子问题的解合并得到原问题的解</strong>。
+            </p>
+
+            <div class="bg-muted p-4 rounded-lg mb-6">
+              <h4 class="font-semibold text-primary mb-3">三步骤框架</h4>
+              <div class="grid md:grid-cols-3 gap-4 text-center">
+                <div class="bg-white p-3 rounded-lg">
+                  <i class="fas fa-cut text-2xl text-accent mb-2"></i>
+                  <h5 class="font-medium text-primary">分解 (Divide)</h5>
+                  <p class="text-xs text-secondary">将问题分解为子问题</p>
+                </div>
+                <div class="bg-white p-3 rounded-lg">
+                  <i class="fas fa-wrench text-2xl text-accent mb-2"></i>
+                  <h5 class="font-medium text-primary">解决 (Conquer)</h5>
+                  <p class="text-xs text-secondary">递归求解子问题</p>
+                </div>
+                <div class="bg-white p-3 rounded-lg">
+                  <i class="fas fa-puzzle-piece text-2xl text-accent mb-2"></i>
+                  <h5 class="font-medium text-primary">合并 (Combine)</h5>
+                  <p class="text-xs text-secondary">合并子问题的解</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Backtracking -->
+          <div id="backtracking" class="algorithm-card">
+            <h3 class="text-2xl font-bold serif text-primary mb-4">
+              <i class="fas fa-undo text-accent mr-3"></i>回溯算法 (Backtracking)
+            </h3>
+
+            <p class="text-secondary mb-6">
+              <strong>回溯算法（Backtracking）是一种通过探索所有可能的候选解来找出所有（或一个）解的算法思想</strong>。
+              如果候选解被确认不是一个解，回溯算法会通过在上一步进行一些修改来丢弃该解（即&#34;回溯&#34;），并尝试其他可能的候选解。
+            </p>
+
+            <div class="highlight-box mb-6">
+              <h4 class="font-semibold text-primary mb-3">解题模式框架</h4>
+              <ol class="text-sm text-secondary space-y-2">
+                <li><strong>1. 定义解空间</strong>：确定问题的所有可能解构成的集合</li>
+                <li><strong>2. 确定约束条件</strong>：明确解必须满足的条件</li>
+                <li><strong>3. 设计搜索过程</strong>：通常采用DFS方式遍历解空间树</li>
+                <li><strong>4. 设定终止条件</strong>：当找到解或确定当前路径无效时停止</li>
+              </ol>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-6">
+              <div>
+                <h4 class="font-semibold text-primary mb-3">典型应用</h4>
+                <ul class="text-sm text-secondary space-y-1">
+                  <li>• N皇后问题</li>
+                  <li>• 数独求解</li>
+                  <li>• 全排列生成</li>
+                  <li>• 组合总和问题</li>
+                  <li>• 子集问题</li>
+                  <li>• 图的着色问题</li>
+                </ul>
+              </div>
+
+              <div>
+                <h4 class="font-semibold text-primary mb-3">优化技巧</h4>
+                <ul class="text-sm text-secondary space-y-1">
+                  <li>• <strong>剪枝 (Pruning)</strong>：提前终止无效搜索</li>
+                  <li>• <strong>可行性剪枝</strong>：不满足约束时回溯</li>
+                  <li>• <strong>最优性剪枝</strong>：不可能更优时回溯</li>
+                  <li>• <strong>记忆化搜索</strong>：避免重复计算</li>
+                  <li>• <strong>搜索顺序优化</strong>：优先处理约束强的选择</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Search Algorithms -->
+          <div id="search" class="algorithm-card">
+            <h3 class="text-2xl font-bold serif text-primary mb-4">
+              <i class="fas fa-search text-accent mr-3"></i>搜索算法 (DFS/BFS)
+            </h3>
+
+            <p class="text-secondary mb-6">
+              <strong>搜索算法是算法设计中的基础，用于在特定的状态空间中寻找目标状态或路径</strong>。
+              深度优先搜索（DFS）和广度优先搜索（BFS）是两种最基本且应用最广泛的搜索策略。
+            </p>
+
+            <div class="grid md:grid-cols-2 gap-6 mb-6">
+              <div class="bento-card">
+                <h4 class="font-semibold text-primary mb-3">
+                  <i class="fas fa-arrow-down text-accent mr-2"></i>深度优先搜索 (DFS)
+                </h4>
+                <ul class="text-sm text-secondary space-y-2">
+                  <li><strong>策略</strong>：尽可能深地搜索每条路径</li>
+                  <li><strong>实现</strong>：递归或栈</li>
+                  <li><strong>优势</strong>：空间复杂度低 (O(h))，适合寻找所有解</li>
+                  <li><strong>劣势</strong>：不一定找到最优解，可能陷入深层</li>
+                </ul>
+              </div>
+
+              <div class="bento-card">
+                <h4 class="font-semibold text-primary mb-3">
+                  <i class="fas fa-expand text-accent mr-2"></i>广度优先搜索 (BFS)
+                </h4>
+                <ul class="text-sm text-secondary space-y-2">
+                  <li><strong>策略</strong>：逐层扩展搜索</li>
+                  <li><strong>实现</strong>：队列</li>
+                  <li><strong>优势</strong>：总能找到最短路径（边权相等时）</li>
+                  <li><strong>劣势</strong>：空间复杂度高 (O(b^d))</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="highlight-box">
+              <h4 class="font-semibold text-primary mb-3">选择策略</h4>
+              <div class="grid md:grid-cols-2 gap-4 text-sm text-secondary">
+                <div>
+                  <strong>使用BFS当：</strong>
+                  <ul class="mt-2 space-y-1">
+                    <li>• 需要找到&#34;最短&#34;、&#34;最少&#34;等最优解</li>
+                    <li>• 问题与&#34;层级&#34;、&#34;距离&#34;相关</li>
+                    <li>• 解可能在较浅层</li>
+                  </ul>
+                </div>
+                <div>
+                  <strong>使用DFS当：</strong>
+                  <ul class="mt-2 space-y-1">
+                    <li>• 需要遍历所有可能性</li>
+                    <li>• 问题与&#34;深度&#34;、&#34;递归结构&#34;相关</li>
+                    <li>• 空间受限</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Graph Algorithms -->
+          <div id="graph" class="algorithm-card">
+            <h3 class="text-2xl font-bold serif text-primary mb-4">
+              <i class="fas fa-project-diagram text-accent mr-3"></i>图论算法 (Graph Algorithms)
+            </h3>
+
+            <p class="text-secondary mb-6">
+              <strong>图论算法是计算机科学中的一个重要分支，研究图（由节点和边组成的数据结构）的性质和算法</strong>。
+              在算法竞赛和编程题平台中，图论问题占据了相当大的比重。
+            </p>
+
+            <div class="grid md:grid-cols-3 gap-4 mb-6">
+              <div class="bento-card text-center">
+                <i class="fas fa-route text-2xl text-accent mb-2"></i>
+                <h5 class="font-medium text-primary mb-1">图的遍历</h5>
+                <p class="text-xs text-secondary">DFS, BFS</p>
+              </div>
+              <div class="bento-card text-center">
+                <i class="fas fa-route text-2xl text-accent mb-2"></i>
+                <h5 class="font-medium text-primary mb-1">最短路径</h5>
+                <p class="text-xs text-secondary">Dijkstra, Bellman-Ford, Floyd-Warshall</p>
+              </div>
+              <div class="bento-card text-center">
+                <i class="fas fa-tree text-2xl text-accent mb-2"></i>
+                <h5 class="font-medium text-primary mb-1">最小生成树</h5>
+                <p class="text-xs text-secondary">Prim, Kruskal</p>
+              </div>
+              <div class="bento-card text-center">
+                <i class="fas fa-sort-numeric-down text-2xl text-accent mb-2"></i>
+                <h5 class="font-medium text-primary mb-1">拓扑排序</h5>
+                <p class="text-xs text-secondary">任务调度、依赖解析</p>
+              </div>
+              <div class="bento-card text-center">
+                <i class="fas fa-circle-nodes text-2xl text-accent mb-2"></i>
+                <h5 class="font-medium text-primary mb-1">强连通分量</h5>
+                <p class="text-xs text-secondary">Tarjan, Kosaraju</p>
+              </div>
+              <div class="bento-card text-center">
+                <i class="fas fa-water text-2xl text-accent mb-2"></i>
+                <h5 class="font-medium text-primary mb-1">网络流</h5>
+                <p class="text-xs text-secondary">最大流、最小割、费用流</p>
+              </div>
+            </div>
+
+            <div class="highlight-box">
+              <h4 class="font-semibold text-primary mb-3">实际应用场景</h4>
+              <div class="grid md:grid-cols-2 gap-4 text-sm text-secondary">
+                <div>
+                  <strong>社交网络分析：</strong>好友推荐、社区发现、影响力传播
+                  <br/>
+                  <strong>路径规划：</strong>地图导航、交通流量优化
+                  <br/>
+                  <strong>网络通信：</strong>路由器协议、网络可靠性分析
+                </div>
+                <div>
+                  <strong>任务调度：</strong>项目管理、编译顺序
+                  <br/>
+                  <strong>生物信息学：</strong>蛋白质相互作用网络
+                  <br/>
+                  <strong>人工智能：</strong>游戏AI、寻路算法
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Number Theory and Combinatorics -->
+          <div id="math" class="algorithm-card">
+            <h3 class="text-2xl font-bold serif text-primary mb-4">
+              <i class="fas fa-calculator text-accent mr-3"></i>数论与组合数学 (Number Theory and Combinatorics)
+            </h3>
+
+            <p class="text-secondary mb-6">
+              <strong>数论和组合数学是数学的两个重要分支，在算法竞赛中也扮演着不可或缺的角色</strong>。
+              许多看似复杂的问题，如果能够运用数论或组合数学的知识进行建模和转化，往往能够迎刃而解。
+            </p>
+
+            <div class="grid md:grid-cols-2 gap-6">
+              <div class="bento-card">
+                <h4 class="font-semibold text-primary mb-3">数论核心内容</h4>
+                <ul class="text-sm text-secondary space-y-2">
+                  <li>• <strong>质数与合数</strong>：素数判定、筛法、质因数分解</li>
+                  <li>• <strong>模运算</strong>：快速幂、乘法逆元、扩展欧几里得</li>
+                  <li>• <strong>GCD与LCM</strong>：欧几里得算法</li>
+                  <li>• <strong>欧拉函数</strong>：计算与n互质的数的个数</li>
+                  <li>• <strong>中国剩余定理</strong>：解同余方程组</li>
+                </ul>
+              </div>
+
+              <div class="bento-card">
+                <h4 class="font-semibold text-primary mb-3">组合数学要点</h4>
+                <ul class="text-sm text-secondary space-y-2">
+                  <li>• <strong>排列与组合</strong>：C(n,r), P(n,r)计算与性质</li>
+                  <li>• <strong>二项式定理</strong>：(a+b)^n展开</li>
+                  <li>• <strong>鸽巢原理</strong>：存在性证明</li>
+                  <li>• <strong>容斥原理</strong>：集合并集计数</li>
+                  <li>• <strong>卡特兰数</strong>：合法括号序列、二叉树形态</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Data Structures -->
+          <div id="data-structures" class="algorithm-card">
+            <h3 class="text-2xl font-bold serif text-primary mb-4">
+              <i class="fas fa-layer-group text-accent mr-3"></i>数据结构应用 (Data Structures)
+            </h3>
+
+            <p class="text-secondary mb-6">
+              <strong>数据结构是计算机存储、组织数据的方式，选择合适的数据结构对于设计高效算法至关重要</strong>。
+              在算法竞赛中，对数据结构的理解和灵活运用是解题的核心能力之一。
+            </p>
+
+            <div class="mermaid-container mb-6">
+              <div class="mermaid-controls">
+                <button class="mermaid-control-btn zoom-in" title="放大">
+                  <i class="fas fa-search-plus"></i>
+                </button>
+                <button class="mermaid-control-btn zoom-out" title="缩小">
+                  <i class="fas fa-search-minus"></i>
+                </button>
+                <button class="mermaid-control-btn reset-zoom" title="重置">
+                  <i class="fas fa-expand-arrows-alt"></i>
+                </button>
+                <button class="mermaid-control-btn fullscreen" title="全屏查看">
+                  <i class="fas fa-expand"></i>
+                </button>
+              </div>
+              <div class="mermaid">
+                graph TD
+                A[&#34;数据结构&#34;] --&gt; B[&#34;基础结构&#34;]
+                A --&gt; C[&#34;高级结构&#34;]
+                A --&gt; D[&#34;特殊结构&#34;]
+
+                B --&gt; B1[&#34;数组 Array&#34;]
+                B --&gt; B2[&#34;链表 Linked List&#34;]
+                B --&gt; B3[&#34;栈 Stack&#34;]
+                B --&gt; B4[&#34;队列 Queue&#34;]
+                B --&gt; B5[&#34;哈希表 Hash Table&#34;]
+
+                C --&gt; C1[&#34;堆 Heap&#34;]
+                C --&gt; C2[&#34;树 Tree&#34;]
+                C --&gt; C3[&#34;图 Graph&#34;]
+                C --&gt; C4[&#34;并查集 DSU&#34;]
+                C --&gt; C5[&#34;字典树 Trie&#34;]
+
+                D --&gt; D1[&#34;线段树 Segment Tree&#34;]
+                D --&gt; D2[&#34;树状数组 BIT&#34;]
+                D --&gt; D3[&#34;平衡树 Balanced BST&#34;]
+                D --&gt; D4[&#34;跳表 Skip List&#34;]
+                D --&gt; D5[&#34;后缀数组 Suffix Array&#34;]
+
+                C2 --&gt; C21[&#34;二叉树&#34;]
+                C2 --&gt; C22[&#34;二叉搜索树&#34;]
+                C2 --&gt; C23[&#34;平衡二叉树&#34;]
+                C2 --&gt; C24[&#34;B树/B+树&#34;]
+
+                C3 --&gt; C31[&#34;邻接矩阵&#34;]
+                C3 --&gt; C32[&#34;邻接表&#34;]
+                C3 --&gt; C33[&#34;链式前向星&#34;]
+              </div>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-4">
+              <div class="bento-card">
+                <h4 class="font-semibold text-primary mb-3">基础结构</h4>
+                <ul class="text-sm text-secondary space-y-1">
+                  <li>• <strong>数组</strong>：随机访问O(1)</li>
+                  <li>• <strong>链表</strong>：插入删除O(1)</li>
+                  <li>• <strong>栈</strong>：LIFO，DFS实现</li>
+                  <li>• <strong>队列</strong>：FIFO，BFS实现</li>
+                  <li>• <strong>哈希表</strong>：快速查找O(1)</li>
+                </ul>
+              </div>
+
+              <div class="bento-card">
+                <h4 class="font-semibold text-primary mb-3">高级结构</h4>
+                <ul class="text-sm text-secondary space-y-1">
+                  <li>• <strong>堆</strong>：优先队列，获取最值</li>
+                  <li>• <strong>二叉树</strong>：递归结构，遍历算法</li>
+                  <li>• <strong>并查集</strong>：集合合并与查找</li>
+                  <li>• <strong>字典树</strong>：字符串前缀匹配</li>
+                  <li>• <strong>图</strong>：邻接表/矩阵表示</li>
+                </ul>
+              </div>
+
+              <div class="bento-card">
+                <h4 class="font-semibold text-primary mb-3">特殊结构</h4>
+                <ul class="text-sm text-secondary space-y-1">
+                  <li>• <strong>线段树</strong>：区间查询与更新</li>
+                  <li>• <strong>树状数组</strong>：前缀和与单点更新</li>
+                  <li>• <strong>平衡树</strong>：AVL树，红黑树</li>
+                  <li>• <strong>跳表</strong>：概率平衡的链表</li>
+                  <li>• <strong>后缀数组</strong>：字符串处理</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Other Techniques -->
+          <div id="other-techniques" class="algorithm-card">
+            <h3 class="text-2xl font-bold serif text-primary mb-4">
+              <i class="fas fa-tools text-accent mr-3"></i>其他常见算法思想与技巧
+            </h3>
+
+            <p class="text-secondary mb-6">
+              除了主要的算法思想外，还有一些在算法竞赛中非常常见且实用的技巧和策略，它们往往不是独立的算法，而是解决问题时的一种模式。
+            </p>
+
+            <div class="grid md:grid-cols-2 gap-6">
+              <div class="space-y-4">
+                <div class="bento-card">
+                  <h4 class="font-semibold text-primary mb-2">双指针 (Two Pointers)</h4>
+                  <p class="text-sm text-secondary mb-2">
+                    使用两个指针以不同速度或方向遍历数据结构，通常将O(n²)优化到O(n)
+                  </p>
+                  <div class="text-xs text-secondary">
+                    <strong>应用：</strong>有序数组求和、链表环检测、滑动窗口
+                  </div>
+                </div>
+
+                <div class="bento-card">
+                  <h4 class="font-semibold text-primary mb-2">滑动窗口 (Sliding Window)</h4>
+                  <p class="text-sm text-secondary mb-2">
+                    维护一个大小可变或固定的窗口，在序列上滑动，高效处理连续子序列问题
+                  </p>
+                  <div class="text-xs text-secondary">
+                    <strong>应用：</strong>最小覆盖子串、最大连续1的个数
+                  </div>
+                </div>
+
+                <div class="bento-card">
+                  <h4 class="font-semibold text-primary mb-2">位运算 (Bit Manipulation)</h4>
+                  <p class="text-sm text-secondary mb-2">
+                    直接对整数在二进制表示下的位进行操作，速度快，用于特定优化
+                  </p>
+                  <div class="text-xs text-secondary">
+                    <strong>技巧：</strong>与或非、异或、位移、状态压缩
+                  </div>
+                </div>
+              </div>
+
+              <div class="space-y-4">
+                <div class="bento-card">
+                  <h4 class="font-semibold text-primary mb-2">前缀和与差分</h4>
+                  <p class="text-sm text-secondary mb-2">
+                    前缀和用于快速计算区间和，差分用于高效处理区间更新
+                  </p>
+                  <div class="text-xs text-secondary">
+                    <strong>应用：</strong>区间求和、区间增减、二维前缀和
+                  </div>
+                </div>
+
+                <div class="bento-card">
+                  <h4 class="font-semibold text-primary mb-2">单调栈/队列</h4>
+                  <p class="text-sm text-secondary mb-2">
+                    栈/队列内元素保持单调递增或递减，解决特定问题
+                  </p>
+                  <div class="text-xs text-secondary">
+                    <strong>应用：</strong>下一个更大元素、滑动窗口最值
+                  </div>
+                </div>
+
+                <div class="bento-card">
+                  <h4 class="font-semibold text-primary mb-2">其他技巧</h4>
+                  <p class="text-sm text-secondary mb-2">
+                    包括离散化、扫描线、折半枚举、Meet in Middle等
+                  </p>
+                  <div class="text-xs text-secondary">
+                    <strong>特点：</strong>针对特定问题的高效解法
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Platform Focus Analysis -->
+      <section id="platform-focus" class="px-8 py-16 bg-muted">
+        <div class="max-w-6xl mx-auto">
+          <h2 class="text-3xl font-bold serif text-primary mb-12 text-center">不同平台对算法思想的侧重与考察方式</h2>
+
+          <div class="grid md:grid-cols-2 gap-8 mb-12">
+            <div class="algorithm-card">
+              <h3 class="text-xl font-semibold text-primary mb-4">
+                <i class="fas fa-briefcase text-accent mr-3"></i>LeetCode 考察特点
+              </h3>
+              <ul class="text-sm text-secondary space-y-2">
+                <li>• <strong>侧重基础与实用性</strong>：重视基础数据结构与核心算法</li>
+                <li>• <strong>强调代码实现</strong>：要求编写完整函数，处理输入输出</li>
+                <li>• <strong>问题描述规范</strong>：背景故事少，侧重问题抽象</li>
+                <li>• <strong>难度梯度匹配</strong>：Easy 40%, Medium 40%, Hard 20%</li>
+                <li>• <strong>考察算法模式</strong>：Two Pointers、Sliding Window等</li>
+                <li>• <strong>公司真题</strong>：大量来自知名科技公司的面试题</li>
+              </ul>
+            </div>
+
+            <div class="algorithm-card">
+              <h3 class="text-xl font-semibold text-primary mb-4">
+                <i class="fas fa-building text-accent mr-3"></i>牛客网 考察特点
+              </h3>
+              <ul class="text-sm text-secondary space-y-2">
+                <li>• <strong>贴近国内需求</strong>：题型更本土化，含计算机基础</li>
+                <li>• <strong>强调应用能力</strong>：在复杂问题中识别和应用算法</li>
+                <li>• <strong>输入输出复杂</strong>：需要自行处理数据读取和输出</li>
+                <li>• <strong>实际场景建模</strong>：需要将实际问题抽象为算法问题</li>
+                <li>• <strong>企业真题导向</strong>：与主流IT企业面试要求一致</li>
+                <li>• <strong>工程实践结合</strong>：考察数据库、网络等综合知识</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-8">
+            <div class="algorithm-card">
+              <h3 class="text-xl font-semibold text-primary mb-4">
+                <i class="fas fa-brain text-accent mr-3"></i>AtCoder 考察特点
+              </h3>
+              <ul class="text-sm text-secondary space-y-2">
+                <li>• <strong>思维灵活性</strong>：强调深入洞察和问题转化能力</li>
+                <li>• <strong>新颖呈现方式</strong>：经典算法以新方式呈现</li>
+                <li>• <strong>数学建模能力</strong>：需要数学推理和证明</li>
+                <li>• <strong>原创性强</strong>：题目具有较高的原创性和思维深度</li>
+                <li>• <strong>组合数学应用</strong>：涉及组合、概率、博弈论等</li>
+                <li>• <strong>启发式算法</strong>：AHC考察近似解法和启发策略</li>
+              </ul>
+            </div>
+
+            <div class="algorithm-card">
+              <h3 class="text-xl font-semibold text-primary mb-4">
+                <i class="fas fa-trophy text-accent mr-3"></i>Codeforces 考察特点
+              </h3>
+              <ul class="text-sm text-secondary space-y-2">
+                <li>• <strong>全面性与深度</strong>：覆盖几乎所有算法范式</li>
+                <li>• <strong>本质理解</strong>：注重对算法本质的理解和灵活运用</li>
+                <li>• <strong>数学思维</strong>：许多问题需要先进行数学推导</li>
+                <li>• <strong>实时竞技</strong>：限时、即时反馈、罚时机制</li>
+                <li>• <strong>综合运用</strong>：多个知识点和算法思想的综合</li>
+                <li>• <strong>难度梯度明显</strong>：从基础到顶尖难题的完整覆盖</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Platform Selection Strategy -->
+          <div class="mt-12">
+            <h3 class="text-2xl font-semibold text-primary mb-6 text-center">平台选择与备赛策略建议</h3>
+
+            <div class="grid md:grid-cols-3 gap-6">
+              <div class="bento-card">
+                <h4 class="font-semibold text-primary mb-3">
+                  <i class="fas fa-user-graduate text-accent mr-2"></i>初学者
+                </h4>
+                <ul class="text-sm text-secondary space-y-2">
+                  <li>• <strong>打好基础</strong>：学习基本语法和数据结构</li>
+                  <li>• <strong>平台选择</strong>：LeetCode Easy/Medium或牛客网入门题</li>
+                  <li>• <strong>刻意练习</strong>：针对薄弱环节专项练习</li>
+                  <li>• <strong>目标</strong>：建立信心，掌握基本解题方法</li>
+                </ul>
+              </div>
+
+              <div class="bento-card">
+                <h4 class="font-semibold text-primary mb-3">
+                  <i class="fas fa-briefcase text-accent mr-2"></i>求职准备
+                </h4>
+                <ul class="text-sm text-secondary space-y-2">
+                  <li>• <strong>深入核心算法</strong>：DP、贪心、回溯、搜索等</li>
+                  <li>• <strong>平台选择</strong>：LeetCode系统刷题，牛客网企业真题</li>
+                  <li>• <strong>模拟面试</strong>：参加周赛，练习时间管理</li>
+                  <li>• <strong>目标</strong>：掌握面试常见题型和解题模式</li>
+                </ul>
+              </div>
+
+              <div class="bento-card">
+                <h4 class="font-semibold text-primary mb-3">
+                  <i class="fas fa-trophy text-accent mr-2"></i>竞赛选手
+                </h4>
+                <ul class="text-sm text-secondary space-y-2">
+                  <li>• <strong>挑战高难度</strong>：LeetCode Hard，AtCoder ARC/AGC</li>
+                  <li>• <strong>平台选择</strong>：Codeforces比赛，AtCoder思维训练</li>
+                  <li>• <strong>专题训练</strong>：弥补薄弱知识点</li>
+                  <li>• <strong>目标</strong>：提升竞技水平，积累实战经验</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Conclusion -->
+      <section id="conclusion" class="px-8 py-16 bg-white">
+        <div class="max-w-4xl mx-auto">
+          <h2 class="text-3xl font-bold serif text-primary mb-8 text-center">总结与展望</h2>
+
+          <div class="space-y-8">
+            <div class="algorithm-card">
+              <h3 class="text-xl font-semibold text-primary mb-4">核心发现总结</h3>
+              <p class="text-secondary mb-4">
+                通过对各大主流算法竞赛及算法题平台（LeetCode、牛客网、AtCoder、Codeforces）的深入研究，
+                我们发现各平台在题型和算法思想的考察上各有侧重，形成了互补的生态系统。
+              </p>
+
+              <div class="grid md:grid-cols-2 gap-6">
+                <div>
+                  <h4 class="font-semibold text-primary mb-3">平台特色</h4>
+                  <ul class="text-sm text-secondary space-y-1">
+                    <li>• <strong>LeetCode</strong>：面试导向，题库庞大</li>
+                    <li>• <strong>牛客网</strong>：国内求职，工程实践</li>
+                    <li>• <strong>AtCoder</strong>：思维挑战，数学趣味</li>
+                    <li>• <strong>Codeforces</strong>：竞技性强，综合能力</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <h4 class="font-semibold text-primary mb-3">核心算法共性</h4>
+                  <ul class="text-sm text-secondary space-y-1">
+                    <li>• 动态规划：最优化问题求解</li>
+                    <li>• 贪心算法：局部最优选择</li>
+                    <li>• 搜索算法：状态空间探索</li>
+                    <li>• 图论算法：网络关系建模</li>
+                    <li>• 数论组合：数学思维应用</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div class="algorithm-card">
+              <h3 class="text-xl font-semibold text-primary mb-4">未来发展趋势</h3>
+              <div class="space-y-4">
+                <div class="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <h4 class="font-semibold text-primary mb-3">技术拓展</h4>
+                    <ul class="text-sm text-secondary space-y-1">
+                      <li>• 人工智能、机器学习相关题目增加</li>
+                      <li>• 图神经网络、强化学习基础</li>
+                      <li>• 分布式算法、量子计算概念</li>
+                      <li>• 对传统算法的更深入考察</li>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <h4 class="font-semibold text-primary mb-3">形式创新</h4>
+                    <ul class="text-sm text-secondary space-y-1">
+                      <li>• 竞赛形式多样化（团队协作、马拉松赛）</li>
+                      <li>• 智能化评测和分析工具</li>
+                      <li>• 更贴近实际应用的题目设计</li>
+                      <li>• 全球化与低龄化趋势加强</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="highlight-box">
+              <h3 class="font-semibold text-primary mb-4">
+                <i class="fas fa-lightbulb text-accent mr-2"></i>给算法学习者的建议
+              </h3>
+              <div class="grid md:grid-cols-2 gap-6 text-sm text-secondary">
+                <div>
+                  <h4 class="font-medium text-primary mb-2">学习策略</h4>
+                  <ul class="space-y-1">
+                    <li>• <strong>目标导向</strong>：根据个人目标选择合适的平台</li>
+                    <li>• <strong>循序渐进</strong>：从基础到高级，系统化学习</li>
+                    <li>• <strong>多平台结合</strong>：取长补短，全面提升</li>
+                    <li>• <strong>刻意练习</strong>：针对薄弱环节专项训练</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <h4 class="font-medium text-primary mb-2">能力培养</h4>
+                  <ul class="space-y-1">
+                    <li>• <strong>数学思维</strong>：加强数论、组合数学学习</li>
+                    <li>• <strong>代码能力</strong>：注重实现效率和正确性</li>
+                    <li>• <strong>问题分析</strong>：培养抽象建模能力</li>
+                    <li>• <strong>创新思维</strong>：跳出固定思维模式</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="mt-4 p-4 bg-accent bg-opacity-10 rounded-lg">
+                <p class="text-sm text-primary font-medium">
+                  <i class="fas fa-quote-left text-accent mr-2"></i>
+                  算法学习是一个长期积累的过程，需要持续的学习、实践和反思。
+                  选择合适的平台，制定合理的学习计划，保持对算法的热情和好奇心，
+                  是提升算法能力的关键。
+                  <i class="fas fa-quote-right text-accent ml-2"></i>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- References -->
+      <section class="px-8 py-16 bg-muted">
+        <div class="max-w-4xl mx-auto">
+          <h2 class="text-2xl font-bold serif text-primary mb-8">参考文献</h2>
+          <div class="grid md:grid-cols-2 gap-4 text-sm text-secondary">
+            <div>
+              <p id="ref-528"><strong>[^528^]</strong>
+                <a href="https://www.linkedin.com/pulse/leetcode-vs-codeforces-detailed-comparison-abdullah-al-mahmud-xdv4c" class="citation" target="_blank">LeetCode vs Codeforces: Detailed Comparison</a>
+              </p>
+              <p id="ref-532"><strong>[^532^]</strong>
+                <a href="https://sourceforge.net/software/compare/AtCoder-vs-Codeforces-vs-LeetCode/" class="citation" target="_blank">AtCoder vs Codeforces vs LeetCode Comparison</a>
+              </p>
+              <p id="ref-546"><strong>[^546^]</strong>
+                <a href="https://zhuanlan.zhihu.com/p/1923358953800198097" class="citation" target="_blank">各大算法竞赛平台分析</a>
+              </p>
+              <p id="ref-551"><strong>[^551^]</strong>
+                <a href="https://blog.csdn.net/weixin_62200515/article/details/148305556" class="citation" target="_blank">AtCoder竞赛体系介绍</a>
+              </p>
+              <p id="ref-552"><strong>[^552^]</strong>
+                <a href="https://www.saikr.com/a/430145" class="citation" target="_blank">Codeforces竞赛机制分析</a>
+              </p>
+            </div>
+            <div>
+              <p id="ref-340"><strong>[^340^]</strong>
+                <a href="https://www.designgurus.io/blog/top-lc-patterns" class="citation" target="_blank">Top LeetCode Patterns</a>
+              </p>
+              <p id="ref-535"><strong>[^535^]</strong>
+                <a href="https://www.geeksforgeeks.org/dsa/competitive-programming-a-complete-guide/" class="citation" target="_blank">Competitive Programming: A Complete Guide</a>
+              </p>
+              <p id="ref-557"><strong>[^557^]</strong>
+                <a href="https://www.geeksforgeeks.org/blogs/top-algorithms-and-data-structures-for-competitive-programming/" class="citation" target="_blank">Top Algorithms for Competitive Programming</a>
+              </p>
+              <p id="ref-558"><strong>[^558^]</strong>
+                <a href="https://madhudeepak.medium.com/must-know-algorithms-for-competitive-programming-39328c673b58" class="citation" target="_blank">Must Know Algorithms for Competitive Programming</a>
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Mobile TOC Toggle -->
+    <button id="tocToggle" class="fixed top-4 left-4 z-50 bg-accent text-white p-3 rounded-full shadow-lg lg:hidden">
+      <i class="fas fa-bars"></i>
+    </button>
+
+    <script>
+        // Initialize Mermaid
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'base',
+            themeVariables: {
+                primaryColor: '#f8fafc',
+                primaryTextColor: '#1e293b',
+                primaryBorderColor: '#1e293b',
+                lineColor: '#3b82f6',
+                secondaryColor: '#e2e8f0',
+                tertiaryColor: '#f1f5f9',
+                background: '#ffffff',
+                mainBkg: '#f8fafc',
+                secondBkg: '#e2e8f0',
+                tertiaryBkg: '#f1f5f9',
+                nodeBkg: '#f8fafc',
+                clusterBkg: '#e2e8f0',
+                edgeLabelBackground: '#ffffff',
+                // Enhanced contrast colors
+                cScale0: '#e3f2fd',
+                cScale1: '#f3e5f5', 
+                cScale2: '#e8f5e8',
+                cScale3: '#fff3e0',
+                cScale4: '#ffebee',
+                cScale5: '#f1f8e9',
+                cScale6: '#fce4ec',
+                cScale7: '#f1f8e9',
+                // Text colors for better contrast
+                cScale0Text: '#1565c0',
+                cScale1Text: '#6a1b9a',
+                cScale2Text: '#2e7d32',
+                cScale3Text: '#ef6c00',
+                cScale4Text: '#c62828',
+                cScale5Text: '#33691e',
+                cScale6Text: '#ad1457',
+                cScale7Text: '#33691e'
+            },
+            flowchart: {
+                useMaxWidth: false,
+                htmlLabels: true,
+                curve: 'basis',
+                padding: 20,
+                nodeSpacing: 50,
+                rankSpacing: 80,
+                diagramPadding: 20
+            },
+            fontSize: 14,
+            fontFamily: 'Inter, sans-serif'
+        });
+
+        // Initialize Mermaid Controls for zoom and pan
+        function initializeMermaidControls() {
+            const containers = document.querySelectorAll('.mermaid-container');
+
+            containers.forEach(container => {
+            const mermaidElement = container.querySelector('.mermaid');
+            let scale = 1;
+            let isDragging = false;
+            let startX, startY, translateX = 0, translateY = 0;
+
+            // 触摸相关状态
+            let isTouch = false;
+            let touchStartTime = 0;
+            let initialDistance = 0;
+            let initialScale = 1;
+            let isPinching = false;
+
+            // Zoom controls
+            const zoomInBtn = container.querySelector('.zoom-in');
+            const zoomOutBtn = container.querySelector('.zoom-out');
+            const resetBtn = container.querySelector('.reset-zoom');
+            const fullscreenBtn = container.querySelector('.fullscreen');
+
+            function updateTransform() {
+                mermaidElement.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+
+                if (scale > 1) {
+                container.classList.add('zoomed');
+                } else {
+                container.classList.remove('zoomed');
+                }
+
+                mermaidElement.style.cursor = isDragging ? 'grabbing' : 'grab';
+            }
+
+            if (zoomInBtn) {
+                zoomInBtn.addEventListener('click', () => {
+                scale = Math.min(scale * 1.25, 4);
+                updateTransform();
+                });
+            }
+
+            if (zoomOutBtn) {
+                zoomOutBtn.addEventListener('click', () => {
+                scale = Math.max(scale / 1.25, 0.3);
+                if (scale <= 1) {
+                    translateX = 0;
+                    translateY = 0;
+                }
+                updateTransform();
+                });
+            }
+
+            if (resetBtn) {
+                resetBtn.addEventListener('click', () => {
+                scale = 1;
+                translateX = 0;
+                translateY = 0;
+                updateTransform();
+                });
+            }
+
+            if (fullscreenBtn) {
+                fullscreenBtn.addEventListener('click', () => {
+                if (container.requestFullscreen) {
+                    container.requestFullscreen();
+                } else if (container.webkitRequestFullscreen) {
+                    container.webkitRequestFullscreen();
+                } else if (container.msRequestFullscreen) {
+                    container.msRequestFullscreen();
+                }
+                });
+            }
+
+            // Mouse Events
+            mermaidElement.addEventListener('mousedown', (e) => {
+                if (isTouch) return; // 如果是触摸设备，忽略鼠标事件
+
+                isDragging = true;
+                startX = e.clientX - translateX;
+                startY = e.clientY - translateY;
+                mermaidElement.style.cursor = 'grabbing';
+                updateTransform();
+                e.preventDefault();
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (isDragging && !isTouch) {
+                translateX = e.clientX - startX;
+                translateY = e.clientY - startY;
+                updateTransform();
+                }
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (isDragging && !isTouch) {
+                isDragging = false;
+                mermaidElement.style.cursor = 'grab';
+                updateTransform();
+                }
+            });
+
+            document.addEventListener('mouseleave', () => {
+                if (isDragging && !isTouch) {
+                isDragging = false;
+                mermaidElement.style.cursor = 'grab';
+                updateTransform();
+                }
+            });
+
+            // 获取两点之间的距离
+            function getTouchDistance(touch1, touch2) {
+                return Math.hypot(
+                touch2.clientX - touch1.clientX,
+                touch2.clientY - touch1.clientY
+                );
+            }
+
+            // Touch Events - 触摸事件处理
+            mermaidElement.addEventListener('touchstart', (e) => {
+                isTouch = true;
+                touchStartTime = Date.now();
+
+                if (e.touches.length === 1) {
+                // 单指拖动
+                isPinching = false;
+                isDragging = true;
+
+                const touch = e.touches[0];
+                startX = touch.clientX - translateX;
+                startY = touch.clientY - translateY;
+
+                } else if (e.touches.length === 2) {
+                // 双指缩放
+                isPinching = true;
+                isDragging = false;
+
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                initialDistance = getTouchDistance(touch1, touch2);
+                initialScale = scale;
+                }
+
+                e.preventDefault();
+            }, { passive: false });
+
+            mermaidElement.addEventListener('touchmove', (e) => {
+                if (e.touches.length === 1 && isDragging && !isPinching) {
+                // 单指拖动
+                const touch = e.touches[0];
+                translateX = touch.clientX - startX;
+                translateY = touch.clientY - startY;
+                updateTransform();
+
+                } else if (e.touches.length === 2 && isPinching) {
+                // 双指缩放
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                const currentDistance = getTouchDistance(touch1, touch2);
+
+                if (initialDistance > 0) {
+                    const newScale = Math.min(Math.max(
+                    initialScale * (currentDistance / initialDistance),
+                    0.3
+                    ), 4);
+                    scale = newScale;
+                    updateTransform();
+                }
+                }
+
+                e.preventDefault();
+            }, { passive: false });
+
+            mermaidElement.addEventListener('touchend', (e) => {
+                // 重置状态
+                if (e.touches.length === 0) {
+                isDragging = false;
+                isPinching = false;
+                initialDistance = 0;
+
+                // 延迟重置isTouch，避免鼠标事件立即触发
+                setTimeout(() => {
+                    isTouch = false;
+                }, 100);
+                } else if (e.touches.length === 1 && isPinching) {
+                // 从双指变为单指，切换为拖动模式
+                isPinching = false;
+                isDragging = true;
+
+                const touch = e.touches[0];
+                startX = touch.clientX - translateX;
+                startY = touch.clientY - translateY;
+                }
+
+                updateTransform();
+            });
+
+            mermaidElement.addEventListener('touchcancel', (e) => {
+                isDragging = false;
+                isPinching = false;
+                initialDistance = 0;
+
+                setTimeout(() => {
+                isTouch = false;
+                }, 100);
+
+                updateTransform();
+            });
+
+            // Enhanced wheel zoom with better center point handling
+            container.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                const rect = container.getBoundingClientRect();
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+
+                const delta = e.deltaY > 0 ? 0.9 : 1.1;
+                const newScale = Math.min(Math.max(scale * delta, 0.3), 4);
+
+                // Adjust translation to zoom towards center
+                if (newScale !== scale) {
+                const scaleDiff = newScale / scale;
+                translateX = translateX * scaleDiff;
+                translateY = translateY * scaleDiff;
+                scale = newScale;
+
+                if (scale <= 1) {
+                    translateX = 0;
+                    translateY = 0;
+                }
+
+                updateTransform();
+                }
+            });
+
+            // Initialize display
+            updateTransform();
+            });
+        }
+
+        // Initialize the mermaid controls
+        initializeMermaidControls();
+
+        // Mobile TOC Toggle
+        function toggleTOC() {
+            const toc = document.querySelector('.toc-fixed');
+            toc.classList.toggle('open');
+        }
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                    
+                    // Close mobile TOC if open
+                    const toc = document.querySelector('.toc-fixed');
+                    if (toc.classList.contains('open')) {
+                        toc.classList.remove('open');
+                    }
+                }
+            });
+        });
+
+        // Add event listener to the toggle button
+        document.getElementById('tocToggle').addEventListener('click', toggleTOC);
+
+        // Highlight current section in TOC
+        window.addEventListener('scroll', () => {
+            const sections = document.querySelectorAll('section[id]');
+            const navLinks = document.querySelectorAll('.toc-fixed a[href^="#"]');
+            
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (window.scrollY >= sectionTop - 200) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('text-accent', 'font-medium');
+                link.classList.add('text-secondary');
+                if (link.getAttribute('href') === `#${current}`) {
+                    link.classList.remove('text-secondary');
+                    link.classList.add('text-accent', 'font-medium');
+                }
+            });
+        });
+    </script>
+  
+
+</body></html>

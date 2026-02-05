@@ -1,0 +1,1741 @@
+<!DOCTYPE html><html lang="zh-CN"><head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>保证接口调用成功后本地事务可靠执行的机制分析与实现</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;1,400&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            overflow-x: hidden;
+        }
+        
+        .font-serif { font-family: 'Crimson Text', serif; }
+        .font-sans { font-family: 'Inter', sans-serif; }
+        
+        .gradient-overlay {
+            background: linear-gradient(135deg, rgba(30, 58, 138, 0.9) 0%, rgba(15, 23, 42, 0.8) 100%);
+        }
+        
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            grid-template-rows: auto auto;
+            gap: 1.5rem;
+            min-height: 60vh;
+        }
+        
+        .hero-main {
+            grid-column: 1;
+            grid-row: 1 / 3;
+            position: relative;
+            overflow: hidden;
+            border-radius: 0.75rem;
+        }
+        
+        .hero-stats {
+            grid-column: 2;
+            grid-row: 1;
+            background: white;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .hero-insight {
+            grid-column: 2;
+            grid-row: 2;
+            background: linear-gradient(135deg, #1e40af 0%, #3730a3 100%);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        
+        .toc-fixed {
+            position: fixed;
+            left: 2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 280px;
+            background: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            z-index: 40;
+            max-height: 70vh;
+            overflow-y: auto;
+            padding: 1.5rem;
+        }
+        
+        .content-wrapper {
+            margin-left: 320px;
+            padding: 0 2rem;
+        }
+        
+        .citation {
+            display: inline-block;
+            background: #e0f2fe;
+            color: #0369a1;
+            padding: 0.125rem 0.375rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-decoration: none;
+            margin-left: 0.25rem;
+            transition: background-color 0.2s;
+        }
+        
+        .citation:hover {
+            background: #bae6fd;
+        }
+        
+        .pull-quote {
+            border-left: 4px solid #1e40af;
+            background: #f8fafc;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            font-style: italic;
+            font-size: 1.125rem;
+            color: #334155;
+        }
+        
+        .comparison-table {
+            overflow-x: auto;
+            margin: 2rem 0;
+        }
+        
+        .comparison-table table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        }
+        
+        .comparison-table th {
+            background: #1e40af;
+            color: white;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        .comparison-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+            vertical-align: top;
+        }
+        
+        .comparison-table tr:nth-child(even) {
+            background: #f8fafc;
+        }
+        
+        .status-flow {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 2rem 0;
+        }
+        
+        .status-node {
+            background: #e0f2fe;
+            border: 2px solid #0369a1;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            text-align: center;
+            width: 120px;
+            position: relative;
+        }
+        
+        .status-node.active {
+            background: #dcfce7;
+            border-color: #16a34a;
+            font-weight: 600;
+        }
+        
+        .status-node.failed {
+            background: #fef2f2;
+            border-color: #dc2626;
+        }
+        
+        .status-node::after {
+            content: '→';
+            position: absolute;
+            right: -1.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.5rem;
+            color: #64748b;
+        }
+        
+        .status-node:last-child::after {
+            display: none;
+        }
+        
+        .mermaid-container {
+            display: flex;
+            justify-content: center;
+            min-height: 300px;
+            max-height: 800px;
+            background: #ffffff;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 30px;
+            margin: 30px 0;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mermaid-container .mermaid {
+            width: 100%;
+            max-width: 100%;
+            height: 100%;
+            cursor: grab;
+            transition: transform 0.3s ease;
+            transform-origin: center center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            touch-action: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        .mermaid-container .mermaid svg {
+            max-width: 100%;
+            height: 100%;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .mermaid-container .mermaid:active {
+            cursor: grabbing;
+        }
+
+        .mermaid-container.zoomed .mermaid {
+            height: 100%;
+            width: 100%;
+            cursor: grab;
+        }
+
+        .mermaid-controls {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            display: flex;
+            gap: 10px;
+            z-index: 20;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 8px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .mermaid-control-btn {
+            background: #ffffff;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #374151;
+            font-size: 14px;
+            min-width: 36px;
+            height: 36px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mermaid-control-btn:hover {
+            background: #f8fafc;
+            border-color: #3b82f6;
+            color: #3b82f6;
+            transform: translateY(-1px);
+        }
+
+        .mermaid-control-btn:active {
+            transform: scale(0.95);
+        }
+        
+        /* Enhanced mermaid styling for better contrast and unified design */
+        .mermaid .node rect,
+        .mermaid .node circle,
+        .mermaid .node ellipse,
+        .mermaid .node polygon {
+            stroke: #334155 !important;
+            stroke-width: 2px !important;
+            filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+        }
+        
+        .mermaid .node text {
+            font-family: 'Inter', sans-serif !important;
+            font-weight: 500 !important;
+            font-size: 14px !important;
+            fill: #1e293b !important;
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+        }
+        
+        /* Enhanced node colors with better contrast */
+        .mermaid .node[id*="A"] rect,
+        .mermaid .node[id*="A"] circle,
+        .mermaid .node[id*="E"] rect,
+        .mermaid .node[id*="E"] circle {
+            fill: #dcfce7 !important;
+            stroke: #16a34a !important;
+        }
+        
+        .mermaid .node[id*="A"] text,
+        .mermaid .node[id*="E"] text {
+            fill: #14532d !important;
+            font-weight: 600 !important;
+        }
+        
+        .mermaid .node[id*="C"] rect,
+        .mermaid .node[id*="C"] circle {
+            fill: #dbeafe !important;
+            stroke: #2563eb !important;
+        }
+        
+        .mermaid .node[id*="C"] text {
+            fill: #1e3a8a !important;
+            font-weight: 600 !important;
+        }
+        
+        .mermaid .node[id*="G"] rect,
+        .mermaid .node[id*="G"] circle,
+        .mermaid .node[id*="F"] rect,
+        .mermaid .node[id*="F"] circle {
+            fill: #fee2e2 !important;
+            stroke: #dc2626 !important;
+        }
+        
+        .mermaid .node[id*="G"] text,
+        .mermaid .node[id*="F"] text {
+            fill: #7f1d1d !important;
+            font-weight: 600 !important;
+        }
+        
+        /* Default node styling */
+        .mermaid .node:not([id*="A"]):not([id*="C"]):not([id*="E"]):not([id*="F"]):not([id*="G"]) rect,
+        .mermaid .node:not([id*="A"]):not([id*="C"]):not([id*="E"]):not([id*="F"]):not([id*="G"]) circle {
+            fill: #f1f5f9 !important;
+            stroke: #64748b !important;
+        }
+        
+        .mermaid .edgePath path {
+            stroke: #64748b !important;
+            stroke-width: 2px !important;
+            filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.1));
+        }
+        
+        .mermaid .edgeLabel {
+            background-color: white !important;
+            border: 1px solid #e2e8f0 !important;
+            border-radius: 6px !important;
+            padding: 4px 8px !important;
+            font-family: 'Inter', sans-serif !important;
+            font-size: 12px !important;
+            font-weight: 500 !important;
+            color: #475569 !important;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+        }
+        
+        .mermaid .cluster rect {
+            fill: #f8fafc !important;
+            stroke: #cbd5e1 !important;
+            stroke-width: 1px !important;
+            rx: 8px !important;
+        }
+        
+        .mermaid .cluster text {
+            fill: #334155 !important;
+            font-weight: 600 !important;
+            font-size: 16px !important;
+        }
+
+    @media (max-width: 1280px) {
+        .toc-fixed {
+            position: static;
+            width: 100%;
+            margin-bottom: 2rem;
+            transform: none;
+        }
+        
+        .content-wrapper {
+            margin-left: 0;
+        }
+        
+        .hero-grid {
+            grid-template-columns: 1fr;
+            grid-template-rows: auto auto auto;
+        }
+        
+        .hero-main {
+            grid-column: 1;
+            grid-row: 1;
+        }
+        
+        .hero-stats {
+            grid-column: 1;
+            grid-row: 2;
+        }
+        
+        .hero-insight {
+            grid-column: 1;
+            grid-row: 3;
+        }
+    }
+
+    @media (max-width: 1024px) {
+        .mermaid-control-btn:not(.reset-zoom) {
+            display: none;
+        }
+        .mermaid-controls {
+            top: auto;
+            bottom: 15px;
+            right: 15px;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .toc-fixed {
+            display: none;
+        }
+        .content-wrapper {
+            padding: 0 1rem;
+        }
+        .hero-main {
+            padding: 1.5rem;
+        }
+        .hero-main h1 {
+            font-size: 2rem;
+        }
+        .hero-stats, .hero-insight {
+            padding: 1rem;
+        }
+        .status-flow {
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .status-node {
+            width: 100%;
+        }
+        .status-node::after {
+            content: '↓';
+            right: 50%;
+            top: auto;
+            bottom: -1.5rem;
+            transform: translateX(50%);
+        }
+        .mermaid-container {
+            padding: 15px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .hero-main h1 {
+            font-size: 1.5rem;
+        }
+        .hero-main p {
+            font-size: 0.875rem;
+        }
+        .hero-main .text-4xl {
+            font-size: 1.25rem;
+        }
+        .content-wrapper {
+            padding: 0 0.5rem;
+        }
+    }
+    </style>
+  </head>
+
+  <body class="bg-gray-50 font-sans text-gray-800">
+    <!-- Table of Contents -->
+    <nav class="toc-fixed">
+      <h3 class="font-serif font-semibold text-lg text-gray-900 mb-4 pb-2 border-b border-gray-200">目录</h3>
+      <ul class="space-y-2 text-sm">
+        <li>
+          <a href="#section-1" class="block py-1 text-gray-600 hover:text-blue-600 transition-colors">核心问题与解决方案概述</a>
+        </li>
+        <li>
+          <a href="#section-2" class="block py-1 text-gray-600 hover:text-blue-600 transition-colors">基于本地事务补偿表的实现方案</a>
+          <ul class="ml-4 mt-1 space-y-1 text-xs">
+            <li>
+              <a href="#section-2-1" class="block py-1 text-gray-500 hover:text-blue-600 transition-colors">方案设计：核心组件与流程</a>
+            </li>
+            <li>
+              <a href="#section-2-2" class="block py-1 text-gray-500 hover:text-blue-600 transition-colors">数据库设计：补偿表结构</a>
+            </li>
+            <li>
+              <a href="#section-2-3" class="block py-1 text-gray-500 hover:text-blue-600 transition-colors">定时任务实现与配置</a>
+            </li>
+            <li>
+              <a href="#section-2-4" class="block py-1 text-gray-500 hover:text-blue-600 transition-colors">幂等性保证</a>
+            </li>
+          </ul>
+        </li>
+        <li>
+          <a href="#section-3" class="block py-1 text-gray-600 hover:text-blue-600 transition-colors">增强型方案：引入对账与反向查询</a>
+        </li>
+        <li>
+          <a href="#section-4" class="block py-1 text-gray-600 hover:text-blue-600 transition-colors">其他分布式事务解决方案对比</a>
+        </li>
+        <li>
+          <a href="#section-5" class="block py-1 text-gray-600 hover:text-blue-600 transition-colors">故障场景应对与最佳实践</a>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="content-wrapper">
+      <!-- Hero Section -->
+      <section class="mb-12">
+        <div class="hero-grid">
+          <div class="hero-main relative">
+            <img src="https://kimi-web-img.moonshot.cn/img/osswangxining.github.io/3682ea4f7cd6701b36aa640801cb02e2547e34d3.png" alt="分布式系统架构" class="w-full h-full object-cover" size="large" aspect="wide" query="分布式系统架构" referrerpolicy="no-referrer" data-modified="1" data-score="0.00"/>
+            <div class="gradient-overlay absolute inset-0"></div>
+            <div class="absolute inset-0 flex flex-col justify-center items-start p-8 text-white">
+              <h1 class="font-serif text-4xl md:text-5xl font-semibold leading-tight mb-4">
+                <em class="not-italic bg-gradient-to-r from-blue-200 to-white bg-clip-text text-transparent">
+                  保证接口调用成功后
+                  <br/>
+                  本地事务可靠执行的
+                  <br/>
+                  机制分析与实现
+                </em>
+              </h1>
+              <p class="text-xl text-blue-100 max-w-2xl">
+                基于最终一致性的补偿机制设计与实现
+              </p>
+            </div>
+          </div>
+
+          <div class="hero-stats">
+            <h3 class="font-serif text-lg font-semibold text-gray-900 mb-4">关键指标</h3>
+            <div class="space-y-3">
+              <div class="flex justify-between items-center">
+                <span class="text-gray-600">最终一致性保证</span>
+                <span class="font-semibold text-green-600">99.9%+</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-gray-600">故障恢复时间</span>
+                <span class="font-semibold text-blue-600">&lt; 5分钟</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-gray-600">系统可用性</span>
+                <span class="font-semibold text-purple-600">99.99%</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="hero-insight">
+            <div>
+              <i class="fas fa-lightbulb text-3xl mb-3 text-yellow-300"></i>
+              <h3 class="font-semibold text-lg mb-2">核心洞察</h3>
+              <p class="text-sm opacity-90">
+                通过本地事务补偿表方案，实现不可回滚接口调用后的可靠事务执行
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 1: Core Problem &amp; Solution -->
+      <section id="section-1" class="mb-16">
+        <h2 class="font-serif text-3xl font-semibold text-gray-900 mb-6">核心问题与解决方案概述</h2>
+
+        <div class="bg-white rounded-lg p-8 shadow-sm mb-8">
+          <h3 class="font-serif text-2xl font-semibold text-gray-900 mb-4">问题定义：不可回滚操作与本地事务的一致性</h3>
+          <p class="text-gray-700 leading-relaxed mb-4">
+            在现代分布式系统架构中，服务间的依赖和协作变得日益复杂。一个典型的业务场景往往涉及多个步骤，这些步骤可能跨越不同的服务、数据库甚至技术栈。本次调研的核心问题聚焦于一个特定的两阶段操作：第一步，调用一个外部的、<strong class="text-blue-700">不可回滚的第三方接口（接口A）</strong>；第二步，执行一个本地的数据库事务（事务B）。
+          </p>
+
+          <div class="pull-quote">
+            问题的关键在于，当第一步（调用接口A）成功完成后，如果服务在执行第二步（本地事务B）之前或过程中发生宕机，将导致本地事务B无法被执行。
+          </div>
+
+          <p class="text-gray-700 leading-relaxed">
+            由于接口A的调用是不可逆的，这意味着系统状态将处于一种不一致的&#34;悬挂&#34;状态：外部系统已经根据接口A的调用结果进行了状态变更，而本地系统却因为事务B的缺失而未能同步更新，从而造成了数据不一致。这种不一致性不仅影响业务的正确性，还可能导致严重的财务或运营问题，例如订单已支付但库存未扣减，或者用户积分已扣除但商品未发货。
+          </p>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-8 mb-8">
+          <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-6">
+            <h3 class="font-serif text-xl font-semibold text-blue-900 mb-4">核心思想</h3>
+            <h4 class="font-semibold text-blue-800 mb-2">通过最终一致性保证事务可靠执行</h4>
+            <p class="text-blue-700 text-sm leading-relaxed">
+              面对不可回滚的接口调用，传统的强一致性事务模型显得力不从心。解决方案必须转向一种更为灵活的分布式事务模型——<strong class="text-blue-900">最终一致性（Eventual Consistency）</strong>，允许系统在短时间内处于不一致的状态，但保证在经过一段时间后，数据最终能够达到一致的状态。
+            </p>
+          </div>
+
+          <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-6">
+            <h3 class="font-serif text-xl font-semibold text-gray-900 mb-4">关键原则</h3>
+            <ul class="space-y-3 text-sm">
+              <li class="flex items-start">
+                <i class="fas fa-database text-blue-600 mt-1 mr-3"></i>
+                <div>
+                  <strong class="text-gray-900">持久化（Persistence）</strong>
+                  <p class="text-gray-700">保证&#34;承诺&#34;在服务宕机后不丢失</p>
+                </div>
+              </li>
+              <li class="flex items-start">
+                <i class="fas fa-redo text-green-600 mt-1 mr-3"></i>
+                <div>
+                  <strong class="text-gray-900">幂等性（Idempotency）</strong>
+                  <p class="text-gray-700">确保操作多次执行与单次执行效果相同</p>
+                </div>
+              </li>
+              <li class="flex items-start">
+                <i class="fas fa-tools text-purple-600 mt-1 mr-3"></i>
+                <div>
+                  <strong class="text-gray-900">补偿机制（Compensation）</strong>
+                  <p class="text-gray-700">自动重试与恢复的执行引擎</p>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 2: Implementation -->
+      <section id="section-2" class="mb-16">
+        <h2 class="font-serif text-3xl font-semibold text-gray-900 mb-6">基于本地事务补偿表的实现方案</h2>
+
+        <div id="section-2-1" class="bg-white rounded-lg p-8 shadow-sm mb-8">
+          <h3 class="font-serif text-2xl font-semibold text-gray-900 mb-6">方案设计：核心组件与流程</h3>
+
+          <div class="grid md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-blue-50 rounded-lg p-6 border border-blue-200">
+              <h4 class="font-semibold text-blue-900 mb-3 flex items-center">
+                <i class="fas fa-table text-blue-600 mr-2"></i>
+                补偿表
+              </h4>
+              <p class="text-blue-800 text-sm">系统的&#34;记忆&#34;中枢，记录所有需要被补偿执行的本地事务</p>
+            </div>
+            <div class="bg-green-50 rounded-lg p-6 border border-green-200">
+              <h4 class="font-semibold text-green-900 mb-3 flex items-center">
+                <i class="fas fa-clock text-green-600 mr-2"></i>
+                定时任务
+              </h4>
+              <p class="text-green-800 text-sm">方案的&#34;执行&#34;引擎，定期扫描补偿表并执行任务</p>
+            </div>
+            <div class="bg-purple-50 rounded-lg p-6 border border-purple-200">
+              <h4 class="font-semibold text-purple-900 mb-3 flex items-center">
+                <i class="fas fa-shield-alt text-purple-600 mr-2"></i>
+                幂等性保证
+              </h4>
+              <p class="text-purple-800 text-sm">方案的&#34;安全&#34;基石，确保操作可重复执行无副作用</p>
+            </div>
+          </div>
+
+          <h4 class="font-semibold text-gray-900 mb-4">核心流程：从接口调用成功到事务最终完成</h4>
+
+          <div class="bg-gray-50 rounded-lg p-6 mb-6">
+            <h5 class="font-semibold text-gray-900 mb-3">阶段一：正常流程（Synchronous Phase）</h5>
+            <div class="space-y-4">
+              <div class="flex items-start">
+                <div class="bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-semibold mr-4 mt-1">1</div>
+                <div>
+                  <strong class="text-gray-900">业务触发</strong>
+                  <p class="text-gray-700 text-sm">某个业务操作（如用户下单）触发流程</p>
+                </div>
+              </div>
+              <div class="flex items-start">
+                <div class="bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-semibold mr-4 mt-1">2</div>
+                <div>
+                  <strong class="text-gray-900">调用接口A</strong>
+                  <p class="text-gray-700 text-sm">系统首先调用不可回滚的第三方接口A</p>
+                </div>
+              </div>
+              <div class="flex items-start">
+                <div class="bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-semibold mr-4 mt-1">3</div>
+                <div>
+                  <strong class="text-gray-900">持久化补偿记录</strong>
+                  <p class="text-gray-700 text-sm">在本地事务中更新业务数据并插入补偿记录</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-gray-50 rounded-lg p-6">
+            <h5 class="font-semibold text-gray-900 mb-3">阶段二：补偿流程（Asynchronous Phase）</h5>
+            <div class="space-y-4">
+              <div class="flex items-start">
+                <div class="bg-green-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-semibold mr-4 mt-1">1</div>
+                <div>
+                  <strong class="text-gray-900">定时任务触发</strong>
+                  <p class="text-gray-700 text-sm">后台定时任务按照预设时间间隔触发</p>
+                </div>
+              </div>
+              <div class="flex items-start">
+                <div class="bg-green-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-semibold mr-4 mt-1">2</div>
+                <div>
+                  <strong class="text-gray-900">扫描补偿表</strong>
+                  <p class="text-gray-700 text-sm">查询状态为&#34;待处理&#34;的记录</p>
+                </div>
+              </div>
+              <div class="flex items-start">
+                <div class="bg-green-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-semibold mr-4 mt-1">3</div>
+                <div>
+                  <strong class="text-gray-900">执行本地事务B</strong>
+                  <p class="text-gray-700 text-sm">对每条记录执行事务B并处理结果</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="section-2-2" class="bg-white rounded-lg p-8 shadow-sm mb-8">
+          <h3 class="font-serif text-2xl font-semibold text-gray-900 mb-6">数据库设计：补偿表（Compensation Table）结构</h3>
+
+          <div class="comparison-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>字段名</th>
+                  <th>数据类型</th>
+                  <th>约束/索引</th>
+                  <th>描述</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <code>id</code>
+                  </td>
+                  <td>
+                    <code>BIGINT / UUID</code>
+                  </td>
+                  <td>主键, 唯一索引</td>
+                  <td>补偿记录的唯一标识符</td>
+                </tr>
+                <tr>
+                  <td>
+                    <code>business_id</code>
+                  </td>
+                  <td>
+                    <code>VARCHAR(64)</code>
+                  </td>
+                  <td>唯一索引</td>
+                  <td>业务唯一标识符，用于幂等性检查</td>
+                </tr>
+                <tr>
+                  <td>
+                    <code>business_type</code>
+                  </td>
+                  <td>
+                    <code>VARCHAR(32)</code>
+                  </td>
+                  <td>普通索引</td>
+                  <td>业务类型，用于分类处理</td>
+                </tr>
+                <tr>
+                  <td>
+                    <code>payload</code>
+                  </td>
+                  <td>
+                    <code>TEXT / JSON</code>
+                  </td>
+                  <td>-</td>
+                  <td>执行本地事务B所需的参数</td>
+                </tr>
+                <tr>
+                  <td>
+                    <code>status</code>
+                  </td>
+                  <td>
+                    <code>VARCHAR(16)</code>
+                  </td>
+                  <td>普通索引</td>
+                  <td>补偿任务的状态（PENDING, PROCESSING, SUCCESS, FAILED）</td>
+                </tr>
+                <tr>
+                  <td>
+                    <code>retry_count</code>
+                  </td>
+                  <td>
+                    <code>INT</code>
+                  </td>
+                  <td>默认 0</td>
+                  <td>已经重试的次数</td>
+                </tr>
+                <tr>
+                  <td>
+                    <code>max_retry_count</code>
+                  </td>
+                  <td>
+                    <code>INT</code>
+                  </td>
+                  <td>默认 5</td>
+                  <td>最大重试次数</td>
+                </tr>
+                <tr>
+                  <td>
+                    <code>next_retry_time</code>
+                  </td>
+                  <td>
+                    <code>DATETIME</code>
+                  </td>
+                  <td>普通索引</td>
+                  <td>下一次重试的时间</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h4 class="font-semibold text-gray-900 mb-4 mt-8">状态流转：PENDING -&gt; SUCCESS / FAILED</h4>
+
+          <div class="status-flow">
+            <div class="status-node active">
+              <div class="font-semibold text-green-800">PENDING</div>
+              <div class="text-xs text-green-700 mt-1">待处理</div>
+            </div>
+            <div class="status-node">
+              <div class="font-semibold text-blue-800">PROCESSING</div>
+              <div class="text-xs text-blue-700 mt-1">处理中</div>
+            </div>
+            <div class="status-node">
+              <div class="font-semibold text-green-800">SUCCESS</div>
+              <div class="text-xs text-green-700 mt-1">成功</div>
+            </div>
+            <div class="status-node failed">
+              <div class="font-semibold text-red-800">FAILED</div>
+              <div class="text-xs text-red-700 mt-1">失败</div>
+            </div>
+          </div>
+
+          <div class="mt-8">
+            <div class="mermaid-container">
+              <div class="mermaid-controls">
+                <button class="mermaid-control-btn zoom-in" title="放大">
+                  <i class="fas fa-search-plus"></i>
+                </button>
+                <button class="mermaid-control-btn zoom-out" title="缩小">
+                  <i class="fas fa-search-minus"></i>
+                </button>
+                <button class="mermaid-control-btn reset-zoom" title="重置">
+                  <i class="fas fa-expand-arrows-alt"></i>
+                </button>
+                <button class="mermaid-control-btn fullscreen" title="全屏查看">
+                  <i class="fas fa-expand"></i>
+                </button>
+              </div>
+              <div class="mermaid">
+                graph TD
+                A[PENDING] --&gt; B{定时任务获取};
+                B --&gt; C[PROCESSING];
+                C --&gt; D{执行本地事务B};
+                D -- 成功 --&gt; E[SUCCESS];
+                D -- 失败 --&gt; F{重试次数 &lt; max_retry_count?};
+                F -- 是 --&gt; A;
+                F -- 否 --&gt; G[FAILED];
+
+                style A fill:#f9f,stroke:#333,stroke-width:2px
+                style C fill:#ccf,stroke:#333,stroke-width:2px
+                style E fill:#9f9,stroke:#333,stroke-width:2px
+                style G fill:#f99,stroke:#333,stroke-width:2px
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="section-2-3" class="bg-white rounded-lg p-8 shadow-sm mb-8">
+          <h3 class="font-serif text-2xl font-semibold text-gray-900 mb-6">定时任务（Job）实现与配置</h3>
+
+          <div class="grid md:grid-cols-2 gap-8 mb-8">
+            <div>
+              <h4 class="font-semibold text-gray-900 mb-4">任务触发：基于时间间隔或事件驱动</h4>
+              <div class="space-y-4">
+                <div class="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                  <h5 class="font-semibold text-blue-900 mb-2">基于固定时间间隔的轮询</h5>
+                  <p class="text-blue-800 text-sm">配置定时任务，每隔固定时间（如30秒）执行一次扫描</p>
+                  <div class="mt-2">
+                    <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">实现简单</span>
+                    <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded ml-1">易于维护</span>
+                  </div>
+                </div>
+                <div class="bg-green-50 rounded-lg p-4 border border-green-200">
+                  <h5 class="font-semibold text-green-900 mb-2">基于事件驱动的触发</h5>
+                  <p class="text-green-800 text-sm">当新补偿记录插入时立即发布事件，实现快速响应</p>
+                  <div class="mt-2">
+                    <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">响应迅速</span>
+                    <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded ml-1">实时性强</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h4 class="font-semibold text-gray-900 mb-4">重试策略</h4>
+              <div class="space-y-4">
+                <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                  <h5 class="font-semibold text-gray-900 mb-2">固定间隔（Fixed Interval）</h5>
+                  <p class="text-gray-700 text-sm mb-2">每次重试之间的时间间隔固定</p>
+                  <div class="text-xs text-gray-600">
+                    <strong>公式：</strong>next_retry_time = now + fixed_interval
+                  </div>
+                  <div class="mt-2">
+                    <span class="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">逻辑简单</span>
+                    <span class="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded ml-1">易于配置</span>
+                  </div>
+                </div>
+                <div class="bg-purple-50 rounded-lg p-4 border border-purple-200">
+                  <h5 class="font-semibold text-purple-900 mb-2">指数退避（Exponential Backoff）</h5>
+                  <p class="text-purple-800 text-sm mb-2">每次重试的等待时间呈指数级增长</p>
+                  <div class="text-xs text-purple-600">
+                    <strong>公式：</strong>next_retry_time = now + base_interval * (2 ^ (retry_count - 1))
+                  </div>
+                  <div class="mt-2">
+                    <span class="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded">智能重试</span>
+                    <span class="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded ml-1">推荐使用</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <h4 class="font-semibold text-gray-900 mb-4">任务逻辑：扫描、执行、更新状态</h4>
+          <div class="bg-gray-50 rounded-lg p-6">
+            <div class="grid md:grid-cols-3 gap-6">
+              <div class="text-center">
+                <div class="bg-blue-600 text-white rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
+                  <i class="fas fa-search"></i>
+                </div>
+                <h5 class="font-semibold text-gray-900 mb-2">扫描</h5>
+                <p class="text-gray-600 text-sm">使用SELECT ... FOR UPDATE查询待处理记录</p>
+              </div>
+              <div class="text-center">
+                <div class="bg-green-600 text-white rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
+                  <i class="fas fa-play"></i>
+                </div>
+                <h5 class="font-semibold text-gray-900 mb-2">执行</h5>
+                <p class="text-gray-600 text-sm">对每条记录执行本地事务B，包含幂等性检查</p>
+              </div>
+              <div class="text-center">
+                <div class="bg-purple-600 text-white rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
+                  <i class="fas fa-sync-alt"></i>
+                </div>
+                <h5 class="font-semibold text-gray-900 mb-2">更新</h5>
+                <p class="text-gray-600 text-sm">根据执行结果更新记录状态和重试信息</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="section-2-4" class="bg-white rounded-lg p-8 shadow-sm">
+          <h3 class="font-serif text-2xl font-semibold text-gray-900 mb-6">幂等性保证</h3>
+
+          <div class="grid md:grid-cols-2 gap-8">
+            <div>
+              <h4 class="font-semibold text-gray-900 mb-4">本地事务B的幂等性设计</h4>
+              <div class="space-y-4">
+                <div class="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                  <h5 class="font-semibold text-blue-900 mb-2">基于唯一标识符</h5>
+                  <p class="text-blue-800 text-sm">为每个业务操作生成全局唯一ID，执行前检查是否已存在</p>
+                </div>
+                <div class="bg-green-50 rounded-lg p-4 border border-green-200">
+                  <h5 class="font-semibold text-green-900 mb-2">基于业务状态检查</h5>
+                  <p class="text-green-800 text-sm">检查业务实体当前状态，判断操作是否已执行</p>
+                </div>
+                <div class="bg-purple-50 rounded-lg p-4 border border-purple-200">
+                  <h5 class="font-semibold text-purple-900 mb-2">基于数据库唯一约束</h5>
+                  <p class="text-purple-800 text-sm">利用唯一索引或主键约束防止重复插入</p>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h4 class="font-semibold text-gray-900 mb-4">利用业务ID防止重复执行</h4>
+              <div class="bg-gray-50 rounded-lg p-6">
+                <div class="space-y-4">
+                  <div class="flex items-start">
+                    <div class="bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-semibold mr-4 mt-1">1</div>
+                    <div>
+                      <strong class="text-gray-900">生成唯一键</strong>
+                      <p class="text-gray-700 text-sm">业务流程开始时生成全局唯一业务ID</p>
+                    </div>
+                  </div>
+                  <div class="flex items-start">
+                    <div class="bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-semibold mr-4 mt-1">2</div>
+                    <div>
+                      <strong class="text-gray-900">记录唯一键</strong>
+                      <p class="text-gray-700 text-sm">将业务ID作为补偿表的business_id字段</p>
+                    </div>
+                  </div>
+                  <div class="flex items-start">
+                    <div class="bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-semibold mr-4 mt-1">3</div>
+                    <div>
+                      <strong class="text-gray-900">检查唯一键</strong>
+                      <p class="text-gray-700 text-sm">执行事务B时根据业务ID进行幂等性检查</p>
+                    </div>
+                  </div>
+                  <div class="flex items-start">
+                    <div class="bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-semibold mr-4 mt-1">4</div>
+                    <div>
+                      <strong class="text-gray-900">保证原子性</strong>
+                      <p class="text-gray-700 text-sm">幂等性记录与业务操作在同一事务中</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 3: Enhanced Solution -->
+      <section id="section-3" class="mb-16">
+        <h2 class="font-serif text-3xl font-semibold text-gray-900 mb-6">增强型方案：引入对账与反向查询</h2>
+
+        <div class="bg-white rounded-lg p-8 shadow-sm mb-8">
+          <h3 class="font-serif text-2xl font-semibold text-gray-900 mb-4">问题：本地事务B执行结果的不确定性</h3>
+          <p class="text-gray-700 leading-relaxed mb-6">
+            在基础的补偿表方案中，我们假设只要本地事务B执行时抛出异常，就意味着操作失败，需要进行重试。然而，在某些复杂的网络环境或系统交互中，可能会出现一种&#34;悬而未决&#34;的状态。例如，当本地事务B执行成功后，在返回成功响应给调用方（即定时任务）的过程中，网络发生了中断。
+          </p>
+
+          <div class="bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
+            <div class="flex items-start">
+              <i class="fas fa-exclamation-triangle text-red-600 text-xl mr-3 mt-1"></i>
+              <div>
+                <h4 class="font-semibold text-red-900 mb-2">核心问题</h4>
+                <p class="text-red-800 text-sm">
+                  调用方（定时任务）无法确切知道被调用方（本地事务B的执行逻辑）的最终状态。它只能根据返回的响应或抛出的异常来判断，而这些信息在不可靠的网络中可能会丢失或延迟。
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-lg p-8 shadow-sm mb-8">
+          <h3 class="font-serif text-2xl font-semibold text-gray-900 mb-6">解决方案：增加对账（Reconciliation）机制</h3>
+
+          <div class="grid md:grid-cols-2 gap-8 mb-8">
+            <div class="bg-blue-50 rounded-lg p-6 border border-blue-200">
+              <h4 class="font-semibold text-blue-900 mb-4">对账接口：由下游服务提供查询接口</h4>
+              <p class="text-blue-800 text-sm mb-4">
+                业务系统或下游服务提供一个<strong>幂等且可靠的查询接口</strong>，接收业务唯一标识作为参数，返回该业务操作的当前状态。
+              </p>
+              <div class="space-y-2">
+                <div class="flex items-center">
+                  <i class="fas fa-check text-green-600 mr-2"></i>
+                  <span class="text-blue-700 text-sm">幂等性：多次查询结果一致</span>
+                </div>
+                <div class="flex items-center">
+                  <i class="fas fa-check text-green-600 mr-2"></i>
+                  <span class="text-blue-700 text-sm">可靠性：高可用，不易失败</span>
+                </div>
+                <div class="flex items-center">
+                  <i class="fas fa-check text-green-600 mr-2"></i>
+                  <span class="text-blue-700 text-sm">准确性：反映真实业务状态</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-green-50 rounded-lg p-6 border border-green-200">
+              <h4 class="font-semibold text-green-900 mb-4">补偿流程优化</h4>
+              <div class="space-y-3">
+                <div class="flex items-start">
+                  <div class="bg-green-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-semibold mr-3 mt-0.5">1</div>
+                  <div>
+                    <strong class="text-green-900 text-sm">获取任务</strong>
+                    <p class="text-green-800 text-xs">从补偿表获取待处理任务</p>
+                  </div>
+                </div>
+                <div class="flex items-start">
+                  <div class="bg-green-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-semibold mr-3 mt-0.5">2</div>
+                  <div>
+                    <strong class="text-green-900 text-sm">调用对账接口</strong>
+                    <p class="text-green-800 text-xs">传入business_id查询真实状态</p>
+                  </div>
+                </div>
+                <div class="flex items-start">
+                  <div class="bg-green-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-semibold mr-3 mt-0.5">3</div>
+                  <div>
+                    <strong class="text-green-900 text-sm">智能决策</strong>
+                    <p class="text-green-800 text-xs">根据对账结果决定是否执行事务B</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-gray-50 rounded-lg p-6">
+            <h4 class="font-semibold text-gray-900 mb-4">对账决策逻辑</h4>
+            <div class="grid md:grid-cols-3 gap-4">
+              <div class="bg-white rounded-lg p-4 border border-green-200">
+                <div class="text-center mb-2">
+                  <i class="fas fa-check-circle text-green-600 text-2xl"></i>
+                </div>
+                <h5 class="font-semibold text-green-900 text-center mb-2">已完成</h5>
+                <p class="text-green-800 text-xs text-center">直接标记成功，无需执行</p>
+              </div>
+              <div class="bg-white rounded-lg p-4 border border-blue-200">
+                <div class="text-center mb-2">
+                  <i class="fas fa-clock text-blue-600 text-2xl"></i>
+                </div>
+                <h5 class="font-semibold text-blue-900 text-center mb-2">未完成</h5>
+                <p class="text-blue-800 text-xs text-center">继续执行本地事务B</p>
+              </div>
+              <div class="bg-white rounded-lg p-4 border border-gray-200">
+                <div class="text-center mb-2">
+                  <i class="fas fa-question-circle text-gray-600 text-2xl"></i>
+                </div>
+                <h5 class="font-semibold text-gray-900 text-center mb-2">对账失败</h5>
+                <p class="text-gray-800 text-xs text-center">按原始补偿逻辑处理</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-lg p-8 shadow-sm">
+          <h3 class="font-serif text-2xl font-semibold text-gray-900 mb-6">实现细节：在补偿任务中集成对账逻辑</h3>
+
+          <div class="bg-gray-100 rounded-lg p-6 overflow-x-auto">
+            <pre class="text-sm text-gray-800"><code>public void processCompensationTask(CompensationTask task) {
+    String bizId = task.getBusinessId();
+    
+    try {
+        // Step 1: 对账
+        BusinessStatus status = reconciliationService.checkStatus(bizId);
+        
+        if (status == BusinessStatus.COMPLETED) {
+            // 操作已完成，直接标记成功
+            updateTaskStatus(task.getId(), TaskStatus.SUCCESS);
+            return;
+        } else if (status == BusinessStatus.NOT_FOUND || status == BusinessStatus.PENDING) {
+            // 操作未完成，继续执行
+            // Step 2: 执行本地事务B
+            boolean success = executeLocalTransactionB(task);
+            
+            if (success) {
+                updateTaskStatus(task.getId(), TaskStatus.SUCCESS);
+            } else {
+                handleTaskFailure(task);
+            }
+        } else {
+            // 其他未知状态，记录错误
+            log.error(&#34;Unknown status from reconciliation service for bizId: {}&#34;, bizId);
+            handleTaskFailure(task);
+        }
+    } catch (Exception e) {
+        // 对账或执行过程中发生异常，按失败处理
+        log.error(&#34;Error processing compensation task for bizId: {}&#34;, bizId, e);
+        handleTaskFailure(task);
+    }
+}</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 4: Comparison -->
+      <section id="section-4" class="mb-16">
+        <h2 class="font-serif text-3xl font-semibold text-gray-900 mb-6">其他分布式事务解决方案对比</h2>
+
+        <div class="grid md:grid-cols-3 gap-8 mb-8">
+          <div class="bg-white rounded-lg p-6 shadow-sm">
+            <h3 class="font-serif text-xl font-semibold text-blue-900 mb-4">可靠消息队列方案</h3>
+            <div class="space-y-4">
+              <div>
+                <h4 class="font-semibold text-gray-900 mb-2">实现原理</h4>
+                <p class="text-gray-700 text-sm">本地消息表与消息队列结合，确保&#34;业务操作成功，消息一定发送成功&#34;</p>
+              </div>
+              <div>
+                <h4 class="font-semibold text-green-900 mb-2">优点</h4>
+                <ul class="text-green-800 text-sm space-y-1">
+                  <li>• 解耦性好</li>
+                  <li>• 最终一致性保证</li>
+                  <li>• 削峰填谷能力</li>
+                </ul>
+              </div>
+              <div>
+                <h4 class="font-semibold text-red-900 mb-2">缺点</h4>
+                <ul class="text-red-800 text-sm space-y-1">
+                  <li>• 系统复杂性增加</li>
+                  <li>• 实时性较差</li>
+                  <li>• 实现成本较高</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-lg p-6 shadow-sm">
+            <h3 class="font-serif text-xl font-semibold text-purple-900 mb-4">SAGA模式</h3>
+            <div class="space-y-4">
+              <div>
+                <h4 class="font-semibold text-gray-900 mb-2">实现原理</h4>
+                <p class="text-gray-700 text-sm">将长事务拆分为多个本地事务，每个事务都有对应的补偿操作
+                  <a href="https://blog.csdn.net/lihao2372/article/details/140001794" class="citation" target="_blank">[44]</a>
+                </p>
+              </div>
+              <div>
+                <h4 class="font-semibold text-green-900 mb-2">优点</h4>
+                <ul class="text-green-800 text-sm space-y-1">
+                  <li>• 无锁高性能
+                    <a href="https://blog.csdn.net/m290345792/article/details/146719073" class="citation" target="_blank">[38]</a>
+                  </li>
+                  <li>• 适合长事务</li>
+                  <li>• 实现相对简单</li>
+                </ul>
+              </div>
+              <div>
+                <h4 class="font-semibold text-red-900 mb-2">缺点</h4>
+                <ul class="text-red-800 text-sm space-y-1">
+                  <li>• 不保证隔离性</li>
+                  <li>• 补偿逻辑复杂</li>
+                  <li>• 实现复杂</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-lg p-6 shadow-sm">
+            <h3 class="font-serif text-xl font-semibold text-orange-900 mb-4">TCC模式</h3>
+            <div class="space-y-4">
+              <div>
+                <h4 class="font-semibold text-gray-900 mb-2">实现原理</h4>
+                <p class="text-gray-700 text-sm">Try-Confirm-Cancel三阶段提交，通过资源预留和确认/释放保证一致性</p>
+              </div>
+              <div>
+                <h4 class="font-semibold text-green-900 mb-2">优点</h4>
+                <ul class="text-green-800 text-sm space-y-1">
+                  <li>• 资源隔离性好</li>
+                  <li>• 灵活性高</li>
+                  <li>• 强一致性保证</li>
+                </ul>
+              </div>
+              <div>
+                <h4 class="font-semibold text-red-900 mb-2">缺点</h4>
+                <ul class="text-red-800 text-sm space-y-1">
+                  <li>• 业务侵入性高
+                    <a href="https://juejin.cn/post/6857520180894351374" class="citation" target="_blank">[43]</a>
+                  </li>
+                  <li>• 实现非常复杂</li>
+                  <li>• 性能开销大</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="comparison-table">
+          <table>
+            <thead>
+              <tr>
+                <th>特性</th>
+                <th>可靠消息队列</th>
+                <th>SAGA模式</th>
+                <th>TCC模式</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>一致性模型</td>
+                <td>最终一致性</td>
+                <td>最终一致性</td>
+                <td>强一致性（接近）</td>
+              </tr>
+              <tr>
+                <td>隔离性</td>
+                <td>无</td>
+                <td>无</td>
+                <td>有（通过资源预留）</td>
+              </tr>
+              <tr>
+                <td>业务侵入性</td>
+                <td>中（需要处理消息）</td>
+                <td>中（需要实现补偿逻辑）</td>
+                <td>高（需要实现Try/Confirm/Cancel）</td>
+              </tr>
+              <tr>
+                <td>实现复杂度</td>
+                <td>中</td>
+                <td>高</td>
+                <td>非常高</td>
+              </tr>
+              <tr>
+                <td>性能</td>
+                <td>高（异步）</td>
+                <td>高（无锁）</td>
+                <td>中（有锁开销）</td>
+              </tr>
+              <tr>
+                <td>适用场景</td>
+                <td>异步处理、解耦、削峰</td>
+                <td>长事务、流程复杂</td>
+                <td>对一致性要求高、资源可预留</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Section 5: Best Practices -->
+      <section id="section-5" class="mb-16">
+        <h2 class="font-serif text-3xl font-semibold text-gray-900 mb-6">故障场景应对与最佳实践</h2>
+
+        <div class="grid md:grid-cols-2 gap-8 mb-8">
+          <div class="bg-white rounded-lg p-8 shadow-sm">
+            <h3 class="font-serif text-xl font-semibold text-red-900 mb-4">服务宕机</h3>
+
+            <div class="mb-6">
+              <h4 class="font-semibold text-gray-900 mb-3">场景分析</h4>
+              <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                <p class="text-red-800 text-sm">
+                  服务在调用接口A后、执行事务B前宕机。此时内存中所有上下文信息丢失，如果没有持久化机制记录状态，将导致数据不一致。
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h4 class="font-semibold text-gray-900 mb-3">应对策略</h4>
+              <div class="space-y-3">
+                <div class="flex items-start">
+                  <i class="fas fa-database text-blue-600 mt-1 mr-3"></i>
+                  <div>
+                    <strong class="text-gray-900">持久化</strong>
+                    <p class="text-gray-700 text-sm">在调用接口A成功后立即将任务记录持久化到数据库</p>
+                  </div>
+                </div>
+                <div class="flex items-start">
+                  <i class="fas fa-redo text-green-600 mt-1 mr-3"></i>
+                  <div>
+                    <strong class="text-gray-900">恢复</strong>
+                    <p class="text-gray-700 text-sm">服务重启后通过定时任务扫描并处理未完成任务</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-lg p-8 shadow-sm">
+            <h3 class="font-serif text-xl font-semibold text-orange-900 mb-4">网络分区</h3>
+
+            <div class="mb-6">
+              <h4 class="font-semibold text-gray-900 mb-3">场景分析</h4>
+              <div class="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                <p class="text-orange-800 text-sm">
+                  网络问题导致事务B执行失败或超时，可能发生在服务与第三方接口A之间，或服务与本地数据库之间。
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h4 class="font-semibold text-gray-900 mb-3">应对策略</h4>
+              <div class="space-y-3">
+                <div class="flex items-start">
+                  <i class="fas fa-clock text-blue-600 mt-1 mr-3"></i>
+                  <div>
+                    <strong class="text-gray-900">超时控制</strong>
+                    <p class="text-gray-700 text-sm">对所有外部调用设置合理超时时间
+                      <a href="https://juejin.cn/post/7368421137918115878" class="citation" target="_blank">[61]</a>
+                    </p>
+                  </div>
+                </div>
+                <div class="flex items-start">
+                  <i class="fas fa-sync-alt text-purple-600 mt-1 mr-3"></i>
+                  <div>
+                    <strong class="text-gray-900">智能重试</strong>
+                    <p class="text-gray-700 text-sm">结合退避策略和最大重试次数</p>
+                  </div>
+                </div>
+                <div class="flex items-start">
+                  <i class="fas fa-search text-green-600 mt-1 mr-3"></i>
+                  <div>
+                    <strong class="text-gray-900">状态查询</strong>
+                    <p class="text-gray-700 text-sm">通过查询接口确认操作真实状态
+                      <a href="https://blog.csdn.net/ChaoticNg/article/details/115109703" class="citation" target="_blank">[62]</a>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-lg p-8 shadow-sm">
+          <h3 class="font-serif text-2xl font-semibold text-gray-900 mb-6">最佳实践总结</h3>
+
+          <div class="grid md:grid-cols-3 gap-6">
+            <div class="bg-blue-50 rounded-lg p-6 border border-blue-200">
+              <h4 class="font-semibold text-blue-900 mb-4 flex items-center">
+                <i class="fas fa-chart-line text-blue-600 mr-2"></i>
+                监控与告警
+              </h4>
+              <ul class="text-blue-800 text-sm space-y-2">
+                <li>• 待处理任务数量监控</li>
+                <li>• 重试失败率告警</li>
+                <li>• 死信队列数量监控</li>
+                <li>• 自动触发告警通知</li>
+              </ul>
+            </div>
+
+            <div class="bg-green-50 rounded-lg p-6 border border-green-200">
+              <h4 class="font-semibold text-green-900 mb-4 flex items-center">
+                <i class="fas fa-user-cog text-green-600 mr-2"></i>
+                人工干预
+              </h4>
+              <ul class="text-green-800 text-sm space-y-2">
+                <li>• 提供管理后台</li>
+                <li>• 查看失败任务详情</li>
+                <li>• 手动重试功能</li>
+                <li>• 手动标记成功/失败</li>
+              </ul>
+            </div>
+
+            <div class="bg-purple-50 rounded-lg p-6 border border-purple-200">
+              <h4 class="font-semibold text-purple-900 mb-4 flex items-center">
+                <i class="fas fa-plug text-purple-600 mr-2"></i>
+                接口设计
+              </h4>
+              <ul class="text-purple-800 text-sm space-y-2">
+                <li>• 第三方接口幂等性</li>
+                <li>• 提供查询接口</li>
+                <li>• 明确错误码设计</li>
+                <li>• 详细的错误信息</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="mt-8 p-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg">
+            <h4 class="font-serif text-xl font-semibold mb-3">核心建议</h4>
+            <p class="text-blue-100">
+              通过遵循这些最佳实践，可以构建一个在面对各种故障时都能表现出强大韧性的系统，从而真正保证&#34;接口调用成功，后续本地事务一定能执行一次且执行成功&#34;这一核心目标。
+            </p>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <script>
+        // Initialize Mermaid with enhanced configuration
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'base',
+            themeVariables: {
+                primaryColor: '#f8fafc',
+                primaryTextColor: '#334155',
+                primaryBorderColor: '#334155',
+                lineColor: '#64748b',
+                secondaryColor: '#e2e8f0',
+                tertiaryColor: '#f1f5f9',
+                background: '#ffffff',
+                mainBkg: '#f8fafc',
+                secondBkg: '#e2e8f0',
+                tertiaryBkg: '#f1f5f9',
+                nodeBkg: '#f8fafc',
+                clusterBkg: '#f8fafc',
+                edgeLabelBackground: '#ffffff',
+                nodeTextColor: '#334155',
+                textColor: '#334155',
+                fontFamily: 'Inter, sans-serif',
+                fontSize: '14px'
+            },
+            flowchart: {
+                useMaxWidth: false,
+                htmlLabels: true,
+                curve: 'basis',
+                padding: 20
+            },
+            fontFamily: 'Inter, sans-serif'
+        });
+
+        // Initialize Mermaid Controls for zoom and pan
+        function initializeMermaidControls() {
+            const containers = document.querySelectorAll('.mermaid-container');
+
+            containers.forEach(container => {
+            const mermaidElement = container.querySelector('.mermaid');
+            let scale = 1;
+            let isDragging = false;
+            let startX, startY, translateX = 0, translateY = 0;
+
+            // 触摸相关状态
+            let isTouch = false;
+            let touchStartTime = 0;
+            let initialDistance = 0;
+            let initialScale = 1;
+            let isPinching = false;
+
+            // Zoom controls
+            const zoomInBtn = container.querySelector('.zoom-in');
+            const zoomOutBtn = container.querySelector('.zoom-out');
+            const resetBtn = container.querySelector('.reset-zoom');
+            const fullscreenBtn = container.querySelector('.fullscreen');
+
+            function updateTransform() {
+                mermaidElement.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+
+                if (scale > 1) {
+                container.classList.add('zoomed');
+                } else {
+                container.classList.remove('zoomed');
+                }
+
+                mermaidElement.style.cursor = isDragging ? 'grabbing' : 'grab';
+            }
+
+            if (zoomInBtn) {
+                zoomInBtn.addEventListener('click', () => {
+                scale = Math.min(scale * 1.25, 4);
+                updateTransform();
+                });
+            }
+
+            if (zoomOutBtn) {
+                zoomOutBtn.addEventListener('click', () => {
+                scale = Math.max(scale / 1.25, 0.3);
+                if (scale <= 1) {
+                    translateX = 0;
+                    translateY = 0;
+                }
+                updateTransform();
+                });
+            }
+
+            if (resetBtn) {
+                resetBtn.addEventListener('click', () => {
+                scale = 1;
+                translateX = 0;
+                translateY = 0;
+                updateTransform();
+                });
+            }
+
+            if (fullscreenBtn) {
+                fullscreenBtn.addEventListener('click', () => {
+                if (container.requestFullscreen) {
+                    container.requestFullscreen();
+                } else if (container.webkitRequestFullscreen) {
+                    container.webkitRequestFullscreen();
+                } else if (container.msRequestFullscreen) {
+                    container.msRequestFullscreen();
+                }
+                });
+            }
+
+            // Mouse Events
+            mermaidElement.addEventListener('mousedown', (e) => {
+                if (isTouch) return; // 如果是触摸设备，忽略鼠标事件
+
+                isDragging = true;
+                startX = e.clientX - translateX;
+                startY = e.clientY - translateY;
+                mermaidElement.style.cursor = 'grabbing';
+                updateTransform();
+                e.preventDefault();
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (isDragging && !isTouch) {
+                translateX = e.clientX - startX;
+                translateY = e.clientY - startY;
+                updateTransform();
+                }
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (isDragging && !isTouch) {
+                isDragging = false;
+                mermaidElement.style.cursor = 'grab';
+                updateTransform();
+                }
+            });
+
+            document.addEventListener('mouseleave', () => {
+                if (isDragging && !isTouch) {
+                isDragging = false;
+                mermaidElement.style.cursor = 'grab';
+                updateTransform();
+                }
+            });
+
+            // 获取两点之间的距离
+            function getTouchDistance(touch1, touch2) {
+                return Math.hypot(
+                touch2.clientX - touch1.clientX,
+                touch2.clientY - touch1.clientY
+                );
+            }
+
+            // Touch Events - 触摸事件处理
+            mermaidElement.addEventListener('touchstart', (e) => {
+                isTouch = true;
+                touchStartTime = Date.now();
+
+                if (e.touches.length === 1) {
+                // 单指拖动
+                isPinching = false;
+                isDragging = true;
+
+                const touch = e.touches[0];
+                startX = touch.clientX - translateX;
+                startY = touch.clientY - translateY;
+
+                } else if (e.touches.length === 2) {
+                // 双指缩放
+                isPinching = true;
+                isDragging = false;
+
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                initialDistance = getTouchDistance(touch1, touch2);
+                initialScale = scale;
+                }
+
+                e.preventDefault();
+            }, { passive: false });
+
+            mermaidElement.addEventListener('touchmove', (e) => {
+                if (e.touches.length === 1 && isDragging && !isPinching) {
+                // 单指拖动
+                const touch = e.touches[0];
+                translateX = touch.clientX - startX;
+                translateY = touch.clientY - startY;
+                updateTransform();
+
+                } else if (e.touches.length === 2 && isPinching) {
+                // 双指缩放
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                const currentDistance = getTouchDistance(touch1, touch2);
+
+                if (initialDistance > 0) {
+                    const newScale = Math.min(Math.max(
+                    initialScale * (currentDistance / initialDistance),
+                    0.3
+                    ), 4);
+                    scale = newScale;
+                    updateTransform();
+                }
+                }
+
+                e.preventDefault();
+            }, { passive: false });
+
+            mermaidElement.addEventListener('touchend', (e) => {
+                // 重置状态
+                if (e.touches.length === 0) {
+                isDragging = false;
+                isPinching = false;
+                initialDistance = 0;
+
+                // 延迟重置isTouch，避免鼠标事件立即触发
+                setTimeout(() => {
+                    isTouch = false;
+                }, 100);
+                } else if (e.touches.length === 1 && isPinching) {
+                // 从双指变为单指，切换为拖动模式
+                isPinching = false;
+                isDragging = true;
+
+                const touch = e.touches[0];
+                startX = touch.clientX - translateX;
+                startY = touch.clientY - translateY;
+                }
+
+                updateTransform();
+            });
+
+            mermaidElement.addEventListener('touchcancel', (e) => {
+                isDragging = false;
+                isPinching = false;
+                initialDistance = 0;
+
+                setTimeout(() => {
+                isTouch = false;
+                }, 100);
+
+                updateTransform();
+            });
+
+            // Enhanced wheel zoom with better center point handling
+            container.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                const rect = container.getBoundingClientRect();
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+
+                const delta = e.deltaY > 0 ? 0.9 : 1.1;
+                const newScale = Math.min(Math.max(scale * delta, 0.3), 4);
+
+                // Adjust translation to zoom towards center
+                if (newScale !== scale) {
+                const scaleDiff = newScale / scale;
+                translateX = translateX * scaleDiff;
+                translateY = translateY * scaleDiff;
+                scale = newScale;
+
+                if (scale <= 1) {
+                    translateX = 0;
+                    translateY = 0;
+                }
+
+                updateTransform();
+                }
+            });
+
+            // Initialize display
+            updateTransform();
+            });
+        }
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Highlight active section in TOC
+        const sections = document.querySelectorAll('section[id]');
+        const tocLinks = document.querySelectorAll('.toc-fixed a[href^="#"]');
+
+        function highlightActiveSection() {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (window.scrollY >= sectionTop - 200) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            tocLinks.forEach(link => {
+                link.classList.remove('text-blue-600', 'font-semibold');
+                link.classList.add('text-gray-600');
+                if (link.getAttribute('href') === `#${current}`) {
+                    link.classList.remove('text-gray-600');
+                    link.classList.add('text-blue-600', 'font-semibold');
+                }
+            });
+        }
+
+        window.addEventListener('scroll', highlightActiveSection);
+        highlightActiveSection(); // Initial call
+
+        // Initialize mermaid controls
+        initializeMermaidControls();
+    </script>
+  
+
+</body></html>

@@ -1,0 +1,1888 @@
+<!DOCTYPE html><html lang="zh-CN"><head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>互联网产品发版流程：解决研发与运维的协作困境</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.6.1/mermaid.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;1,400&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'serif': ['Crimson Text', 'serif'],
+                        'sans': ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'primary': '#1e3a8a',
+                        'secondary': '#64748b',
+                        'accent': '#3b82f6',
+                        'neutral': '#f8fafc',
+                        'base': '#1e293b',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .gradient-overlay {
+            background: linear-gradient(135deg, rgba(30, 58, 138, 0.9) 0%, rgba(59, 130, 246, 0.7) 100%);
+        }
+        
+        .hero-pattern {
+            background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.15) 1px, transparent 0);
+            background-size: 20px 20px;
+        }
+        
+        .toc-fixed {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 280px;
+            height: 100vh;
+            background: rgba(248, 250, 252, 0.95);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid #e2e8f0;
+            z-index: 1000;
+            overflow-y: auto;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .toc-fixed.active {
+            transform: translateX(0);
+        }
+        
+        .content-wrapper {
+            margin-left: 0;
+            transition: margin-left 0.3s ease;
+        }
+        
+        .content-wrapper.toc-active {
+            margin-left: 280px;
+        }
+        
+        .toc-toggle {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1001;
+            background: rgba(30, 58, 138, 0.9);
+            backdrop-filter: blur(10px);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .toc-toggle:hover {
+            background: rgba(30, 58, 138, 1);
+            transform: scale(1.05);
+        }
+        
+        .citation {
+            color: #3b82f6;
+            text-decoration: none;
+            font-weight: 500;
+            border-bottom: 1px dotted #3b82f6;
+        }
+        
+        .citation:hover {
+            background-color: rgba(59, 130, 246, 0.1);
+            border-bottom-style: solid;
+        }
+        
+        .section-divider {
+            height: 2px;
+            background: linear-gradient(90deg, #3b82f6, transparent);
+            margin: 3rem 0;
+        }
+        
+        .quote-highlight {
+            border-left: 4px solid #3b82f6;
+            background: rgba(59, 130, 246, 0.05);
+            padding: 1.5rem;
+            margin: 2rem 0;
+            font-style: italic;
+        }
+        
+        .mermaid-container {
+            display: flex;
+            justify-content: center;
+            min-height: 300px;
+            max-height: 800px;
+            background: #ffffff;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 15px;
+            margin: 15px 0;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            position: relative;
+            overflow: hidden;
+        }
+
+        @media (min-width: 768px) {
+            .mermaid-container {
+                padding: 30px;
+                margin: 30px 0;
+            }
+        }
+
+        .mermaid-container .mermaid {
+            width: 100%;
+            max-width: 100%;
+            height: 100%;
+            cursor: grab;
+            transition: transform 0.3s ease;
+            transform-origin: center center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            touch-action: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        .mermaid-container .mermaid svg {
+            max-width: 100%;
+            height: 100%;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .mermaid-container .mermaid:active {
+            cursor: grabbing;
+        }
+
+        .mermaid-container.zoomed .mermaid {
+            height: 100%;
+            width: 100%;
+            cursor: grab;
+        }
+
+        .mermaid-controls {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            display: flex;
+            gap: 10px;
+            z-index: 20;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 8px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .mermaid-control-btn {
+            background: #ffffff;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #374151;
+            font-size: 14px;
+            min-width: 36px;
+            height: 36px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mermaid-control-btn:hover {
+            background: #f8fafc;
+            border-color: #3b82f6;
+            color: #3b82f6;
+            transform: translateY(-1px);
+        }
+
+        .mermaid-control-btn:active {
+            transform: scale(0.95);
+        }
+        
+        @media (min-width: 768px) {
+            .mermaid-control-btn:not(.reset-zoom) {
+                display: flex;
+            }
+        }
+
+        /* Responsive fixes for small screens */
+        @media (max-width: 767px) {
+            .hero-pattern h1 {
+                font-size: 2.5rem;
+            }
+            .hero-pattern .grid {
+                grid-template-columns: 1fr;
+            }
+            .hero-pattern img {
+                height: 16rem;
+            }
+            .mermaid-control-btn:not(.reset-zoom) {
+                display: none;
+            }
+            .mermaid-controls {
+                top: auto;
+                bottom: 15px;
+                right: 15px;
+            }
+        }
+    </style>
+  </head>
+
+  <body class="bg-neutral text-base font-sans leading-relaxed">
+    <!-- TOC Toggle Button -->
+    <button class="toc-toggle" onclick="toggleTOC()">
+      <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Fixed Table of Contents -->
+    <nav id="toc" class="toc-fixed">
+      <div class="p-6">
+        <h3 class="font-bold text-lg mb-4 text-primary">目录</h3>
+        <ul class="space-y-2 text-sm">
+          <li>
+            <a href="#executive-summary" class="block py-1 px-2 rounded hover:bg-blue-50 transition-colors">执行摘要</a>
+          </li>
+          <li>
+            <a href="#problem-diagnosis" class="block py-1 px-2 rounded hover:bg-blue-50 transition-colors">核心问题诊断</a>
+          </li>
+          <li>
+            <a href="#solution-one" class="block py-1 px-2 rounded hover:bg-blue-50 transition-colors">一体化DevOps平台</a>
+          </li>
+          <li>
+            <a href="#solution-two" class="block py-1 px-2 rounded hover:bg-blue-50 transition-colors">自定义协作平台</a>
+          </li>
+          <li>
+            <a href="#best-practices" class="block py-1 px-2 rounded hover:bg-blue-50 transition-colors">流程标准化与自动化</a>
+          </li>
+          <li>
+            <a href="#version-management" class="block py-1 px-2 rounded hover:bg-blue-50 transition-colors">版本管理与发布策略</a>
+          </li>
+          <li>
+            <a href="#documentation" class="block py-1 px-2 rounded hover:bg-blue-50 transition-colors">统一文档平台</a>
+          </li>
+          <li>
+            <a href="#conclusion" class="block py-1 px-2 rounded hover:bg-blue-50 transition-colors">总结与展望</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div id="content-wrapper" class="content-wrapper">
+      <!-- Hero Section -->
+      <section class="relative min-h-[70vh] flex items-center overflow-hidden">
+        <div class="absolute inset-0 hero-pattern"></div>
+        <div class="absolute inset-0 gradient-overlay"></div>
+
+        <div class="relative z-10 max-w-7xl mx-auto px-6 lg:px-8">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            <!-- Hero Content -->
+            <div class="lg:col-span-7 text-white">
+              <h1 class="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight mb-6">
+                <span class="italic">互联网产品发版流程</span>
+                <br/>
+                深度研究报告
+              </h1>
+              <p class="text-lg sm:text-xl lg:text-2xl font-light mb-8 opacity-90">
+                解决研发与运维的协作困境
+              </p>
+              <div class="flex flex-wrap gap-4 text-sm">
+                <span class="bg-white/20 px-4 py-2 rounded-full backdrop-blur-sm">
+                  DevOps实践
+                </span>
+                <span class="bg-white/20 px-4 py-2 rounded-full backdrop-blur-sm">
+                  流程自动化
+                </span>
+                <span class="bg-white/20 px-4 py-2 rounded-full backdrop-blur-sm">
+                  统一协作
+                </span>
+              </div>
+            </div>
+
+            <!-- Hero Visual -->
+            <div class="lg:col-span-5 mt-8 lg:mt-0">
+              <div class="relative">
+                <img src="https://kimi-web-img.moonshot.cn/img/i-blog.csdnimg.cn/bfec2478c99c4e4a03bd08bd6cba9e3b83024dc6.png" alt="现代软件开发团队协作场景" class="w-full h-80 object-cover rounded-2xl shadow-2xl" size="medium" aspect="wide" style="photo" query="软件开发团队协作" referrerpolicy="no-referrer" data-modified="1" data-score="0.00"/>
+                <div class="absolute inset-0 bg-gradient-to-t from-primary/30 to-transparent rounded-2xl"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Executive Summary -->
+      <section id="executive-summary" class="py-16 bg-white">
+        <div class="max-w-4xl mx-auto px-6 lg:px-8">
+          <h2 class="font-serif text-3xl font-bold text-primary mb-8">执行摘要</h2>
+
+          <div class="prose prose-lg max-w-none">
+            <p class="text-xl text-secondary leading-relaxed mb-6">
+              在现代互联网产品的开发与运维实践中，研发团队与运维团队之间天然存在的视角差异已成为制约产品快速迭代和稳定交付的关键瓶颈。本报告通过深入分析这一核心问题，提出了系统性的解决方案。
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 my-12">
+              <div class="bg-blue-50 p-6 rounded-xl">
+                <h3 class="font-semibold text-lg text-primary mb-3">
+                  <i class="fas fa-exclamation-triangle mr-2"></i>核心问题
+                </h3>
+                <p class="text-secondary">
+                  研发团队以&#34;项目&#34;维度记录变更，运维团队以&#34;部署顺序&#34;维度执行上线，导致流程文档双重维护、信息同步滞后、协作效率低下。
+                </p>
+              </div>
+
+              <div class="bg-green-50 p-6 rounded-xl">
+                <h3 class="font-semibold text-lg text-primary mb-3">
+                  <i class="fas fa-lightbulb mr-2"></i>解决方案
+                </h3>
+                <p class="text-secondary">
+                  构建<strong>统一的信息源（Single Source of Truth）</strong>，通过流程自动化和信息透明化，实现研发与运维的无缝协作。
+                </p>
+              </div>
+            </div>
+
+            <div class="quote-highlight">
+              <p class="text-lg font-medium text-primary">
+                &#34;解决这一问题的关键在于构建一个能够同时满足研发和运维两种不同视角需求的统一协作平台，实现信息同步和流程自动化，从而打破部门墙，提升交付效率和质量。&#34;
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Problem Diagnosis -->
+      <section id="problem-diagnosis" class="py-16 bg-gray-50">
+        <div class="max-w-6xl mx-auto px-6 lg:px-8">
+          <h2 class="font-serif text-4xl font-bold text-primary mb-12 text-center">核心问题诊断：研发与运维的视角冲突</h2>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
+            <div class="bg-white p-8 rounded-xl shadow-lg">
+              <div class="flex items-center mb-6">
+                <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4">
+                  <i class="fas fa-code text-blue-600 text-xl"></i>
+                </div>
+                <h3 class="font-serif text-2xl font-bold text-primary">研发视角</h3>
+              </div>
+              <p class="text-secondary mb-4">
+                以&#34;项目&#34;或&#34;功能&#34;为维度组织和管理变更，关注代码演进、功能实现和缺陷修复。
+              </p>
+              <ul class="space-y-2 text-sm text-secondary">
+                <li class="flex items-start">
+                  <i class="fas fa-check-circle text-green-500 mr-2 mt-1"></i>
+                  项目维度的变更记录
+                </li>
+                <li class="flex items-start">
+                  <i class="fas fa-check-circle text-green-500 mr-2 mt-1"></i>
+                  代码提交与合并请求关联
+                </li>
+                <li class="flex items-start">
+                  <i class="fas fa-check-circle text-green-500 mr-2 mt-1"></i>
+                  完整的开发链路追溯
+                </li>
+              </ul>
+            </div>
+
+            <div class="bg-white p-8 rounded-xl shadow-lg">
+              <div class="flex items-center mb-6">
+                <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mr-4">
+                  <i class="fas fa-server text-orange-600 text-xl"></i>
+                </div>
+                <h3 class="font-serif text-2xl font-bold text-primary">运维视角</h3>
+              </div>
+              <p class="text-secondary mb-4">
+                以&#34;部署顺序&#34;和&#34;系统稳定性&#34;为维度执行上线操作，关注配置正确性和服务依赖关系。
+              </p>
+              <ul class="space-y-2 text-sm text-secondary">
+                <li class="flex items-start">
+                  <i class="fas fa-check-circle text-green-500 mr-2 mt-1"></i>
+                  部署顺序的管理
+                </li>
+                <li class="flex items-start">
+                  <i class="fas fa-check-circle text-green-500 mr-2 mt-1"></i>
+                  配置变更的协调
+                </li>
+                <li class="flex items-start">
+                  <i class="fas fa-check-circle text-green-500 mr-2 mt-1"></i>
+                  回滚预案的制定
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Problem Flow Diagram -->
+          <div class="bg-white p-8 rounded-xl shadow-lg mb-12">
+            <h3 class="font-serif text-2xl font-bold text-primary mb-6 text-center">问题冲突示意图</h3>
+            <div class="mermaid-container">
+              <div class="mermaid-controls">
+                <button class="mermaid-control-btn zoom-in" title="放大">
+                  <i class="fas fa-search-plus"></i>
+                </button>
+                <button class="mermaid-control-btn zoom-out" title="缩小">
+                  <i class="fas fa-search-minus"></i>
+                </button>
+                <button class="mermaid-control-btn reset-zoom" title="重置">
+                  <i class="fas fa-expand-arrows-alt"></i>
+                </button>
+                <button class="mermaid-control-btn fullscreen" title="全屏查看">
+                  <i class="fas fa-expand"></i>
+                </button>
+              </div>
+              <div class="mermaid" id="problem-flow">
+                graph TD
+                A[&#34;需求变更&#34;] --&gt; B[&#34;研发团队&#34;]
+                A --&gt; C[&#34;运维团队&#34;]
+                B --&gt; D[&#34;项目维度文档
+                <br/>代码变更记录
+                <br/>功能实现跟踪&#34;]
+                C --&gt; E[&#34;部署维度文档
+                <br/>上线顺序规划
+                <br/>配置变更管理&#34;]
+                D --&gt; F[&#34;信息孤岛&#34;]
+                E --&gt; F
+                F --&gt; G[&#34;沟通成本高&#34;]
+                F --&gt; H[&#34;信息不一致&#34;]
+                F --&gt; I[&#34;难以追溯&#34;]
+
+                style A fill:#e1f5fe,stroke:#1e3a8a,stroke-width:2px,color:#1e293b
+                style B fill:#fff3e0,stroke:#1e3a8a,stroke-width:2px,color:#1e293b
+                style C fill:#e8f5e8,stroke:#1e3a8a,stroke-width:2px,color:#1e293b
+                style D fill:#fff3e0,stroke:#1e3a8a,stroke-width:2px,color:#1e293b
+                style E fill:#e8f5e8,stroke:#1e3a8a,stroke-width:2px,color:#1e293b
+                style F fill:#ffebee,stroke:#d32f2f,stroke-width:3px,color:#1e293b
+                style G fill:#ffebee,stroke:#d32f2f,stroke-width:2px,color:#1e293b
+                style H fill:#ffebee,stroke:#d32f2f,stroke-width:2px,color:#1e293b
+                style I fill:#ffebee,stroke:#d32f2f,stroke-width:2px,color:#1e293b
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-red-50 border-l-4 border-red-400 p-6 rounded-r-xl">
+            <h3 class="font-semibold text-lg text-red-800 mb-3">
+              <i class="fas fa-exclamation-triangle mr-2"></i>冲突点分析
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm text-red-700">
+              <div>
+                <h4 class="font-medium mb-2">信息同步成本高</h4>
+                <p>每次上线前需要大量时间沟通对齐，确保两份文档内容一致，耗时耗力且易出错。</p>
+              </div>
+              <div>
+                <h4 class="font-medium mb-2">信息不一致风险</h4>
+                <p>独立文档容易出现信息不一致，研发修改未同步给运维，导致上线故障。</p>
+              </div>
+              <div>
+                <h4 class="font-medium mb-2">缺乏统一视图</h4>
+                <p>缺少从需求到上线的完整流程视图，研发看不到部署状态，运维看不到变更详情。</p>
+              </div>
+              <div>
+                <h4 class="font-medium mb-2">难以追溯和复盘</h4>
+                <p>信息分散在不同维度，线上问题难以快速定位根源，影响故障恢复速度。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Solution One: Integrated DevOps Platform -->
+      <section id="solution-one" class="py-16 bg-white">
+        <div class="max-w-6xl mx-auto px-6 lg:px-8">
+          <h2 class="font-serif text-4xl font-bold text-primary mb-12 text-center">解决方案一：采用一体化DevOps平台</h2>
+
+          <div class="bg-blue-50 p-8 rounded-xl mb-12">
+            <h3 class="font-serif text-2xl font-bold text-primary mb-6">平台选型：腾讯云 CODING DevOps</h3>
+            <p class="text-lg text-secondary mb-6">
+              腾讯云 CODING DevOps 是一个一站式 DevOps 解决方案，整合了敏捷项目管理、代码版本控制、制品库、CI/CD 流水线、测试管理、知识管理等多个模块，旨在打破研发、测试、运维之间的壁垒。
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div class="bg-white p-6 rounded-lg">
+                <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                  <i class="fas fa-users text-blue-600 text-xl"></i>
+                </div>
+                <h4 class="font-semibold text-lg text-primary mb-2">多角色支持</h4>
+                <p class="text-sm text-secondary">为产品经理、开发、测试、运维等不同角色提供定制化工作台</p>
+              </div>
+
+              <div class="bg-white p-6 rounded-lg">
+                <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                  <i class="fas fa-book text-green-600 text-xl"></i>
+                </div>
+                <h4 class="font-semibold text-lg text-primary mb-2">统一文档管理</h4>
+                <p class="text-sm text-secondary">内置Wiki与知识库功能，支持版本控制和深度集成</p>
+              </div>
+
+              <div class="bg-white p-6 rounded-lg">
+                <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mb-4">
+                  <i class="fas fa-cogs text-purple-600 text-xl"></i>
+                </div>
+                <h4 class="font-semibold text-lg text-primary mb-2">流程自动化</h4>
+                <p class="text-sm text-secondary">可视化CI/CD流水线，支持多种触发方式和高级发布策略</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- CODING DevOps Architecture -->
+          <div class="bg-gray-50 p-8 rounded-xl mb-12">
+            <h3 class="font-serif text-2xl font-bold text-primary mb-6 text-center">CODING DevOps 平台架构</h3>
+            <div class="mermaid-container">
+              <div class="mermaid-controls">
+                <button class="mermaid-control-btn zoom-in" title="放大">
+                  <i class="fas fa-search-plus"></i>
+                </button>
+                <button class="mermaid-control-btn zoom-out" title="缩小">
+                  <i class="fas fa-search-minus"></i>
+                </button>
+                <button class="mermaid-control-btn reset-zoom" title="重置">
+                  <i class="fas fa-expand-arrows-alt"></i>
+                </button>
+                <button class="mermaid-control-btn fullscreen" title="全屏查看">
+                  <i class="fas fa-expand"></i>
+                </button>
+              </div>
+              <div class="mermaid" id="coding-architecture">
+                graph TB
+                subgraph &#34;CODING DevOps 平台&#34;
+                A[&#34;项目协同&#34;] --&gt; B[&#34;代码仓库&#34;]
+                B --&gt; C[&#34;持续集成 CI&#34;]
+                C --&gt; D[&#34;持续部署 CD&#34;]
+                D --&gt; E[&#34;测试管理&#34;]
+                E --&gt; F[&#34;制品库&#34;]
+                F --&gt; G[&#34;Wiki 知识库&#34;]
+                end
+
+                subgraph &#34;研发视图&#34;
+                H1[&#34;需求管理&#34;] --&gt; A
+                H2[&#34;任务跟踪&#34;] --&gt; A
+                H3[&#34;代码提交&#34;] --&gt; B
+                end
+
+                subgraph &#34;运维视图&#34;
+                I1[&#34;部署流水线&#34;] --&gt; D
+                I2[&#34;环境管理&#34;] --&gt; D
+                I3[&#34;监控告警&#34;] --&gt; D
+                end
+
+                subgraph &#34;统一数据源&#34;
+                J[&#34;应用元数据
+                <br/>版本信息
+                <br/>部署记录
+                <br/>配置信息&#34;]
+                end
+
+                A --&gt; J
+                B --&gt; J
+                C --&gt; J
+                D --&gt; J
+                E --&gt; J
+                F --&gt; J
+                G --&gt; J
+
+                style A fill:#e3f2fd,stroke:#1e3a8a,stroke-width:2px,color:#1e293b
+                style B fill:#e3f2fd,stroke:#1e3a8a,stroke-width:2px,color:#1e293b
+                style C fill:#e3f2fd,stroke:#1e3a8a,stroke-width:2px,color:#1e293b
+                style D fill:#e3f2fd,stroke:#1e3a8a,stroke-width:2px,color:#1e293b
+                style E fill:#e3f2fd,stroke:#1e3a8a,stroke-width:2px,color:#1e293b
+                style F fill:#e3f2fd,stroke:#1e3a8a,stroke-width:2px,color:#1e293b
+                style G fill:#e3f2fd,stroke:#1e3a8a,stroke-width:2px,color:#1e293b
+                style J fill:#f3e5f5,stroke:#7c3aed,stroke-width:3px,color:#1e293b
+                style H1 fill:#fff3e0,stroke:#1e3a8a,stroke-width:2px,color:#1e293b
+                style H2 fill:#fff3e0,stroke:#1e3a8a,stroke-width:2px,color:#1e293b
+                style H3 fill:#fff3e0,stroke:#1e3a8a,stroke-width:2px,color:#1e293b
+                style I1 fill:#e8f5e8,stroke:#1e3a8a,stroke-width:2px,color:#1e293b
+                style I2 fill:#e8f5e8,stroke:#1e3a8a,stroke-width:2px,color:#1e293b
+                style I3 fill:#e8f5e8,stroke:#1e3a8a,stroke-width:2px,color:#1e293b
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+            <div class="bg-blue-50 p-8 rounded-xl">
+              <h3 class="font-serif text-xl font-bold text-primary mb-4">
+                <i class="fas fa-code mr-2"></i>项目维度视图（研发需求）
+              </h3>
+              <p class="text-secondary mb-4">
+                通过&#34;项目协同&#34;模块，研发团队可以创建项目，拆解为需求、任务、缺陷等工作项。每个工作项都可以与代码仓库中的分支、提交记录、合并请求关联。
+              </p>
+              <ul class="space-y-2 text-sm text-secondary">
+                <li class="flex items-start">
+                  <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                  清晰展示项目开发进度
+                </li>
+                <li class="flex items-start">
+                  <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                  代码变更自动同步
+                </li>
+                <li class="flex items-start">
+                  <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                  相关讨论完整记录
+                </li>
+              </ul>
+            </div>
+
+            <div class="bg-orange-50 p-8 rounded-xl">
+              <h3 class="font-serif text-xl font-bold text-primary mb-4">
+                <i class="fas fa-server mr-2"></i>部署维度视图（运维需求）
+              </h3>
+              <p class="text-secondary mb-4">
+                通过&#34;持续部署（CD）&#34;模块，运维团队可以创建和管理部署流水线，定义多个阶段和任务，全面掌控上线全过程。
+              </p>
+              <ul class="space-y-2 text-sm text-secondary">
+                <li class="flex items-start">
+                  <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                  可视化发布流程
+                </li>
+                <li class="flex items-start">
+                  <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                  环境统一管理
+                </li>
+                <li class="flex items-start">
+                  <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                  部署策略灵活配置
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="bg-green-50 p-8 rounded-xl">
+            <h3 class="font-serif text-2xl font-bold text-primary mb-6">
+              <i class="fas fa-link mr-2"></i>信息共享与透明化
+            </h3>
+            <p class="text-lg text-secondary mb-6">
+              CODING DevOps 平台通过底层数据的打通，实现了项目维度视图和部署维度视图之间的信息共享和透明化，有效地打破了研发与运维之间的信息孤岛。
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div class="bg-white p-6 rounded-lg">
+                <h4 class="font-semibold text-lg text-primary mb-3">双向关联</h4>
+                <p class="text-sm text-secondary">
+                  研发任务关联到部署流水线后，运维人员在部署视图中可直接查看任务详情，研发人员在项目视图中可看到部署状态。
+                </p>
+              </div>
+
+              <div class="bg-white p-6 rounded-lg">
+                <h4 class="font-semibold text-lg text-primary mb-3">实时同步</h4>
+                <p class="text-sm text-secondary">
+                  当部署失败时，运维人员可立即查看失败日志，并通过关联的研发任务快速找到相关开发人员共同排查问题。
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Solution Two: Custom Platform -->
+      <section id="solution-two" class="py-16 bg-gray-50">
+        <div class="max-w-6xl mx-auto px-6 lg:px-8">
+          <h2 class="font-serif text-4xl font-bold text-primary mb-12 text-center">解决方案二：构建自定义的统一协作平台</h2>
+
+          <div class="bg-white p-8 rounded-xl shadow-lg mb-12">
+            <h3 class="font-serif text-2xl font-bold text-primary mb-6">平台架构设计</h3>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+              <div class="text-center">
+                <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <i class="fas fa-cubes text-blue-600 text-2xl"></i>
+                </div>
+                <h4 class="font-semibold text-lg text-primary mb-2">微服务架构</h4>
+                <p class="text-sm text-secondary">实现灵活性与可扩展性，支持技术多样性</p>
+              </div>
+
+              <div class="text-center">
+                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <i class="fas fa-layer-group text-green-600 text-2xl"></i>
+                </div>
+                <h4 class="font-semibold text-lg text-primary mb-2">微前端架构</h4>
+                <p class="text-sm text-secondary">支持多角色视图，独立开发部署</p>
+              </div>
+
+              <div class="text-center">
+                <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <i class="fas fa-database text-purple-600 text-2xl"></i>
+                </div>
+                <h4 class="font-semibold text-lg text-primary mb-2">统一数据模型</h4>
+                <p class="text-sm text-secondary">支持多维度数据展示，建立核心实体关联</p>
+              </div>
+            </div>
+
+            <!-- Architecture Diagram -->
+            <div class="mermaid-container">
+              <div class="mermaid-controls">
+                <button class="mermaid-control-btn zoom-in" title="放大">
+                  <i class="fas fa-search-plus"></i>
+                </button>
+                <button class="mermaid-control-btn zoom-out" title="缩小">
+                  <i class="fas fa-search-minus"></i>
+                </button>
+                <button class="mermaid-control-btn reset-zoom" title="重置">
+                  <i class="fas fa-expand-arrows-alt"></i>
+                </button>
+                <button class="mermaid-control-btn fullscreen" title="全屏查看">
+                  <i class="fas fa-expand"></i>
+                </button>
+              </div>
+              <div class="mermaid" id="custom-architecture">
+                graph TB
+                subgraph &#34;前端架构&#34;
+                A1[&#34;研发子应用
+                <br/>项目视图&#34;] --&gt; B[&#34;微前端基座&#34;]
+                A2[&#34;运维子应用
+                <br/>部署视图&#34;] --&gt; B
+                A3[&#34;管理子应用
+                <br/>统计视图&#34;] --&gt; B
+                end
+
+                subgraph &#34;后端架构&#34;
+                C1[&#34;应用管理服务&#34;] --&gt; D[&#34;API网关&#34;]
+                C2[&#34;项目管理服务&#34;] --&gt; D
+                C3[&#34;部署编排服务&#34;] --&gt; D
+                C4[&#34;文档中心服务&#34;] --&gt; D
+                end
+
+                subgraph &#34;数据层&#34;
+                E1[&#34;MySQL
+                <br/>核心业务数据&#34;] --&gt; F[&#34;统一数据模型&#34;]
+                E2[&#34;MongoDB
+                <br/>文档配置数据&#34;] --&gt; F
+                E3[&#34;Git
+                <br/>文档版本控制&#34;] --&gt; F
+                end
+
+                B --&gt; D
+                D --&gt; F
+
+                style A1 fill:#fff3e0,stroke:#1e3a8a,stroke-width:2px,color:#1e293b
+                style A2 fill:#e8f5e8,stroke:#1e3a8a,stroke-width:2px,color:#1e293b
+                style A3 fill:#f3e5f5,stroke:#1e3a8a,stroke-width:2px,color:#1e293b
+                style B fill:#e1f5fe,stroke:#1e3a8a,stroke-width:3px,color:#1e293b
+                style C1 fill:#fce4ec,stroke:#1e3a8a,stroke-width:2px,color:#1e293b
+                style C2 fill:#fce4ec,stroke:#1e3a8a,stroke-width:2px,color:#1e293b
+                style C3 fill:#fce4ec,stroke:#1e3a8a,stroke-width:2px,color:#1e293b
+                style C4 fill:#fce4ec,stroke:#1e3a8a,stroke-width:2px,color:#1e293b
+                style D fill:#e0f2f1,stroke:#1e3a8a,stroke-width:3px,color:#1e293b
+                style E1 fill:#f1f8e9,stroke:#1e3a8a,stroke-width:2px,color:#1e293b
+                style E2 fill:#f1f8e9,stroke:#1e3a8a,stroke-width:2px,color:#1e293b
+                style E3 fill:#f1f8e9,stroke:#1e3a8a,stroke-width:2px,color:#1e293b
+                style F fill:#fff8e1,stroke:#7c3aed,stroke-width:3px,color:#1e293b
+              </div>
+            </div>
+          </div>
+
+          <!-- Core Modules -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="bg-white p-6 rounded-xl shadow-lg">
+              <h3 class="font-serif text-xl font-bold text-primary mb-4">
+                <i class="fas fa-cog mr-2"></i>应用管理模块
+              </h3>
+              <p class="text-secondary mb-4">以应用为核心，管理元数据与依赖关系，形成系统拓扑图。</p>
+              <ul class="space-y-2 text-sm text-secondary">
+                <li class="flex items-start">
+                  <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                  应用注册与信息管理
+                </li>
+                <li class="flex items-start">
+                  <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                  依赖关系可视化
+                </li>
+                <li class="flex items-start">
+                  <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                  环境配置集中管理
+                </li>
+                <li class="flex items-start">
+                  <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                  健康状态监控集成
+                </li>
+              </ul>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-lg">
+              <h3 class="font-serif text-xl font-bold text-primary mb-4">
+                <i class="fas fa-project-diagram mr-2"></i>项目视图模块
+              </h3>
+              <p class="text-secondary mb-4">以项目为主线，记录开发进度与变更，提供完整追溯链。</p>
+              <ul class="space-y-2 text-sm text-secondary">
+                <li class="flex items-start">
+                  <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                  需求与任务管理
+                </li>
+                <li class="flex items-start">
+                  <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                  代码变更关联
+                </li>
+                <li class="flex items-start">
+                  <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                  版本与构建记录
+                </li>
+                <li class="flex items-start">
+                  <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                  发布历史追溯
+                </li>
+              </ul>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-lg">
+              <h3 class="font-serif text-xl font-bold text-primary mb-4">
+                <i class="fas fa-rocket mr-2"></i>部署视图模块
+              </h3>
+              <p class="text-secondary mb-4">以部署顺序为主线，展示发布流程与配置，实现标准化发布。</p>
+              <ul class="space-y-2 text-sm text-secondary">
+                <li class="flex items-start">
+                  <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                  发布流程编排
+                </li>
+                <li class="flex items-start">
+                  <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                  发布单管理
+                </li>
+                <li class="flex items-start">
+                  <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                  实时执行监控
+                </li>
+                <li class="flex items-start">
+                  <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                  发布策略支持
+                </li>
+              </ul>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-lg">
+              <h3 class="font-serif text-xl font-bold text-primary mb-4">
+                <i class="fas fa-book mr-2"></i>文档中心模块
+              </h3>
+              <p class="text-secondary mb-4">统一文档管理，支持版本控制与协作，实现知识沉淀。</p>
+              <ul class="space-y-2 text-sm text-secondary">
+                <li class="flex items-start">
+                  <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                  多维度文档组织
+                </li>
+                <li class="flex items-start">
+                  <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                  版本控制与追溯
+                </li>
+                <li class="flex items-start">
+                  <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                  实时协作评论
+                </li>
+                <li class="flex items-start">
+                  <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                  精细权限管理
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Best Practices -->
+      <section id="best-practices" class="py-16 bg-white">
+        <div class="max-w-6xl mx-auto px-6 lg:px-8">
+          <h2 class="font-serif text-4xl font-bold text-primary mb-12 text-center">流程标准化与自动化最佳实践</h2>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            <!-- CI/CD -->
+            <div class="bg-blue-50 p-8 rounded-xl">
+              <h3 class="font-serif text-2xl font-bold text-primary mb-6">
+                <i class="fas fa-sync-alt mr-2"></i>持续集成/持续交付（CI/CD）
+              </h3>
+
+              <div class="space-y-6">
+                <div>
+                  <h4 class="font-semibold text-lg text-primary mb-3">自动化构建与测试</h4>
+                  <p class="text-secondary mb-3">
+                    当开发人员提交代码后，CI服务器自动拉取最新代码，执行预定义的构建脚本，完成编译、打包、依赖管理等操作。
+                  </p>
+                  <div class="bg-white p-4 rounded-lg">
+                    <ul class="space-y-2 text-sm text-secondary">
+                      <li class="flex items-start">
+                        <i class="fas fa-check-circle text-green-500 mr-2 mt-1"></i>
+                        单元测试：验证最小可测试单元的功能正确性
+                      </li>
+                      <li class="flex items-start">
+                        <i class="fas fa-check-circle text-green-500 mr-2 mt-1"></i>
+                        集成测试：关注不同模块间的交互
+                      </li>
+                      <li class="flex items-start">
+                        <i class="fas fa-check-circle text-green-500 mr-2 mt-1"></i>
+                        端到端测试：模拟真实用户场景
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 class="font-semibold text-lg text-primary mb-3">自动化部署</h4>
+                  <p class="text-secondary mb-3">
+                    将经过测试验证的代码包自动部署到不同环境，确保部署过程的一致性和可重复性。
+                  </p>
+                  <div class="bg-green-50 p-4 rounded-lg">
+                    <p class="text-sm text-green-700">
+                      <strong>案例：</strong>杭州幻熊公司通过引入自动化发布流程，将原本需要平均30分钟的手动发布缩短至2分钟，每周节省至少1.5人/日的工作量。
+                      <a href="https://help.aliyun.com/zh/yunxiao/product-overview/hangzhou-magic-bear-from-once-a-week-to-daily-delivery" class="citation">[来源]</a>
+                    </p>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 class="font-semibold text-lg text-primary mb-3">工具选择</h4>
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-white p-4 rounded-lg text-center">
+                      <i class="fas fa-cog text-blue-600 text-2xl mb-2"></i>
+                      <h5 class="font-medium text-primary">Jenkins</h5>
+                      <p class="text-xs text-secondary">最流行的开源自动化服务器</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg text-center">
+                      <i class="fab fa-gitlab text-orange-600 text-2xl mb-2"></i>
+                      <h5 class="font-medium text-primary">GitLab CI</h5>
+                      <p class="text-xs text-secondary">与GitLab深度集成</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg text-center">
+                      <i class="fas fa-cloud text-blue-600 text-2xl mb-2"></i>
+                      <h5 class="font-medium text-primary">CircleCI</h5>
+                      <p class="text-xs text-secondary">云端CI/CD服务</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- IaC -->
+            <div class="bg-green-50 p-8 rounded-xl">
+              <h3 class="font-serif text-2xl font-bold text-primary mb-6">
+                <i class="fas fa-code mr-2"></i>基础设施即代码（IaC）
+              </h3>
+
+              <div class="space-y-6">
+                <div>
+                  <h4 class="font-semibold text-lg text-primary mb-3">环境一致性保障</h4>
+                  <p class="text-secondary mb-3">
+                    使用同一份代码模板创建和管理所有环境，确保从开发到生产的整个流程中基础设施配置完全一致。
+                  </p>
+                  <div class="bg-white p-4 rounded-lg">
+                    <p class="text-sm text-secondary">
+                      <i class="fas fa-docker text-blue-600 mr-2"></i>
+                      结合Docker容器技术和Kubernetes编排工具，从根本上解决环境不一致问题。
+                    </p>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 class="font-semibold text-lg text-primary mb-3">工具选择</h4>
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-white p-4 rounded-lg">
+                      <div class="flex items-center mb-2">
+                        <i class="fas fa-mountain text-purple-600 text-xl mr-2"></i>
+                        <h5 class="font-medium text-primary">Terraform</h5>
+                      </div>
+                      <p class="text-xs text-secondary">使用HCL定义基础设施，支持多平台</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg">
+                      <div class="flex items-center mb-2">
+                        <i class="fas fa-play text-red-600 text-xl mr-2"></i>
+                        <h5 class="font-medium text-primary">Ansible</h5>
+                      </div>
+                      <p class="text-xs text-secondary">无代理架构，YAML编写Playbook</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg">
+                      <div class="flex items-center mb-2">
+                        <i class="fab fa-aws text-orange-600 text-xl mr-2"></i>
+                        <h5 class="font-medium text-primary">CloudFormation</h5>
+                      </div>
+                      <p class="text-xs text-secondary">AWS原生IaC服务</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Version Management -->
+      <section id="version-management" class="py-16 bg-gray-50">
+        <div class="max-w-6xl mx-auto px-6 lg:px-8">
+          <h2 class="font-serif text-4xl font-bold text-primary mb-12 text-center">版本管理与发布策略</h2>
+
+          <!-- Version Control -->
+          <div class="bg-white p-8 rounded-xl shadow-lg mb-12">
+            <h3 class="font-serif text-2xl font-bold text-primary mb-8">版本控制最佳实践</h3>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div>
+                <h4 class="font-semibold text-lg text-primary mb-4">
+                  <i class="fas fa-code-branch mr-2"></i>Git分支策略
+                </h4>
+                <div class="space-y-4">
+                  <div class="bg-blue-50 p-4 rounded-lg">
+                    <h5 class="font-medium text-primary mb-2">Git Flow</h5>
+                    <p class="text-sm text-secondary mb-2">
+                      功能强大但相对复杂的分支模型，定义了master、develop、feature、release、hotfix等多种分支。
+                    </p>
+                    <p class="text-xs text-blue-600">
+                      适用于有明确发布周期和版本规划的项目
+                    </p>
+                  </div>
+
+                  <div class="bg-green-50 p-4 rounded-lg">
+                    <h5 class="font-medium text-primary mb-2">GitHub Flow</h5>
+                    <p class="text-sm text-secondary mb-2">
+                      轻量级分支模型，只有main主分支，通过Pull Request合并功能分支。
+                    </p>
+                    <p class="text-xs text-green-600">
+                      适用于持续部署和快速迭代的项目
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h4 class="font-semibold text-lg text-primary mb-4">
+                  <i class="fas fa-tag mr-2"></i>版本号规范
+                </h4>
+                <div class="bg-gray-50 p-6 rounded-lg">
+                  <h5 class="font-medium text-primary mb-3">语义化版本控制（SemVer）</h5>
+                  <div class="space-y-3">
+                    <div class="flex items-center">
+                      <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center mr-3">
+                        <span class="text-red-600 font-bold text-sm">MAJOR</span>
+                      </div>
+                      <div>
+                        <p class="text-sm font-medium text-primary">不兼容的API变更</p>
+                        <p class="text-xs text-secondary">大版本升级，可能存在不兼容变更</p>
+                      </div>
+                    </div>
+
+                    <div class="flex items-center">
+                      <div class="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center mr-3">
+                        <span class="text-yellow-600 font-bold text-sm">MINOR</span>
+                      </div>
+                      <div>
+                        <p class="text-sm font-medium text-primary">向下兼容的功能新增</p>
+                        <p class="text-xs text-secondary">小版本升级，保持向后兼容</p>
+                      </div>
+                    </div>
+
+                    <div class="flex items-center">
+                      <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                        <span class="text-green-600 font-bold text-sm">PATCH</span>
+                      </div>
+                      <div>
+                        <p class="text-sm font-medium text-primary">向下兼容的问题修正</p>
+                        <p class="text-xs text-secondary">补丁版本，修复Bug不引入新功能</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Release Strategies -->
+          <div class="bg-white p-8 rounded-xl shadow-lg mb-12">
+            <h3 class="font-serif text-2xl font-bold text-primary mb-8">发布策略</h3>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div class="bg-blue-50 p-6 rounded-lg">
+                <div class="text-center mb-4">
+                  <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto">
+                    <i class="fas fa-exchange-alt text-blue-600 text-2xl"></i>
+                  </div>
+                </div>
+                <h4 class="font-semibold text-lg text-primary mb-3 text-center">蓝绿部署</h4>
+                <p class="text-sm text-secondary mb-3">
+                  零停机时间的发布策略，通过维护两个完全相同的生产环境实现。
+                </p>
+                <div class="space-y-2 text-xs">
+                  <div class="flex justify-between">
+                    <span class="text-green-600">✓ 快速回滚</span>
+                    <span class="text-red-600">✗ 成本较高</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-green-600">✓ 用户无感知</span>
+                    <span class="text-red-600">✗ 需维护两套环境</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-yellow-50 p-6 rounded-lg">
+                <div class="text-center mb-4">
+                  <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto">
+                    <i class="fas fa-dove text-yellow-600 text-2xl"></i>
+                  </div>
+                </div>
+                <h4 class="font-semibold text-lg text-primary mb-3 text-center">金丝雀发布</h4>
+                <p class="text-sm text-secondary mb-3">
+                  渐进式发布策略，先部署到一小部分用户，逐步扩大范围。
+                </p>
+                <div class="space-y-2 text-xs">
+                  <div class="flex justify-between">
+                    <span class="text-green-600">✓ 风险控制</span>
+                    <span class="text-green-600">✓ 逐步验证</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-green-600">✓ 影响范围小</span>
+                    <span class="text-blue-600">~ 需监控分析</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-purple-50 p-6 rounded-lg">
+                <div class="text-center mb-4">
+                  <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto">
+                    <i class="fas fa-chart-bar text-purple-600 text-2xl"></i>
+                  </div>
+                </div>
+                <h4 class="font-semibold text-lg text-primary mb-3 text-center">A/B测试</h4>
+                <p class="text-sm text-secondary mb-3">
+                  数据驱动的发布决策，同时运行多个版本进行对比实验。
+                </p>
+                <div class="space-y-2 text-xs">
+                  <div class="flex justify-between">
+                    <span class="text-green-600">✓ 科学验证</span>
+                    <span class="text-green-600">✓ 数据驱动</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-green-600">✓ 优化效果</span>
+                    <span class="text-blue-600">~ 数据分析复杂</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Release Management -->
+          <div class="bg-white p-8 rounded-xl shadow-lg">
+            <h3 class="font-serif text-2xl font-bold text-primary mb-8">发布管理</h3>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div>
+                <h4 class="font-semibold text-lg text-primary mb-4">
+                  <i class="fas fa-clipboard-list mr-2"></i>发布计划制定
+                </h4>
+                <ul class="space-y-2 text-sm text-secondary">
+                  <li class="flex items-start">
+                    <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                    明确发布目标、范围、时间表
+                  </li>
+                  <li class="flex items-start">
+                    <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                    分析影响范围和风险评估
+                  </li>
+                  <li class="flex items-start">
+                    <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                    制定部署步骤和测试计划
+                  </li>
+                  <li class="flex items-start">
+                    <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                    准备回滚策略和沟通计划
+                  </li>
+                </ul>
+              </div>
+
+              <div>
+                <h4 class="font-semibold text-lg text-primary mb-4">
+                  <i class="fas fa-user-check mr-2"></i>发布评审与审批
+                </h4>
+                <ul class="space-y-2 text-sm text-secondary">
+                  <li class="flex items-start">
+                    <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                    回顾发布计划和测试结果
+                  </li>
+                  <li class="flex items-start">
+                    <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                    评估风险并制定应对措施
+                  </li>
+                  <li class="flex items-start">
+                    <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                    多方参与共同决策
+                  </li>
+                  <li class="flex items-start">
+                    <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                    正式审批确保准备充分
+                  </li>
+                </ul>
+              </div>
+
+              <div>
+                <h4 class="font-semibold text-lg text-primary mb-4">
+                  <i class="fas fa-chart-line mr-2"></i>发布后监控与回滚
+                </h4>
+                <ul class="space-y-2 text-sm text-secondary">
+                  <li class="flex items-start">
+                    <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                    持续监控系统性能指标
+                  </li>
+                  <li class="flex items-start">
+                    <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                    观察业务指标和错误日志
+                  </li>
+                  <li class="flex items-start">
+                    <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                    实现一键式快速回滚
+                  </li>
+                  <li class="flex items-start">
+                    <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                    及时响应降低用户影响
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Documentation -->
+      <section id="documentation" class="py-16 bg-white">
+        <div class="max-w-6xl mx-auto px-6 lg:px-8">
+          <h2 class="font-serif text-4xl font-bold text-primary mb-12 text-center">统一文档平台与信息同步</h2>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            <!-- Platform Building -->
+            <div class="bg-blue-50 p-8 rounded-xl">
+              <h3 class="font-serif text-2xl font-bold text-primary mb-6">统一文档平台构建</h3>
+
+              <div class="space-y-6">
+                <div>
+                  <h4 class="font-semibold text-lg text-primary mb-3">
+                    <i class="fas fa-tools mr-2"></i>平台选择
+                  </h4>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-white p-4 rounded-lg">
+                      <h5 class="font-medium text-primary mb-2">Confluence</h5>
+                      <p class="text-sm text-secondary">企业级Wiki工具，强大的编辑功能和丰富的插件生态</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg">
+                      <h5 class="font-medium text-primary mb-2">ONES Wiki</h5>
+                      <p class="text-sm text-secondary">与研发管理平台深度集成，实现流程与知识结合</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 class="font-semibold text-lg text-primary mb-3">
+                    <i class="fas fa-file-alt mr-2"></i>文档标准化
+                  </h4>
+                  <div class="bg-white p-4 rounded-lg">
+                    <ul class="space-y-2 text-sm text-secondary">
+                      <li class="flex items-start">
+                        <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                        制定统一的文档模板和编写规范
+                      </li>
+                      <li class="flex items-start">
+                        <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                        明确命名规则和格式要求
+                      </li>
+                      <li class="flex items-start">
+                        <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                        建立术语定义和图表标准
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 class="font-semibold text-lg text-primary mb-3">
+                    <i class="fas fa-history mr-2"></i>版本控制与历史追溯
+                  </h4>
+                  <div class="bg-white p-4 rounded-lg">
+                    <p class="text-sm text-secondary mb-2">
+                      内置强大的版本控制功能，记录每一次文档修改历史，支持版本对比和回滚。
+                    </p>
+                    <div class="flex items-center text-xs text-green-600">
+                      <i class="fas fa-git-alt mr-2"></i>
+                      结合Git实现文档的版本管理
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Information Synchronization -->
+            <div class="bg-green-50 p-8 rounded-xl">
+              <h3 class="font-serif text-2xl font-bold text-primary mb-6">信息同步与协作</h3>
+
+              <div class="space-y-6">
+                <div>
+                  <h4 class="font-semibold text-lg text-primary mb-3">
+                    <i class="fas fa-users mr-2"></i>实时协作与评论
+                  </h4>
+                  <div class="bg-white p-4 rounded-lg">
+                    <p class="text-sm text-secondary mb-3">
+                      支持多人同时在线编辑同一份文档，通过评论、@成员等功能进行实时讨论和反馈。
+                    </p>
+                    <div class="flex items-center text-xs text-blue-600">
+                      <i class="fas fa-comments mr-2"></i>
+                      基于上下文的沟通比传统方式更高效
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 class="font-semibold text-lg text-primary mb-3">
+                    <i class="fas fa-bell mr-2"></i>通知与提醒机制
+                  </h4>
+                  <div class="bg-white p-4 rounded-lg">
+                    <ul class="space-y-2 text-sm text-secondary">
+                      <li class="flex items-start">
+                        <i class="fas fa-envelope text-blue-500 mr-2 mt-1"></i>
+                        文档创建、修改、评论时自动通知
+                      </li>
+                      <li class="flex items-start">
+                        <i class="fas fa-slack text-purple-500 mr-2 mt-1"></i>
+                        支持邮件、即时通讯工具集成
+                      </li>
+                      <li class="flex items-start">
+                        <i class="fas fa-rss text-orange-500 mr-2 mt-1"></i>
+                        自定义订阅规则，避免信息过载
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 class="font-semibold text-lg text-primary mb-3">
+                    <i class="fas fa-graduation-cap mr-2"></i>知识沉淀与共享
+                  </h4>
+                  <div class="bg-white p-4 rounded-lg">
+                    <p class="text-sm text-secondary mb-3">
+                      统一文档平台是团队知识沉淀和共享的核心载体，记录有价值的信息并整理成结构化文档。
+                    </p>
+                    <div class="text-xs text-green-600">
+                      <i class="fas fa-lightbulb mr-2"></i>
+                      避免知识流失，为新成员提供快速上手指南
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Conclusion -->
+      <section id="conclusion" class="py-16 bg-gray-50">
+        <div class="max-w-6xl mx-auto px-6 lg:px-8">
+          <h2 class="font-serif text-4xl font-bold text-primary mb-12 text-center">总结与展望</h2>
+
+          <!-- Solution Comparison -->
+          <div class="bg-white p-8 rounded-xl shadow-lg mb-12">
+            <h3 class="font-serif text-2xl font-bold text-primary mb-8 text-center">解决方案对比与选择</h3>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead>
+                  <tr class="bg-gray-50">
+                    <th class="text-left p-4 font-semibold text-primary">特性</th>
+                    <th class="text-left p-4 font-semibold text-primary">一体化DevOps平台</th>
+                    <th class="text-left p-4 font-semibold text-primary">自定义协作平台</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                  <tr>
+                    <td class="p-4 font-medium text-primary">核心优势</td>
+                    <td class="p-4 text-secondary">快速落地，开箱即用，集成度高</td>
+                    <td class="p-4 text-secondary">高度定制，灵活性强，可扩展性高</td>
+                  </tr>
+                  <tr class="bg-gray-50">
+                    <td class="p-4 font-medium text-primary">实施成本</td>
+                    <td class="p-4 text-secondary">较低（主要为订阅费用）</td>
+                    <td class="p-4 text-secondary">极高（需要专门研发团队）</td>
+                  </tr>
+                  <tr>
+                    <td class="p-4 font-medium text-primary">技术门槛</td>
+                    <td class="p-4 text-secondary">较低（标准化功能）</td>
+                    <td class="p-4 text-secondary">极高（微服务、微前端等）</td>
+                  </tr>
+                  <tr class="bg-gray-50">
+                    <td class="p-4 font-medium text-primary">灵活性</td>
+                    <td class="p-4 text-secondary">受限（相对标准化）</td>
+                    <td class="p-4 text-secondary">极高（随时调整扩展）</td>
+                  </tr>
+                  <tr>
+                    <td class="p-4 font-medium text-primary">数据安全</td>
+                    <td class="p-4 text-secondary">依赖服务商（云端存储）</td>
+                    <td class="p-4 text-secondary">自主可控（本地部署）</td>
+                  </tr>
+                  <tr class="bg-gray-50">
+                    <td class="p-4 font-medium text-primary">适用场景</td>
+                    <td class="p-4 text-secondary">希望快速引入DevOps的中小企业</td>
+                    <td class="p-4 text-secondary">业务场景复杂的大型企业</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="mt-8 p-6 bg-blue-50 rounded-lg">
+              <h4 class="font-semibold text-lg text-primary mb-3">
+                <i class="fas fa-lightbulb mr-2"></i>结论
+              </h4>
+              <p class="text-secondary">
+                对于大多数企业而言，<strong>采用成熟的一体化DevOps平台是性价比最高、风险最低的选择</strong>。它能够快速见效，帮助团队建立标准化的流程和协作文化。只有当一体化平台无法满足企业独特的业务需求，且企业有足够的技术实力和资源投入时，才应考虑构建自定义平台。
+              </p>
+            </div>
+          </div>
+
+          <!-- Future Trends -->
+          <div class="bg-white p-8 rounded-xl shadow-lg">
+            <h3 class="font-serif text-2xl font-bold text-primary mb-8 text-center">未来趋势</h3>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div class="text-center">
+                <div class="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <i class="fas fa-brain text-purple-600 text-3xl"></i>
+                </div>
+                <h4 class="font-serif text-xl font-bold text-primary mb-4">AI与DevOps融合</h4>
+                <p class="text-sm text-secondary mb-4">
+                  AI将更广泛地融入DevOps流程，实现智能自动化、异常预测和故障自愈。
+                </p>
+                <div class="space-y-2 text-xs text-blue-600">
+                  <div>AIOps - 智能运维</div>
+                  <div>MLOps - 机器学习运维</div>
+                  <div>智能发布策略</div>
+                </div>
+              </div>
+
+              <div class="text-center">
+                <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <i class="fas fa-stream text-green-600 text-3xl"></i>
+                </div>
+                <h4 class="font-serif text-xl font-bold text-primary mb-4">价值流管理</h4>
+                <p class="text-sm text-secondary mb-4">
+                  VSM提供端到端的全局视角，从业务价值层面评估和优化研发效能。
+                </p>
+                <div class="space-y-2 text-xs text-green-600">
+                  <div>流动效率分析</div>
+                  <div>瓶颈识别优化</div>
+                  <div>业务技术对齐</div>
+                </div>
+              </div>
+
+              <div class="text-center">
+                <div class="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <i class="fas fa-cube text-orange-600 text-3xl"></i>
+                </div>
+                <h4 class="font-serif text-xl font-bold text-primary mb-4">Web3与去中心化</h4>
+                <p class="text-sm text-secondary mb-4">
+                  Web3技术为构建去中心化协作网络提供可能性，增强数据安全和流程公信力。
+                </p>
+                <div class="space-y-2 text-xs text-orange-600">
+                  <div>区块链存储</div>
+                  <div>智能合约执行</div>
+                  <div>分布式协作</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Footer -->
+      <footer class="bg-primary text-white py-12">
+        <div class="max-w-6xl mx-auto px-6 lg:px-8 text-center">
+          <h3 class="font-serif text-2xl font-bold mb-4">互联网产品发版流程深度研究</h3>
+          <p class="text-blue-200 mb-6">解决研发与运维的协作困境，构建高效的DevOps实践体系</p>
+          <div class="flex justify-center space-x-6 text-sm text-blue-200">
+            <span>基于深度研究</span>
+            <span>•</span>
+            <span>实践案例分析</span>
+            <span>•</span>
+            <span>最佳实践总结</span>
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script>
+        // Initialize Mermaid
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'base',
+            themeVariables: {
+                primaryColor: '#e1f5fe',
+                primaryTextColor: '#1e293b',
+                primaryBorderColor: '#1e3a8a',
+                lineColor: '#64748b',
+                secondaryColor: '#f8fafc',
+                tertiaryColor: '#ffffff',
+                background: '#ffffff',
+                mainBkg: '#ffffff',
+                secondBkg: '#f8fafc',
+                tertiaryBkg: '#f1f5f9',
+                fontFamily: 'Inter, sans-serif',
+                fontSize: '14px'
+            },
+            flowchart: {
+                useMaxWidth: false,
+                htmlLabels: true,
+                curve: 'basis'
+            },
+            gantt: {
+                useMaxWidth: false
+            },
+            journey: {
+                useMaxWidth: false
+            }
+        });
+
+        // Initialize Mermaid Controls for zoom and pan
+        function initializeMermaidControls() {
+            const containers = document.querySelectorAll('.mermaid-container');
+
+            containers.forEach(container => {
+            const mermaidElement = container.querySelector('.mermaid');
+            let scale = 1;
+            let isDragging = false;
+            let startX, startY, translateX = 0, translateY = 0;
+
+            // 触摸相关状态
+            let isTouch = false;
+            let touchStartTime = 0;
+            let initialDistance = 0;
+            let initialScale = 1;
+            let isPinching = false;
+
+            // Zoom controls
+            const zoomInBtn = container.querySelector('.zoom-in');
+            const zoomOutBtn = container.querySelector('.zoom-out');
+            const resetBtn = container.querySelector('.reset-zoom');
+            const fullscreenBtn = container.querySelector('.fullscreen');
+
+            function updateTransform() {
+                mermaidElement.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+
+                if (scale > 1) {
+                container.classList.add('zoomed');
+                } else {
+                container.classList.remove('zoomed');
+                }
+
+                mermaidElement.style.cursor = isDragging ? 'grabbing' : 'grab';
+            }
+
+            if (zoomInBtn) {
+                zoomInBtn.addEventListener('click', () => {
+                scale = Math.min(scale * 1.25, 4);
+                updateTransform();
+                });
+            }
+
+            if (zoomOutBtn) {
+                zoomOutBtn.addEventListener('click', () => {
+                scale = Math.max(scale / 1.25, 0.3);
+                if (scale <= 1) {
+                    translateX = 0;
+                    translateY = 0;
+                }
+                updateTransform();
+                });
+            }
+
+            if (resetBtn) {
+                resetBtn.addEventListener('click', () => {
+                scale = 1;
+                translateX = 0;
+                translateY = 0;
+                updateTransform();
+                });
+            }
+
+            if (fullscreenBtn) {
+                fullscreenBtn.addEventListener('click', () => {
+                if (container.requestFullscreen) {
+                    container.requestFullscreen();
+                } else if (container.webkitRequestFullscreen) {
+                    container.webkitRequestFullscreen();
+                } else if (container.msRequestFullscreen) {
+                    container.msRequestFullscreen();
+                }
+                });
+            }
+
+            // Mouse Events
+            mermaidElement.addEventListener('mousedown', (e) => {
+                if (isTouch) return; // 如果是触摸设备，忽略鼠标事件
+
+                isDragging = true;
+                startX = e.clientX - translateX;
+                startY = e.clientY - translateY;
+                mermaidElement.style.cursor = 'grabbing';
+                updateTransform();
+                e.preventDefault();
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (isDragging && !isTouch) {
+                translateX = e.clientX - startX;
+                translateY = e.clientY - startY;
+                updateTransform();
+                }
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (isDragging && !isTouch) {
+                isDragging = false;
+                mermaidElement.style.cursor = 'grab';
+                updateTransform();
+                }
+            });
+
+            document.addEventListener('mouseleave', () => {
+                if (isDragging && !isTouch) {
+                isDragging = false;
+                mermaidElement.style.cursor = 'grab';
+                updateTransform();
+                }
+            });
+
+            // 获取两点之间的距离
+            function getTouchDistance(touch1, touch2) {
+                return Math.hypot(
+                touch2.clientX - touch1.clientX,
+                touch2.clientY - touch1.clientY
+                );
+            }
+
+            // Touch Events - 触摸事件处理
+            mermaidElement.addEventListener('touchstart', (e) => {
+                isTouch = true;
+                touchStartTime = Date.now();
+
+                if (e.touches.length === 1) {
+                // 单指拖动
+                isPinching = false;
+                isDragging = true;
+
+                const touch = e.touches[0];
+                startX = touch.clientX - translateX;
+                startY = touch.clientY - translateY;
+
+                } else if (e.touches.length === 2) {
+                // 双指缩放
+                isPinching = true;
+                isDragging = false;
+
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                initialDistance = getTouchDistance(touch1, touch2);
+                initialScale = scale;
+                }
+
+                e.preventDefault();
+            }, { passive: false });
+
+            mermaidElement.addEventListener('touchmove', (e) => {
+                if (e.touches.length === 1 && isDragging && !isPinching) {
+                // 单指拖动
+                const touch = e.touches[0];
+                translateX = touch.clientX - startX;
+                translateY = touch.clientY - startY;
+                updateTransform();
+
+                } else if (e.touches.length === 2 && isPinching) {
+                // 双指缩放
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                const currentDistance = getTouchDistance(touch1, touch2);
+
+                if (initialDistance > 0) {
+                    const newScale = Math.min(Math.max(
+                    initialScale * (currentDistance / initialDistance),
+                    0.3
+                    ), 4);
+                    scale = newScale;
+                    updateTransform();
+                }
+                }
+
+                e.preventDefault();
+            }, { passive: false });
+
+            mermaidElement.addEventListener('touchend', (e) => {
+                // 重置状态
+                if (e.touches.length === 0) {
+                isDragging = false;
+                isPinching = false;
+                initialDistance = 0;
+
+                // 延迟重置isTouch，避免鼠标事件立即触发
+                setTimeout(() => {
+                    isTouch = false;
+                }, 100);
+                } else if (e.touches.length === 1 && isPinching) {
+                // 从双指变为单指，切换为拖动模式
+                isPinching = false;
+                isDragging = true;
+
+                const touch = e.touches[0];
+                startX = touch.clientX - translateX;
+                startY = touch.clientY - translateY;
+                }
+
+                updateTransform();
+            });
+
+            mermaidElement.addEventListener('touchcancel', (e) => {
+                isDragging = false;
+                isPinching = false;
+                initialDistance = 0;
+
+                setTimeout(() => {
+                isTouch = false;
+                }, 100);
+
+                updateTransform();
+            });
+
+            // Enhanced wheel zoom with better center point handling
+            container.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                const rect = container.getBoundingClientRect();
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+
+                const delta = e.deltaY > 0 ? 0.9 : 1.1;
+                const newScale = Math.min(Math.max(scale * delta, 0.3), 4);
+
+                // Adjust translation to zoom towards center
+                if (newScale !== scale) {
+                const scaleDiff = newScale / scale;
+                translateX = translateX * scaleDiff;
+                translateY = translateY * scaleDiff;
+                scale = newScale;
+
+                if (scale <= 1) {
+                    translateX = 0;
+                    translateY = 0;
+                }
+
+                updateTransform();
+                }
+            });
+
+            // Initialize display
+            updateTransform();
+            });
+        }
+
+        // Initialize the controls when the DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeMermaidControls();
+        });
+
+        // TOC functionality
+        function toggleTOC() {
+            const toc = document.getElementById('toc');
+            const contentWrapper = document.getElementById('content-wrapper');
+            const toggleBtn = document.querySelector('.toc-toggle');
+            
+            toc.classList.toggle('active');
+            contentWrapper.classList.toggle('toc-active');
+            
+            const icon = toggleBtn.querySelector('i');
+            if (toc.classList.contains('active')) {
+                icon.classList.remove('fa-bars');
+                icon.classList.add('fa-times');
+            } else {
+                icon.classList.remove('fa-times');
+                icon.classList.add('fa-bars');
+            }
+        }
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                    
+                    // Close TOC on mobile after clicking
+                    if (window.innerWidth < 1024) {
+                        const toc = document.getElementById('toc');
+                        if (toc.classList.contains('active')) {
+                            toggleTOC();
+                        }
+                    }
+                }
+            });
+        });
+
+        // Highlight active section in TOC
+        function updateActiveSection() {
+            const sections = document.querySelectorAll('section[id]');
+            const tocLinks = document.querySelectorAll('#toc a[href^="#"]');
+            
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop - 100;
+                if (window.scrollY >= sectionTop) {
+                    current = section.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('bg-blue-100', 'text-blue-700', 'font-medium');
+                if (link.getAttribute('href') === `#${current}`) {
+                    link.classList.add('bg-blue-100', 'text-blue-700', 'font-medium');
+                }
+            });
+        }
+
+        // Update active section on scroll
+        window.addEventListener('scroll', updateActiveSection);
+        
+        // Initialize on load
+        updateActiveSection();
+
+        // Close TOC when clicking outside
+        document.addEventListener('click', function(event) {
+            const toc = document.getElementById('toc');
+            const toggleBtn = document.querySelector('.toc-toggle');
+            
+            if (toc.classList.contains('active') && 
+                !toc.contains(event.target) && 
+                event.target !== toggleBtn) {
+                toggleTOC();
+            }
+        });
+
+        // Handle window resize
+        function handleResize() {
+            const toc = document.getElementById('toc');
+            const contentWrapper = document.getElementById('content-wrapper');
+            const toggleBtn = document.querySelector('.toc-toggle');
+            const icon = toggleBtn.querySelector('i');
+            
+            if (window.innerWidth >= 1024) {
+                // Large screen: show TOC
+                toc.classList.add('active');
+                contentWrapper.classList.add('toc-active');
+                toggleBtn.style.display = 'none';
+            } else {
+                // Small screen: hide TOC
+                toc.classList.remove('active');
+                contentWrapper.classList.remove('toc-active');
+                toggleBtn.style.display = 'block';
+                icon.classList.remove('fa-times');
+                icon.classList.add('fa-bars');
+            }
+        }
+
+        // Initial call to set the state
+        handleResize();
+        
+        // Listen for resize events
+        window.addEventListener('resize', handleResize);
+    </script>
+  
+
+</body></html>

@@ -1,0 +1,1063 @@
+<!DOCTYPE html><html lang="zh-CN"><head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>TOB业务后台数据列表个性化配置存储与管理方案</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&amp;family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --secondary: #64748b;
+            --accent: #f59e0b;
+            --muted: #f8fafc;
+            --border: #e2e8f0;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.7;
+            color: #1e293b;
+        }
+        
+        .serif {
+            font-family: 'Playfair Display', serif;
+        }
+        
+        .hero-gradient {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 50%, #1e40af 100%);
+        }
+        
+        .toc-fixed {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 280px;
+            height: 100vh;
+            background: white;
+            border-right: 1px solid var(--border);
+            z-index: 40;
+            overflow-y: auto;
+            padding: 2rem 1.5rem;
+        }
+        
+        .main-content {
+            margin-left: 280px;
+            min-height: 100vh;
+        }
+        
+        .toc-link {
+            display: block;
+            padding: 0.5rem 0;
+            color: var(--secondary);
+            text-decoration: none;
+            border-left: 2px solid transparent;
+            padding-left: 1rem;
+            transition: all 0.2s;
+        }
+        
+        .toc-link:hover, .toc-link.active {
+            color: var(--primary);
+            border-left-color: var(--accent);
+            background: rgba(30, 58, 138, 0.05);
+        }
+        
+        .toc-link.sub {
+            font-size: 0.875rem;
+            padding-left: 2rem;
+            color: #64748b;
+        }
+        
+        .section-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent 0%, #e2e8f0 50%, transparent 100%);
+            margin: 3rem 0;
+        }
+        
+        .highlight-box {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-left: 4px solid var(--accent);
+        }
+        
+        .code-block {
+            background: #1e293b;
+            color: #e2e8f0;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+        }
+        
+        .chart-container {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .hero-overlay {
+            background: rgba(30, 58, 138, 0.15);
+        }
+        
+        @media (max-width: 1024px) {
+            .toc-fixed {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            
+            .toc-fixed.mobile-open {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+  <base target="_blank">
+</head>
+
+  <body class="bg-gray-50">
+    <!-- Mobile TOC Toggle -->
+    <button id="mobile-toc-toggle" class="lg:hidden fixed top-4 left-4 z-50 bg-white p-2 rounded-lg shadow-lg">
+      <i class="fas fa-bars text-gray-700"></i>
+    </button>
+
+    <!-- Table of Contents -->
+    <nav id="toc" class="toc-fixed">
+      <div class="mb-8">
+        <h2 class="serif text-lg font-semibold text-gray-900 mb-4">目录导航</h2>
+        <div class="space-y-1">
+          <a href="#hero" class="toc-link">概述</a>
+          <a href="#section-1" class="toc-link">1. 核心问题与解决方案</a>
+          <a href="#section-1-1" class="toc-link sub">1.1 个性化设置存储位置</a>
+          <a href="#section-1-2" class="toc-link sub">1.2 个性化设置存储格式</a>
+          <a href="#section-1-3" class="toc-link sub">1.3 不同维度组合的配置管理</a>
+          <a href="#section-2" class="toc-link">2. 后端存储设计与实现</a>
+          <a href="#section-2-1" class="toc-link sub">2.1 数据库表结构设计</a>
+          <a href="#section-2-2" class="toc-link sub">2.2 后端API设计与实现</a>
+          <a href="#section-2-3" class="toc-link sub">2.3 技术选型与实现细节</a>
+          <a href="#section-3" class="toc-link">3. 前端实现与前后端交互</a>
+          <a href="#section-3-1" class="toc-link sub">3.1 前端配置界面设计</a>
+          <a href="#section-3-2" class="toc-link sub">3.2 前后端数据交互</a>
+          <a href="#section-3-3" class="toc-link sub">3.3 前端技术选型与实现</a>
+          <a href="#section-4" class="toc-link">4. 不同维度组合的字段配置管理策略</a>
+          <a href="#section-4-1" class="toc-link sub">4.1 统一管理策略详解</a>
+          <a href="#section-4-2" class="toc-link sub">4.2 实现方式与注意事项</a>
+          <a href="#section-5" class="toc-link">5. 案例分析与最佳实践</a>
+          <a href="#section-5-1" class="toc-link sub">5.1 案例分析</a>
+          <a href="#section-5-2" class="toc-link sub">5.2 最佳实践与建议</a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- Hero Section -->
+      <section id="hero" class="relative min-h-screen flex items-center justify-center overflow-hidden">
+        <div class="hero-gradient absolute inset-0"></div>
+        <div class="hero-overlay absolute inset-0"></div>
+
+        <div class="relative z-10 max-w-6xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
+          <!-- Main Title -->
+          <div class="lg:col-span-2 text-center lg:text-left">
+            <h1 class="serif text-4xl md:text-5xl lg:text-7xl font-semibold text-white mb-6 leading-tight">
+              TOB业务后台数据列表
+              <span class="block italic text-amber-200 mt-2">
+                个性化配置存储方案
+              </span>
+            </h1>
+            <p class="text-lg md:text-xl text-blue-100 mb-8 max-w-2xl">
+              在支持用户个性化定制和多维度数据聚合的复杂场景下，设计一套稳健、高效且可扩展的后端存储与管理方案
+            </p>
+          </div>
+
+          <!-- Key Highlights -->
+          <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+            <h3 class="serif text-xl font-semibold text-white mb-4">核心要点</h3>
+            <div class="space-y-3">
+              <div class="flex items-center space-x-3">
+                <i class="fas fa-database text-amber-300"></i>
+                <span class="text-blue-100">后端数据库存储</span>
+              </div>
+              <div class="flex items-center space-x-3">
+                <i class="fas fa-code text-amber-300"></i>
+                <span class="text-blue-100">JSON格式配置</span>
+              </div>
+              <div class="flex items-center space-x-3">
+                <i class="fas fa-sitemap text-amber-300"></i>
+                <span class="text-blue-100">统一管理策略</span>
+              </div>
+              <div class="flex items-center space-x-3">
+                <i class="fas fa-sync text-amber-300"></i>
+                <span class="text-blue-100">跨设备同步</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <img src="https://kimi-web-img.moonshot.cn/img/pic.616pic.com/07a096afe4e1c042485ff0c5a60bf9dd303163aa.jpg" alt="蓝色抽象科技背景图" class="absolute inset-0 w-full h-full object-cover opacity-20" size="wallpaper" aspect="wide" color="blue" query="抽象科技背景" referrerpolicy="no-referrer" data-modified="1" data-score="0.00"/>
+      </section>
+
+      <!-- Main Content Sections -->
+      <div class="max-w-5xl mx-auto px-6 py-16">
+
+        <!-- Section 1 -->
+        <section id="section-1" class="mb-16">
+          <h2 class="serif text-4xl font-semibold text-gray-900 mb-8">1. 核心问题与解决方案概述</h2>
+
+          <div class="prose prose-lg max-w-none">
+            <p class="text-xl text-gray-700 leading-relaxed mb-6">
+              在面向企业（ToB）的后台管理系统中，数据列表是核心的信息展示与交互组件。不同用户或不同角色对于数据列表的展示需求存在显著差异，例如，销售经理可能更关心订单金额和客户地区，而产品经理则可能更关注产品类别和库存状态。
+            </p>
+
+            <div class="highlight-box p-6 rounded-lg mb-8">
+              <h3 class="serif text-xl font-semibold text-gray-900 mb-3">关键洞察</h3>
+              <p class="text-gray-800">
+                提供灵活的个性化配置功能，允许用户自定义字段的展示、顺序以及数据聚合维度，对于提升用户体验和工作效率至关重要。
+              </p>
+            </div>
+          </div>
+
+          <!-- Subsection 1.1 -->
+          <div id="section-1-1" class="mb-12">
+            <h3 class="serif text-2xl font-semibold text-gray-900 mb-6">1.1 个性化设置存储位置：后端数据库</h3>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+              <div>
+                <h4 class="font-semibold text-lg text-gray-900 mb-4">后端存储的优势</h4>
+                <ul class="space-y-3">
+                  <li class="flex items-start space-x-3">
+                    <i class="fas fa-check-circle text-green-500 mt-1"></i>
+                    <div>
+                      <strong class="text-gray-900">数据持久性</strong>
+                      <p class="text-gray-600 text-sm">用户配置不会因为清除浏览器缓存、更换设备而丢失</p>
+                    </div>
+                  </li>
+                  <li class="flex items-start space-x-3">
+                    <i class="fas fa-shield-alt text-blue-500 mt-1"></i>
+                    <div>
+                      <strong class="text-gray-900">数据安全性</strong>
+                      <p class="text-gray-600 text-sm">集中服务器端存储，统一权限校验和安全防护</p>
+                    </div>
+                  </li>
+                  <li class="flex items-start space-x-3">
+                    <i class="fas fa-sync text-purple-500 mt-1"></i>
+                    <div>
+                      <strong class="text-gray-900">跨设备同步</strong>
+                      <p class="text-gray-600 text-sm">任何设备登录都能看到一致的配置界面</p>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+
+              <div>
+                <h4 class="font-semibold text-lg text-gray-900 mb-4">前端存储的局限性</h4>
+                <ul class="space-y-3">
+                  <li class="flex items-start space-x-3">
+                    <i class="fas fa-exclamation-triangle text-red-500 mt-1"></i>
+                    <div>
+                      <strong class="text-gray-900">数据易丢失</strong>
+                      <p class="text-gray-600 text-sm">清理浏览器数据或无痕模式下配置会丢失</p>
+                    </div>
+                  </li>
+                  <li class="flex items-start space-x-3">
+                    <i class="fas fa-exclamation-triangle text-red-500 mt-1"></i>
+                    <div>
+                      <strong class="text-gray-900">安全隐患</strong>
+                      <p class="text-gray-600 text-sm">客户端数据易被查看和修改，缺乏安全校验</p>
+                    </div>
+                  </li>
+                  <li class="flex items-start space-x-3">
+                    <i class="fas fa-exclamation-triangle text-red-500 mt-1"></i>
+                    <div>
+                      <strong class="text-gray-900">无法实现同步</strong>
+                      <p class="text-gray-600 text-sm">配置绑定特定设备，更换环境需重新配置</p>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Subsection 1.2 -->
+          <div id="section-1-2" class="mb-12">
+            <h3 class="serif text-2xl font-semibold text-gray-900 mb-6">1.2 个性化设置存储格式：JSON</h3>
+
+            <div class="bg-white rounded-xl p-8 shadow-sm border border-gray-200 mb-8">
+              <h4 class="font-semibold text-lg text-gray-900 mb-4">JSON格式的优点</h4>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="text-center">
+                  <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-puzzle-piece text-2xl text-blue-600"></i>
+                  </div>
+                  <h5 class="font-semibold text-gray-900 mb-2">结构灵活</h5>
+                  <p class="text-sm text-gray-600">轻松表示复杂的嵌套数据结构，支持多层级配置信息</p>
+                </div>
+                <div class="text-center">
+                  <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-code text-2xl text-green-600"></i>
+                  </div>
+                  <h5 class="font-semibold text-gray-900 mb-2">易于处理</h5>
+                  <p class="text-sm text-gray-600">JavaScript原生支持，前后端都有成熟的处理库</p>
+                </div>
+                <div class="text-center">
+                  <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-database text-2xl text-purple-600"></i>
+                  </div>
+                  <h5 class="font-semibold text-gray-900 mb-2">兼容性好</h5>
+                  <p class="text-sm text-gray-600">现代数据库原生支持JSON类型，提供丰富操作函数</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Subsection 1.3 -->
+          <div id="section-1-3" class="mb-12">
+            <h3 class="serif text-2xl font-semibold text-gray-900 mb-6">1.3 不同维度组合的配置管理：统一管理</h3>
+
+            <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-8 mb-8">
+              <div class="flex items-start space-x-4">
+                <div class="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <i class="fas fa-sitemap text-white text-xl"></i>
+                </div>
+                <div>
+                  <h4 class="font-semibold text-lg text-gray-900 mb-3">统一管理策略</h4>
+                  <p class="text-gray-700 mb-4">
+                    将所有可能的维度组合及其对应的字段配置，都存储在一个统一的JSON对象中。这个JSON对象的顶层结构可以是一个字典，其键是维度组合的唯一标识符，值则是该维度组合下的具体字段配置。
+                  </p>
+                  <div class="bg-white rounded-lg p-4 border border-blue-200">
+                    <code class="text-sm text-gray-800">
+                                        {<br/>
+                                          &#34;schemas&#34;: {<br/>
+                                            &#34;default&#34;: { ... },<br/>
+                                            &#34;dimension_category&#34;: { ... },<br/>
+                                            &#34;dimension_region&#34;: { ... }<br/>
+                                          }<br/>
+                                        }
+                                    </code>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- Section 2 -->
+        <section id="section-2" class="mb-16">
+          <h2 class="serif text-4xl font-semibold text-gray-900 mb-8">2. 后端存储设计与实现</h2>
+
+          <!-- Subsection 2.1 -->
+          <div id="section-2-1" class="mb-12">
+            <h3 class="serif text-2xl font-semibold text-gray-900 mb-6">2.1 数据库表结构设计</h3>
+
+            <div class="bg-white rounded-xl p-8 shadow-sm border border-gray-200 mb-8">
+              <h4 class="font-semibold text-lg text-gray-900 mb-4">核心字段设计</h4>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <h5 class="font-medium text-gray-900 mb-3">必需字段</h5>
+                  <ul class="space-y-2 text-sm">
+                    <li class="flex items-center space-x-2">
+                      <span class="w-2 h-2 bg-blue-500 rounded-full"></span>
+                      <code class="bg-gray-100 px-2 py-1 rounded">user_id</code> - 用户ID
+                    </li>
+                    <li class="flex items-center space-x-2">
+                      <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+                      <code class="bg-gray-100 px-2 py-1 rounded">table_key</code> - 表格标识
+                    </li>
+                    <li class="flex items-center space-x-2">
+                      <span class="w-2 h-2 bg-purple-500 rounded-full"></span>
+                      <code class="bg-gray-100 px-2 py-1 rounded">config_json</code> - JSON配置
+                    </li>
+                  </ul>
+                </div>
+                <div>
+                  <h5 class="font-medium text-gray-900 mb-3">辅助字段</h5>
+                  <ul class="space-y-2 text-sm">
+                    <li class="flex items-center space-x-2">
+                      <span class="w-2 h-2 bg-gray-400 rounded-full"></span>
+                      <code class="bg-gray-100 px-2 py-1 rounded">created_at</code> - 创建时间
+                    </li>
+                    <li class="flex items-center space-x-2">
+                      <span class="w-2 h-2 bg-gray-400 rounded-full"></span>
+                      <code class="bg-gray-100 px-2 py-1 rounded">updated_at</code> - 更新时间
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div class="code-block p-6 mb-8">
+              <h4 class="text-white font-semibold mb-4">Flask-SQLAlchemy 模型定义</h4>
+              <pre class="text-sm"><code>from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
+
+db = SQLAlchemy()
+
+class UserTableConfig(db.Model):
+    __tablename__ = &#39;user_table_config&#39;
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    user_id = db.Column(db.Integer, db.ForeignKey(&#39;users.id&#39;), nullable=False)
+    table_key = db.Column(db.String(128), nullable=False)
+    config_json = db.Column(db.JSON, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    __table_args__ = (
+        db.UniqueConstraint(&#39;user_id&#39;, &#39;table_key&#39;, name=&#39;uix_user_table&#39;),
+        db.Index(&#39;ix_user_id&#39;, &#39;user_id&#39;),
+        db.Index(&#39;ix_table_key&#39;, &#39;table_key&#39;),
+    )</code></pre>
+            </div>
+          </div>
+
+          <!-- Subsection 2.2 -->
+          <div id="section-2-2" class="mb-12">
+            <h3 class="serif text-2xl font-semibold text-gray-900 mb-6">2.2 后端API设计与实现</h3>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div class="code-block p-6">
+                <h4 class="text-white font-semibold mb-4">保存配置 API</h4>
+                <pre class="text-sm"><code>@api_bp.route(&#39;/save&#39;, methods=[&#39;POST&#39;])
+def save_table_config():
+    data = request.get_json(force=True, silent=True)
+    if not data:
+        return jsonify({&#39;error&#39;: &#39;Invalid JSON data&#39;}), 400
+
+    user_id = data.get(&#39;user_id&#39;)
+    table_key = data.get(&#39;table_key&#39;)
+    config_json = data.get(&#39;config_json&#39;)
+
+    if not all([user_id, table_key, config_json]):
+        return jsonify({&#39;error&#39;: &#39;Missing required fields&#39;}), 400
+
+    config = UserTableConfig.query.filter_by(
+        user_id=user_id, table_key=table_key
+    ).first()
+
+    try:
+        if config:
+            config.config_json = config_json
+            db.session.commit()
+            return jsonify({&#39;message&#39;: &#39;Configuration updated successfully&#39;}), 200
+        else:
+            new_config = UserTableConfig(
+                user_id=user_id,
+                table_key=table_key,
+                config_json=config_json
+            )
+            db.session.add(new_config)
+            db.session.commit()
+            return jsonify({&#39;message&#39;: &#39;Configuration saved successfully&#39;}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({&#39;error&#39;: &#39;Failed to save configuration&#39;, &#39;details&#39;: str(e)}), 500</code></pre>
+              </div>
+
+              <div class="code-block p-6">
+                <h4 class="text-white font-semibold mb-4">获取配置 API</h4>
+                <pre class="text-sm"><code>@api_bp.route(&#39;/get&#39;, methods=[&#39;GET&#39;])
+def get_table_config():
+    user_id = request.args.get(&#39;user_id&#39;, type=int)
+    table_key = request.args.get(&#39;table_key&#39;, type=str)
+
+    if not all([user_id, table_key]):
+        return jsonify({&#39;error&#39;: &#39;Missing required parameters&#39;}), 400
+
+    config = UserTableConfig.query.filter_by(
+        user_id=user_id, table_key=table_key
+    ).first()
+
+    if config:
+        return jsonify({&#39;config&#39;: config.config_json}), 200
+    else:
+        return jsonify({&#39;config&#39;: None}), 404</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <!-- Subsection 2.3 -->
+          <div id="section-2-3" class="mb-12">
+            <h3 class="serif text-2xl font-semibold text-gray-900 mb-6">2.3 技术选型与实现细节</h3>
+
+            <div class="bg-white rounded-xl p-8 shadow-sm border border-gray-200">
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="text-center">
+                  <div class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fab fa-python text-3xl text-blue-600"></i>
+                  </div>
+                  <h4 class="font-semibold text-gray-900 mb-2">后端框架</h4>
+                  <p class="text-sm text-gray-600 mb-3">Flask 或 Django</p>
+                  <div class="text-xs text-gray-500">
+                    <p>• Flask: 轻量级微框架</p>
+                    <p>• Django: 全栈框架</p>
+                  </div>
+                </div>
+                <div class="text-center">
+                  <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-database text-3xl text-green-600"></i>
+                  </div>
+                  <h4 class="font-semibold text-gray-900 mb-2">数据库</h4>
+                  <p class="text-sm text-gray-600 mb-3">MySQL 或 PostgreSQL</p>
+                  <div class="text-xs text-gray-500">
+                    <p>• MySQL 5.7+ 支持JSON</p>
+                    <p>• PostgreSQL JSONB性能更优</p>
+                  </div>
+                </div>
+                <div class="text-center">
+                  <div class="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-layer-group text-3xl text-purple-600"></i>
+                  </div>
+                  <h4 class="font-semibold text-gray-900 mb-2">ORM</h4>
+                  <p class="text-sm text-gray-600 mb-3">JSONField 支持</p>
+                  <div class="text-xs text-gray-500">
+                    <p>• SQLAlchemy JSON类型</p>
+                    <p>• Django JSONField</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- Section 3 -->
+        <section id="section-3" class="mb-16">
+          <h2 class="serif text-4xl font-semibold text-gray-900 mb-8">3. 前端实现与前后端交互</h2>
+
+          <!-- Subsection 3.1 -->
+          <div id="section-3-1" class="mb-12">
+            <h3 class="serif text-2xl font-semibold text-gray-900 mb-6">3.1 前端配置界面设计</h3>
+
+            <div class="bg-white rounded-xl p-8 shadow-sm border border-gray-200 mb-8">
+              <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="text-center">
+                  <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-mouse-pointer text-2xl text-blue-600"></i>
+                  </div>
+                  <h4 class="font-semibold text-gray-900 mb-2">字段选择与排序</h4>
+                  <p class="text-sm text-gray-600">拖拽排序、勾选选择，支持动态调整字段显示顺序</p>
+                </div>
+                <div class="text-center">
+                  <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-filter text-2xl text-green-600"></i>
+                  </div>
+                  <h4 class="font-semibold text-gray-900 mb-2">维度选择与聚合</h4>
+                  <p class="text-sm text-gray-600">下拉框、多选框，支持按类别、地区等维度聚合数据</p>
+                </div>
+                <div class="text-center">
+                  <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-lock text-2xl text-purple-600"></i>
+                  </div>
+                  <h4 class="font-semibold text-gray-900 mb-2">必显字段关联</h4>
+                  <p class="text-sm text-gray-600">根据维度选择自动展示关联的必需字段，带锁定图标</p>
+                </div>
+              </div>
+            </div>
+
+            <img src="https://kimi-web-img.moonshot.cn/img/study.sf.163.com/ef6f3f76798b7f51ed61ea83c0ea364b1777ec19.png" alt="数据表格设置界面，包含字段选择和排序功能" class="w-full rounded-xl shadow-sm border border-gray-200" size="medium" aspect="wide" style="photo" query="数据表格设置界面" referrerpolicy="no-referrer" data-modified="1" data-score="0.00"/>
+          </div>
+
+          <!-- Subsection 3.2 -->
+          <div id="section-3-2" class="mb-12">
+            <h3 class="serif text-2xl font-semibold text-gray-900 mb-6">3.2 前后端数据交互</h3>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                <h4 class="font-semibold text-lg text-gray-900 mb-4 flex items-center">
+                  <i class="fas fa-paper-plane text-blue-500 mr-2"></i>
+                  前端发送配置
+                </h4>
+                <div class="space-y-3 text-sm">
+                  <div class="flex items-start space-x-2">
+                    <span class="w-5 h-5 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xs font-bold">1</span>
+                    <span>收集配置状态：字段选择、排序、聚合维度</span>
+                  </div>
+                  <div class="flex items-start space-x-2">
+                    <span class="w-5 h-5 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xs font-bold">2</span>
+                    <span>构建JSON对象，符合后端API要求</span>
+                  </div>
+                  <div class="flex items-start space-x-2">
+                    <span class="w-5 h-5 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xs font-bold">3</span>
+                    <span>通过axios或fetch发送API请求</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                <h4 class="font-semibold text-lg text-gray-900 mb-4 flex items-center">
+                  <i class="fas fa-download text-green-500 mr-2"></i>
+                  前端获取配置
+                </h4>
+                <div class="space-y-3 text-sm">
+                  <div class="flex items-start space-x-2">
+                    <span class="w-5 h-5 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-xs font-bold">1</span>
+                    <span>页面加载时发起API请求</span>
+                  </div>
+                  <div class="flex items-start space-x-2">
+                    <span class="w-5 h-5 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-xs font-bold">2</span>
+                    <span>接收后端返回的JSON配置数据</span>
+                  </div>
+                  <div class="flex items-start space-x-2">
+                    <span class="w-5 h-5 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-xs font-bold">3</span>
+                    <span>解析并应用配置到UI组件</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Subsection 3.3 -->
+          <div id="section-3-3" class="mb-12">
+            <h3 class="serif text-2xl font-semibold text-gray-900 mb-6">3.3 前端技术选型与实现</h3>
+
+            <div class="bg-white rounded-xl p-8 shadow-sm border border-gray-200">
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                  <h4 class="font-semibold text-gray-900 mb-3 flex items-center">
+                    <i class="fab fa-vuejs text-green-500 mr-2"></i>
+                    前端框架
+                  </h4>
+                  <div class="space-y-2 text-sm text-gray-600">
+                    <p><strong>Vue.js:</strong> 渐进式框架，适合后台管理系统</p>
+                    <p><strong>React:</strong> 函数式编程，生态系统丰富</p>
+                  </div>
+                </div>
+                <div>
+                  <h4 class="font-semibold text-gray-900 mb-3 flex items-center">
+                    <i class="fas fa-table text-blue-500 mr-2"></i>
+                    表格组件
+                  </h4>
+                  <div class="space-y-2 text-sm text-gray-600">
+                    <p><strong>Element UI:</strong> Vue组件库，功能强大</p>
+                    <p><strong>Ant Design:</strong> 设计语言统一，质量高</p>
+                  </div>
+                </div>
+                <div>
+                  <h4 class="font-semibold text-gray-900 mb-3 flex items-center">
+                    <i class="fas fa-hand-paper text-purple-500 mr-2"></i>
+                    拖拽排序
+                  </h4>
+                  <div class="space-y-2 text-sm text-gray-600">
+                    <p><strong>vuedraggable:</strong> 基于Sortable.js</p>
+                    <p>无缝集成Vue响应式系统</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- Section 4 -->
+        <section id="section-4" class="mb-16">
+          <h2 class="serif text-4xl font-semibold text-gray-900 mb-8">4. 不同维度组合的字段配置管理策略</h2>
+
+          <!-- Subsection 4.1 -->
+          <div id="section-4-1" class="mb-12">
+            <h3 class="serif text-2xl font-semibold text-gray-900 mb-6">4.1 统一管理策略详解</h3>
+
+            <div class="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-xl p-8 mb-8">
+              <h4 class="font-semibold text-lg text-gray-900 mb-4">JSON结构设计：以维度组合为键</h4>
+              <div class="code-block p-6">
+                <pre class="text-sm"><code>{
+  &#34;schemas&#34;: {
+    &#34;default&#34;: {
+      &#34;name&#34;: &#34;默认视图&#34;,
+      &#34;columns&#34;: [&#34;id&#34;, &#34;product_name&#34;, &#34;category&#34;, &#34;price&#34;, &#34;stock&#34;],
+      &#34;columnOrder&#34;: [&#34;id&#34;, &#34;product_name&#34;, &#34;category&#34;, &#34;price&#34;, &#34;stock&#34;],
+      &#34;requiredColumns&#34;: [&#34;id&#34;, &#34;product_name&#34;]
+    },
+    &#34;dimension_category&#34;: {
+      &#34;name&#34;: &#34;按类别聚合&#34;,
+      &#34;columns&#34;: [&#34;category&#34;, &#34;total_sales&#34;, &#34;product_count&#34;, &#34;avg_price&#34;],
+      &#34;columnOrder&#34;: [&#34;category&#34;, &#34;total_sales&#34;, &#34;product_count&#34;, &#34;avg_price&#34;],
+      &#34;requiredColumns&#34;: [&#34;category&#34;, &#34;total_sales&#34;]
+    },
+    &#34;dimension_region&#34;: {
+      &#34;name&#34;: &#34;按地区聚合&#34;,
+      &#34;columns&#34;: [&#34;region&#34;, &#34;customer_count&#34;, &#34;total_revenue&#34;, &#34;top_product&#34;],
+      &#34;columnOrder&#34;: [&#34;region&#34;, &#34;total_revenue&#34;, &#34;customer_count&#34;, &#34;top_product&#34;],
+      &#34;requiredColumns&#34;: [&#34;region&#34;, &#34;customer_count&#34;]
+    }
+  },
+  &#34;activeSchema&#34;: &#34;default&#34;
+}</code></pre>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+                <h4 class="font-semibold text-gray-900 mb-3 flex items-center">
+                  <i class="fas fa-list text-blue-500 mr-2"></i>
+                  字段列表
+                </h4>
+                <p class="text-sm text-gray-600">定义该方案下可供用户选择的字段列表，可作为前端渲染字段选择器的数据源</p>
+              </div>
+              <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+                <h4 class="font-semibold text-gray-900 mb-3 flex items-center">
+                  <i class="fas fa-lock text-red-500 mr-2"></i>
+                  必显字段
+                </h4>
+                <p class="text-sm text-gray-600">该方案下必须显示的字段，通常与聚合逻辑紧密相关，不能被用户隐藏</p>
+              </div>
+              <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+                <h4 class="font-semibold text-gray-900 mb-3 flex items-center">
+                  <i class="fas fa-sort text-green-500 mr-2"></i>
+                  字段排序
+                </h4>
+                <p class="text-sm text-gray-600">定义字段的初始顺序，用户拖拽改变顺序后会被更新并保存</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Subsection 4.2 -->
+          <div id="section-4-2" class="mb-12">
+            <h3 class="serif text-2xl font-semibold text-gray-900 mb-6">4.2 实现方式与注意事项</h3>
+
+            <div class="space-y-8">
+              <div class="bg-white rounded-xl p-8 shadow-sm border border-gray-200">
+                <h4 class="font-semibold text-lg text-gray-900 mb-4 flex items-center">
+                  <i class="fas fa-code text-blue-500 mr-2"></i>
+                  前端处理
+                </h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <h5 class="font-medium text-gray-900 mb-2">核心逻辑</h5>
+                    <ul class="space-y-2 text-sm text-gray-600">
+                      <li>• 监听维度选择变化</li>
+                      <li>• 查找并应用对应方案</li>
+                      <li>• 动态更新表格列定义</li>
+                      <li>• 更新激活状态标识</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <h5 class="font-medium text-gray-900 mb-2">UI更新</h5>
+                    <ul class="space-y-2 text-sm text-gray-600">
+                      <li>• 根据requiredColumns锁定字段</li>
+                      <li>• 设置列的初始顺序</li>
+                      <li>• 更新表格数据源</li>
+                      <li>• 显示锁定图标提示</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-white rounded-xl p-8 shadow-sm border border-gray-200">
+                <h4 class="font-semibold text-lg text-gray-900 mb-4 flex items-center">
+                  <i class="fas fa-server text-green-500 mr-2"></i>
+                  后端处理
+                </h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <h5 class="font-medium text-gray-900 mb-2">API设计</h5>
+                    <ul class="space-y-2 text-sm text-gray-600">
+                      <li>• 接收完整配置JSON对象</li>
+                      <li>• 进行基本结构校验</li>
+                      <li>• 使用ORM直接存储</li>
+                      <li>• 原样返回配置数据</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <h5 class="font-medium text-gray-900 mb-2">数据库操作</h5>
+                    <ul class="space-y-2 text-sm text-gray-600">
+                      <li>• 检查配置版本号</li>
+                      <li>• 执行迁移逻辑（如有需要）</li>
+                      <li>• 支持事务回滚</li>
+                      <li>• 提供默认配置</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-white rounded-xl p-8 shadow-sm border border-gray-200">
+                <h4 class="font-semibold text-lg text-gray-900 mb-4 flex items-center">
+                  <i class="fas fa-expand-arrows-alt text-purple-500 mr-2"></i>
+                  扩展性考虑
+                </h4>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div>
+                    <h5 class="font-medium text-gray-900 mb-2">新增维度</h5>
+                    <p class="text-sm text-gray-600">定义新的维度常量，UI增加选项，优雅处理无预设配置情况</p>
+                  </div>
+                  <div>
+                    <h5 class="font-medium text-gray-900 mb-2">新增字段</h5>
+                    <p class="text-sm text-gray-600">更新相关方案的columns列表，用户手动选择显示新字段</p>
+                  </div>
+                  <div>
+                    <h5 class="font-medium text-gray-900 mb-2">配置版本化</h5>
+                    <p class="text-sm text-gray-600">引入版本号，支持平滑升级，引导用户迁移或保留旧配置</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- Section 5 -->
+        <section id="section-5" class="mb-16">
+          <h2 class="serif text-4xl font-semibold text-gray-900 mb-8">5. 案例分析与最佳实践</h2>
+
+          <!-- Subsection 5.1 -->
+          <div id="section-5-1" class="mb-12">
+            <h3 class="serif text-2xl font-semibold text-gray-900 mb-6">5.1 案例分析：Vue.js + Spring Boot实现</h3>
+
+            <div class="bg-white rounded-xl p-8 shadow-sm border border-gray-200 mb-8">
+              <h4 class="font-semibold text-lg text-gray-900 mb-6 flex items-center">
+                <i class="fas fa-code-branch text-blue-500 mr-2"></i>
+                完整技术栈实现案例
+              </h4>
+
+              <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div>
+                  <h5 class="font-medium text-gray-900 mb-3">前端实现</h5>
+                  <div class="space-y-3 text-sm text-gray-600">
+                    <p><strong>配置界面组件：</strong>TableSettings.vue</p>
+                    <p><strong>拖拽排序：</strong>vuedraggable集成</p>
+                    <p><strong>状态管理：</strong>响应式数据处理</p>
+                    <p><strong>API交互：</strong>axios请求封装</p>
+                  </div>
+                </div>
+                <div>
+                  <h5 class="font-medium text-gray-900 mb-3">后端实现</h5>
+                  <div class="space-y-3 text-sm text-gray-600">
+                    <p><strong>数据库模型：</strong>TableConfig实体类</p>
+                    <p><strong>API控制器：</strong>RESTful接口</p>
+                    <p><strong>权限控制：</strong>@LoginRequired注解</p>
+                    <p><strong>事务管理：</strong>数据库操作回滚</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-gray-50 rounded-xl p-8">
+              <h4 class="font-semibold text-lg text-gray-900 mb-4">交互流程详解</h4>
+
+              <div class="space-y-6">
+                <div class="bg-white rounded-lg p-6 border border-gray-200">
+                  <h5 class="font-medium text-gray-900 mb-3 flex items-center">
+                    <span class="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-bold mr-3">1</span>
+                    页面首次加载
+                  </h5>
+                  <p class="text-sm text-gray-600 mb-3">产品列表组件挂载时，同时初始化表格数据和配置组件</p>
+                  <div class="text-xs text-gray-500">
+                    <p>• 获取默认表格数据</p>
+                    <p>• 加载配置组件</p>
+                    <p>• 发起配置API请求</p>
+                  </div>
+                </div>
+
+                <div class="bg-white rounded-lg p-6 border border-gray-200">
+                  <h5 class="font-medium text-gray-900 mb-3 flex items-center">
+                    <span class="w-8 h-8 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-sm font-bold mr-3">2</span>
+                    配置获取与应用
+                  </h5>
+                  <p class="text-sm text-gray-600 mb-3">配置组件获取到配置后，更新UI状态并通知父组件</p>
+                  <div class="text-xs text-gray-500">
+                    <p>• 解析配置JSON</p>
+                    <p>• 更新选中维度</p>
+                    <p>• 应用字段配置</p>
+                  </div>
+                </div>
+
+                <div class="bg-white rounded-lg p-6 border border-gray-200">
+                  <h5 class="font-medium text-gray-900 mb-3 flex items-center">
+                    <span class="w-8 h-8 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-sm font-bold mr-3">3</span>
+                    用户修改与保存
+                  </h5>
+                  <p class="text-sm text-gray-600 mb-3">用户修改配置后触发保存流程，完成持久化存储</p>
+                  <div class="text-xs text-gray-500">
+                    <p>• 构建保存payload</p>
+                    <p>• 发送保存请求</p>
+                    <p>• 通知父组件更新</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Subsection 5.2 -->
+          <div id="section-5-2" class="mb-12">
+            <h3 class="serif text-2xl font-semibold text-gray-900 mb-6">5.2 最佳实践与建议</h3>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                  <i class="fas fa-code-branch text-blue-600"></i>
+                </div>
+                <h4 class="font-semibold text-gray-900 mb-3">配置版本控制</h4>
+                <div class="space-y-2 text-sm text-gray-600">
+                  <p><strong>版本号管理：</strong>在配置JSON中添加版本号字段</p>
+                  <p><strong>迁移逻辑：</strong>后端提供配置迁移函数，自动升级旧配置</p>
+                  <p><strong>兼容性处理：</strong>前端进行防御性编程，过滤无效字段</p>
+                </div>
+              </div>
+
+              <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                  <i class="fas fa-tachometer-alt text-green-600"></i>
+                </div>
+                <h4 class="font-semibold text-gray-900 mb-3">性能优化</h4>
+                <div class="space-y-2 text-sm text-gray-600">
+                  <p><strong>前端缓存：</strong>使用Vuex或Pinia缓存配置数据</p>
+                  <p><strong>后端缓存：</strong>引入Redis缓存层，减少数据库查询</p>
+                  <p><strong>懒加载：</strong>配置面板组件按需加载</p>
+                </div>
+              </div>
+
+              <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                  <i class="fas fa-shield-alt text-red-600"></i>
+                </div>
+                <h4 class="font-semibold text-gray-900 mb-3">安全性考虑</h4>
+                <div class="space-y-2 text-sm text-gray-600">
+                  <p><strong>权限控制：</strong>确保API端点受认证保护</p>
+                  <p><strong>输入校验：</strong>严格校验JSON结构和字段类型</p>
+                  <p><strong>防止XSS：</strong>用户输入内容渲染前进行转义</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-gradient-to-r from-amber-50 to-orange-100 rounded-xl p-8 mt-8">
+              <h4 class="font-semibold text-lg text-gray-900 mb-4 flex items-center">
+                <i class="fas fa-lightbulb text-amber-500 mr-2"></i>
+                核心建议总结
+              </h4>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <ul class="space-y-3 text-sm text-gray-700">
+                  <li class="flex items-start space-x-2">
+                    <i class="fas fa-check text-green-500 mt-1"></i>
+                    <span>始终坚持后端存储，确保数据安全和同步</span>
+                  </li>
+                  <li class="flex items-start space-x-2">
+                    <i class="fas fa-check text-green-500 mt-1"></i>
+                    <span>采用JSON格式存储，保持结构灵活性</span>
+                  </li>
+                  <li class="flex items-start space-x-2">
+                    <i class="fas fa-check text-green-500 mt-1"></i>
+                    <span>使用统一管理策略，避免配置冗余</span>
+                  </li>
+                </ul>
+                <ul class="space-y-3 text-sm text-gray-700">
+                  <li class="flex items-start space-x-2">
+                    <i class="fas fa-check text-green-500 mt-1"></i>
+                    <span>提供直观的配置界面，降低用户学习成本</span>
+                  </li>
+                  <li class="flex items-start space-x-2">
+                    <i class="fas fa-check text-green-500 mt-1"></i>
+                    <span>考虑配置版本化，应对未来业务变化</span>
+                  </li>
+                  <li class="flex items-start space-x-2">
+                    <i class="fas fa-check text-green-500 mt-1"></i>
+                    <span>重视性能优化和安全性设计</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Conclusion -->
+        <section class="bg-gradient-to-br from-gray-900 to-blue-900 rounded-2xl p-12 text-white">
+          <h2 class="serif text-3xl font-semibold mb-6 text-center">总结与展望</h2>
+          <div class="max-w-4xl mx-auto">
+            <p class="text-xl text-blue-100 mb-8 text-center leading-relaxed">
+              在ToB业务场景下，后台数据列表的个性化配置是一个复杂但至关重要的功能。通过本报告提出的存储方案，企业可以构建一个既灵活又可靠的个性化系统。
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div class="text-center">
+                <div class="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <i class="fas fa-database text-2xl"></i>
+                </div>
+                <h3 class="font-semibold mb-2">后端存储</h3>
+                <p class="text-sm text-blue-100">确保配置持久性、安全性和跨设备同步</p>
+              </div>
+              <div class="text-center">
+                <div class="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <i class="fas fa-code text-2xl"></i>
+                </div>
+                <h3 class="font-semibold mb-2">JSON格式</h3>
+                <p class="text-sm text-blue-100">提供灵活的数据结构和良好的兼容性</p>
+              </div>
+              <div class="text-center">
+                <div class="w-16 h-16 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <i class="fas fa-sitemap text-2xl"></i>
+                </div>
+                <h3 class="font-semibold mb-2">统一管理</h3>
+                <p class="text-sm text-blue-100">简化数据管理，避免冗余，提升可维护性</p>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <script>
+        // Mobile TOC Toggle
+        document.getElementById('mobile-toc-toggle').addEventListener('click', function(e) {
+            const toc = document.getElementById('toc');
+            toc.classList.toggle('mobile-open');
+            e.stopPropagation(); // Prevent this click from triggering the document click listener
+        });
+
+        // Close TOC when clicking outside
+        document.addEventListener('click', function(event) {
+            const toc = document.getElementById('toc');
+            const mobileToggle = document.getElementById('mobile-toc-toggle');
+            // Check if the click is inside the TOC or on the toggle button
+            if (!toc.contains(event.target) && event.target !== mobileToggle) {
+                toc.classList.remove('mobile-open');
+            }
+        });
+
+        // TOC Active Link Tracking
+        function updateActiveLink() {
+            const sections = document.querySelectorAll('section[id], div[id]');
+            const tocLinks = document.querySelectorAll('.toc-link');
+            
+            let currentSection = '';
+            sections.forEach(section => {
+                const rect = section.getBoundingClientRect();
+                if (rect.top <= 100 && rect.bottom >= 100) {
+                    currentSection = section.id;
+                }
+            });
+
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === `#${currentSection}`) {
+                    link.classList.add('active');
+                }
+            });
+        }
+
+        // Smooth scrolling for TOC links
+        document.querySelectorAll('.toc-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href').substring(1);
+                const targetElement = document.getElementById(targetId);
+                if (targetElement) {
+                    targetElement.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+                // Close mobile TOC
+                document.getElementById('toc').classList.remove('mobile-open');
+            });
+        });
+
+        // Update active link on scroll
+        window.addEventListener('scroll', updateActiveLink);
+        window.addEventListener('load', updateActiveLink);
+    </script>
+  
+
+</body></html>

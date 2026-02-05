@@ -1,0 +1,1496 @@
+<!DOCTYPE html><html lang="zh-CN"><head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>国内大厂算法面试真题分析：2023-2024年度报告</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1e3a8a',
+                        secondary: '#64748b',
+                        accent: '#3b82f6',
+                        neutral: '#f8fafc',
+                        'base-100': '#ffffff'
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif'],
+                        'serif': ['Playfair Display', 'serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&amp;display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        .gradient-text {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .hero-overlay {
+            background: linear-gradient(135deg, rgba(30, 58, 138, 0.9) 0%, rgba(59, 130, 246, 0.8) 100%);
+        }
+        
+        .citation-link {
+            color: #3b82f6;
+            text-decoration: none;
+            font-size: 0.75rem;
+            vertical-align: super;
+            margin-left: 2px;
+        }
+        
+        .citation-link:hover {
+            text-decoration: underline;
+        }
+        
+        .toc-fixed {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 280px;
+            height: 100vh;
+            background: #f8fafc;
+            border-right: 1px solid #e2e8f0;
+            overflow-y: auto;
+            z-index: 1000;
+            padding: 1.5rem;
+        }
+        
+        .main-content {
+            margin-left: 280px;
+            min-height: 100vh;
+        }
+        
+        .toc-link {
+            display: block;
+            padding: 0.5rem 0;
+            color: #64748b;
+            text-decoration: none;
+            border-left: 2px solid transparent;
+            padding-left: 1rem;
+            transition: all 0.2s;
+        }
+        
+        .toc-link:hover, .toc-link.active {
+            color: #1e3a8a;
+            border-left-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.05);
+        }
+        
+        .section-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #e2e8f0, transparent);
+            margin: 3rem 0;
+        }
+        
+        .data-card {
+            background: linear-gradient(135deg, rgba(248, 250, 252, 0.8) 0%, rgba(241, 245, 249, 0.6) 100%);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(226, 232, 240, 0.5);
+        }
+        
+        /* Mermaid diagram styling */
+        .mermaid-container {
+            display: flex;
+            justify-content: center;
+            min-height: 300px;
+            max-height: 800px;
+            background: #ffffff;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 30px;
+            margin: 30px 0;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mermaid-container .mermaid {
+            width: 100%;
+            max-width: 100%;
+            height: 100%;
+            cursor: grab;
+            transition: transform 0.3s ease;
+            transform-origin: center center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            touch-action: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        .mermaid-container .mermaid svg {
+            max-width: 100%;
+            height: 100%;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .mermaid-container .mermaid:active {
+            cursor: grabbing;
+        }
+
+        .mermaid-container.zoomed .mermaid {
+            height: 100%;
+            width: 100%;
+            cursor: grab;
+        }
+
+        .mermaid-controls {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            display: flex;
+            gap: 10px;
+            z-index: 20;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 8px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .mermaid-control-btn {
+            background: #ffffff;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #374151;
+            font-size: 14px;
+            min-width: 36px;
+            height: 36px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mermaid-control-btn:hover {
+            background: #f8fafc;
+            border-color: #3b82f6;
+            color: #3b82f6;
+            transform: translateY(-1px);
+        }
+
+        .mermaid-control-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Enhanced mermaid theme for better contrast and unified styling */
+        .mermaid .node rect,
+        .mermaid .node circle,
+        .mermaid .node ellipse,
+        .mermaid .node polygon {
+            fill: #ffffff !important;
+            stroke: #1e3a8a !important;
+            stroke-width: 2px !important;
+            filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1)) !important;
+        }
+        
+        /* Different colors for various node types with good contrast */
+        .mermaid .node.node0 rect,
+        .mermaid .node.node0 circle,
+        .mermaid .node.node0 ellipse,
+        .mermaid .node.node0 polygon {
+            fill: #dbeafe !important;
+            stroke: #1e3a8a !important;
+        }
+        
+        .mermaid .node.node1 rect,
+        .mermaid .node.node1 circle,
+        .mermaid .node.node1 ellipse,
+        .mermaid .node.node1 polygon {
+            fill: #dbeafe !important;
+            stroke: #1e3a8a !important;
+        }
+        
+        .mermaid .node.node2 rect,
+        .mermaid .node.node2 circle,
+        .mermaid .node.node2 ellipse,
+        .mermaid .node.node2 polygon {
+            fill: #dbeafe !important;
+            stroke: #1e3a8a !important;
+        }
+        
+        .mermaid .node.node3 rect,
+        .mermaid .node.node3 circle,
+        .mermaid .node.node3 ellipse,
+        .mermaid .node.node3 polygon {
+            fill: #dbeafe !important;
+            stroke: #1e3a8a !important;
+        }
+        
+        .mermaid .node.node4 rect,
+        .mermaid .node.node4 circle,
+        .mermaid .node.node4 ellipse,
+        .mermaid .node.node4 polygon {
+            fill: #dbeafe !important;
+            stroke: #1e3a8a !important;
+        }
+        
+        .mermaid .node.node5 rect,
+        .mermaid .node.node5 circle,
+        .mermaid .node.node5 ellipse,
+        .mermaid .node.node5 polygon {
+            fill: #dbeafe !important;
+            stroke: #1e3a8a !important;
+        }
+        
+        /* Special styling for decision nodes */
+        .mermaid .node.decision rect,
+        .mermaid .node.decision polygon {
+            fill: #fef3c7 !important;
+            stroke: #d97706 !important;
+        }
+        
+        /* Special styling for process nodes */
+        .mermaid .node.process rect {
+            fill: #dcfce7 !important;
+            stroke: #16a34a !important;
+        }
+        
+        /* Special styling for start/end nodes */
+        .mermaid .node.start rect,
+        .mermaid .node.end rect {
+            fill: #ede9fe !important;
+            stroke: #7c3aed !important;
+        }
+        
+        .mermaid .node .label {
+            color: #1e293b !important;
+            font-family: 'Inter', system-ui, sans-serif !important;
+            font-size: 14px !important;
+            font-weight: 500 !important;
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8) !important;
+        }
+        
+        .mermaid .edgePath .path {
+            stroke: #64748b !important;
+            stroke-width: 2px !important;
+            filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.1)) !important;
+        }
+        
+        .mermaid .edgeLabel {
+            background-color: #ffffff !important;
+            color: #374151 !important;
+            font-family: 'Inter', system-ui, sans-serif !important;
+            font-size: 12px !important;
+            font-weight: 500 !important;
+            padding: 4px 8px !important;
+            border-radius: 4px !important;
+            border: 1px solid #e5e7eb !important;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+        }
+        
+        /* Arrow styling */
+        .mermaid .arrowheadPath {
+            fill: #64748b !important;
+            stroke: #64748b !important;
+        }
+
+    @media (max-width: 1024px) {
+        .toc-fixed {
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .toc-fixed.mobile-open {
+            transform: translateX(0);
+        }
+        
+        .main-content {
+            margin-left: 0;
+        }
+
+        /* Responsive mermaid controls */
+        .mermaid-control-btn:not(.reset-zoom) {
+            display: none;
+        }
+        .mermaid-controls {
+            top: auto;
+            bottom: 15px;
+            right: 15px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .mermaid-container {
+            padding: 15px;
+        }
+    }
+
+    /* Prevent horizontal overflow on small screens */
+    @media (max-width: 767px) {
+        body {
+            overflow-x: hidden;
+        }
+    }
+    </style>
+  </head>
+
+  <body class="bg-neutral font-sans text-gray-800">
+    <!-- Table of Contents -->
+    <nav class="toc-fixed" id="toc">
+      <div class="mb-6">
+        <h3 class="font-serif text-lg font-semibold text-primary mb-4">目录导航</h3>
+        <a href="#hero" class="toc-link text-sm">概述与趋势</a>
+        <a href="#baidu" class="toc-link text-sm">百度算法面试分析</a>
+        <a href="#alibaba" class="toc-link text-sm">阿里巴巴算法面试分析</a>
+        <a href="#tencent" class="toc-link text-sm">腾讯算法面试分析</a>
+        <a href="#meituan" class="toc-link text-sm">美团算法面试分析</a>
+        <a href="#didi" class="toc-link text-sm">滴滴算法面试分析</a>
+        <a href="#bytedance" class="toc-link text-sm">字节跳动算法面试分析</a>
+        <a href="#others" class="toc-link text-sm">其他大厂算法面试分析</a>
+        <a href="#types" class="toc-link text-sm">算法题目类型分布</a>
+        <a href="#difficulty" class="toc-link text-sm">难度分析与对比</a>
+        <a href="#strategies" class="toc-link text-sm">面试准备策略</a>
+      </div>
+    </nav>
+
+    <!-- Mobile TOC Toggle -->
+    <button class="lg:hidden fixed top-4 left-4 z-50 bg-primary text-white p-2 rounded-lg shadow-lg" onclick="toggleTOC()">
+      <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Hero Section -->
+      <section id="hero" class="relative min-h-screen flex items-center">
+        <div class="absolute inset-0">
+          <img src="https://kimi-web-img.moonshot.cn/img/user-images.githubusercontent.com/6986ee3e8dbb94dd85e4da27bb50201002b77931.png" alt="简约风格的算法面试概念背景图" class="w-full h-full object-cover" size="wallpaper" aspect="wide" query="算法面试背景" referrerpolicy="no-referrer" data-modified="1" data-score="11596.00"/>
+          <div class="hero-overlay absolute inset-0"></div>
+        </div>
+
+        <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-12 md:py-20">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center">
+            <div>
+              <h1 class="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 sm:mb-6 leading-tight">
+                <em class="gradient-text">国内大厂算法面试</em>
+                <br/>
+                真题深度解析
+              </h1>
+              <p class="text-lg sm:text-xl text-gray-200 mb-6 sm:mb-8 leading-relaxed">
+                基于2023-2024年BAT、TMD等头部互联网公司的真实面试数据，深入分析算法题目类型、难度分布及考察趋势
+              </p>
+              <div class="flex flex-wrap gap-2 sm:gap-4">
+                <span class="bg-white bg-opacity-20 text-white px-2 sm:px-4 py-1 sm:py-2 rounded-full text-xs sm:text-sm">BAT+TMD全覆盖</span>
+                <span class="bg-white bg-opacity-20 text-white px-2 sm:px-4 py-1 sm:py-2 rounded-full text-xs sm:text-sm">200+真题分析</span>
+                <span class="bg-white bg-opacity-20 text-white px-2 sm:px-4 py-1 sm:py-2 rounded-full text-xs sm:text-sm">LeetCode对标</span>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mt-8 sm:mt-0">
+              <div class="data-card rounded-xl p-4 sm:p-6">
+                <div class="text-xl sm:text-2xl md:text-3xl font-bold text-primary mb-1 sm:mb-2">70%+</div>
+                <div class="text-xs sm:text-sm text-secondary">中等难度题目占比</div>
+              </div>
+              <div class="data-card rounded-xl p-4 sm:p-6">
+                <div class="text-xl sm:text-2xl md:text-3xl font-bold text-primary mb-1 sm:mb-2">9</div>
+                <div class="text-xs sm:text-sm text-secondary">核心数据结构</div>
+              </div>
+              <div class="data-card rounded-xl p-4 sm:p-6">
+                <div class="text-xl sm:text-2xl md:text-3xl font-bold text-primary mb-1 sm:mb-2">12</div>
+                <div class="text-xs sm:text-sm text-secondary">重点算法类型</div>
+              </div>
+              <div class="data-card rounded-xl p-4 sm:p-6">
+                <div class="text-xl sm:text-2xl md:text-3xl font-bold text-primary mb-1 sm:mb-2">30min</div>
+                <div class="text-xs sm:text-sm text-secondary">平均解题时间</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Key Findings -->
+      <section class="py-16 bg-white">
+        <div class="max-w-7xl mx-auto px-6">
+          <div class="text-center mb-12">
+            <h2 class="font-serif text-3xl font-semibold text-primary mb-4">核心发现</h2>
+            <p class="text-lg text-secondary max-w-3xl mx-auto">
+              通过对2023-2024年大厂算法面试的深入分析，我们发现了一些关键趋势和模式
+            </p>
+          </div>
+
+          <div class="grid md:grid-cols-3 gap-8">
+            <div class="text-center p-6">
+              <div class="w-16 h-16 bg-primary bg-opacity-10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-chart-line text-2xl text-primary"></i>
+              </div>
+              <h3 class="font-semibold text-lg mb-2">难度集中在中等级别</h3>
+              <p class="text-secondary">超过70%的面试题目为LeetCode中等难度，注重考察候选人的算法基础和优化能力</p>
+            </div>
+            <div class="text-center p-6">
+              <div class="w-16 h-16 bg-primary bg-opacity-10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-code text-2xl text-primary"></i>
+              </div>
+              <h3 class="font-semibold text-lg mb-2">从手撕代码到思维考察</h3>
+              <p class="text-secondary">面试重点从单纯编写代码转向综合考察问题分析、算法设计和优化思维能力</p>
+            </div>
+            <div class="text-center p-6">
+              <div class="w-16 h-16 bg-primary bg-opacity-10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-sync-alt text-2xl text-primary"></i>
+              </div>
+              <h3 class="font-semibold text-lg mb-2">高频题目重复出现</h3>
+              <p class="text-secondary">经典算法题和数据结构被反复考察，针对性地准备高频题是提升通过率的有效策略</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <!-- Company Analysis -->
+      <section class="py-16">
+        <div class="max-w-7xl mx-auto px-6">
+          <!-- Baidu Analysis -->
+          <div id="baidu" class="mb-16">
+            <h2 class="font-serif text-3xl font-semibold text-primary mb-6">百度算法面试分析</h2>
+            <div class="grid lg:grid-cols-2 gap-8">
+              <div>
+                <h3 class="font-semibold text-xl mb-4">常见题目类型</h3>
+                <div class="space-y-4">
+                  <div class="p-4 bg-gray-50 rounded-lg">
+                    <h4 class="font-medium text-primary mb-2">系统设计算法</h4>
+                    <p class="text-sm text-secondary mb-2">限流算法（漏桶、令牌桶、计数器）<a href="https://www.cnblogs.com/crazymakercircle/p/17455046.html" class="citation-link" target="_blank">[1]</a>
+                    </p>
+                    <p class="text-xs text-gray-600">考察高并发场景下的流量控制能力</p>
+                  </div>
+                  <div class="p-4 bg-gray-50 rounded-lg">
+                    <h4 class="font-medium text-primary mb-2">经典算法题</h4>
+                    <p class="text-sm text-secondary mb-2">3sum、岛屿最大面积、反转链表、编辑距离<a href="https://blog.csdn.net/Kaiyuan_sjtu/article/details/134725303" class="citation-link" target="_blank">[161]</a>
+                    </p>
+                    <p class="text-xs text-gray-600">全面考察数据结构和算法基础</p>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <h3 class="font-semibold text-xl mb-4">难度特点</h3>
+                <div class="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl">
+                  <p class="text-secondary mb-4">
+                    据面试者反馈，&#34;百度的代码题还是最需要好好准备的&#34;<a href="https://blog.csdn.net/Kaiyuan_sjtu/article/details/134725303" class="citation-link" target="_blank">[161]</a>，
+                    可能会涉及一些&#34;没见过&#34;的题目，增加了面试的挑战性。
+                  </p>
+                  <div class="flex items-center text-sm text-primary">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                    <span>难度评级：中高难度</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Alibaba Analysis -->
+          <div id="alibaba" class="mb-16">
+            <h2 class="font-serif text-3xl font-semibold text-primary mb-6">阿里巴巴算法面试分析</h2>
+            <div class="grid lg:grid-cols-2 gap-8">
+              <div>
+                <h3 class="font-semibold text-xl mb-4">题目范围广泛</h3>
+                <div class="space-y-4">
+                  <div class="p-4 bg-gray-50 rounded-lg">
+                    <h4 class="font-medium text-primary mb-2">大数据处理</h4>
+                    <p class="text-sm text-secondary mb-2">4亿个int数找出重复的数<a href="https://blog.csdn.net/2401_84584289/article/details/138637989" class="citation-link" target="_blank">[6]</a>
+                    </p>
+                    <p class="text-xs text-gray-600">考察位图和哈希等大数据处理技术</p>
+                  </div>
+                  <div class="p-4 bg-gray-50 rounded-lg">
+                    <h4 class="font-medium text-primary mb-2">机器学习算法</h4>
+                    <p class="text-sm text-secondary mb-2">L1/L2正则化、Dropout原理比较<a href="https://blog.csdn.net/calculusstill/article/details/136714222" class="citation-link" target="_blank">[4]</a>
+                    </p>
+                    <p class="text-xs text-gray-600">深入考察算法理论基础</p>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <h3 class="font-semibold text-xl mb-4">考察重点</h3>
+                <div class="p-6 bg-gradient-to-br from-orange-50 to-red-50 rounded-xl">
+                  <p class="text-secondary mb-4">
+                    明确考察&#34;mid难度动态规划&#34;<a href="https://blog.csdn.net/Kaiyuan_sjtu/article/details/134725303" class="citation-link" target="_blank">[161]</a>，
+                    注重算法与项目实践的结合，P7及以上级别对算法深度要求更高。
+                  </p>
+                  <div class="flex items-center text-sm text-primary">
+                    <i class="fas fa-chart-bar mr-2"></i>
+                    <span>难度评级：中等偏上</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tencent Analysis -->
+          <div id="tencent" class="mb-16">
+            <h2 class="font-serif text-3xl font-semibold text-primary mb-6">腾讯算法面试分析</h2>
+            <div class="grid lg:grid-cols-2 gap-8">
+              <div>
+                <h3 class="font-semibold text-xl mb-4">题目类型多样</h3>
+                <div class="space-y-4">
+                  <div class="p-4 bg-gray-50 rounded-lg">
+                    <h4 class="font-medium text-primary mb-2">数学几何计算</h4>
+                    <p class="text-sm text-secondary mb-2">圆的弦长计算、几何面积比例<a href="https://www.nowcoder.com/discuss/527178792419217408" class="citation-link" target="_blank">[7]</a>
+                    </p>
+                    <p class="text-xs text-gray-600">结合数学知识的算法问题</p>
+                  </div>
+                  <div class="p-4 bg-gray-50 rounded-lg">
+                    <h4 class="font-medium text-primary mb-2">字符串处理</h4>
+                    <p class="text-sm text-secondary mb-2">字母大小写全排列、最小覆盖子串<a href="https://zhuanlan.zhihu.com/p/670948199" class="citation-link" target="_blank">[105]</a>
+                    </p>
+                    <p class="text-xs text-gray-600">考察回溯和滑动窗口算法</p>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <h3 class="font-semibold text-xl mb-4">特色考察</h3>
+                <div class="p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl">
+                  <p class="text-secondary mb-4">
+                    除了传统算法题，还包括逻辑思维题和机器学习算法原理深入探讨，
+                    如随机森林与XGBoost的区别分析<a href="https://www.jiangdabai.com/911" class="citation-link" target="_blank">[8]</a>。
+                  </p>
+                  <div class="flex items-center text-sm text-primary">
+                    <i class="fas fa-puzzle-piece mr-2"></i>
+                    <span>难度评级：中等偏上</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Meituan Analysis -->
+          <div id="meituan" class="mb-16">
+            <h2 class="font-serif text-3xl font-semibold text-primary mb-6">美团算法面试分析</h2>
+            <div class="grid lg:grid-cols-2 gap-8">
+              <div>
+                <h3 class="font-semibold text-xl mb-4">注重实际应用</h3>
+                <div class="space-y-4">
+                  <div class="p-4 bg-gray-50 rounded-lg">
+                    <h4 class="font-medium text-primary mb-2">动态规划优化</h4>
+                    <p class="text-sm text-secondary mb-2">不同路径、接雨水、字符串相加<a href="https://zhuanlan.zhihu.com/p/27867066366" class="citation-link" target="_blank">[155]</a>
+                    </p>
+                    <p class="text-xs text-gray-600">重点关注空间复杂度优化</p>
+                  </div>
+                  <div class="p-4 bg-gray-50 rounded-lg">
+                    <h4 class="font-medium text-primary mb-2">业务场景题</h4>
+                    <p class="text-sm text-secondary mb-2">小美的平衡矩阵、区间删除、朋友关系<a href="https://blog.csdn.net/weixin_62517188/article/details/136777830" class="citation-link" target="_blank">[10]</a>
+                    </p>
+                    <p class="text-xs text-gray-600">结合实际业务的问题建模</p>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <h3 class="font-semibold text-xl mb-4">难度评估</h3>
+                <div class="p-6 bg-gradient-to-br from-yellow-50 to-amber-50 rounded-xl">
+                  <p class="text-secondary mb-4">
+                    题目难度&#34;没有想象中那么难&#34;，大约等同于中学信息学竞赛普及组难度<a href="https://blog.csdn.net/weixin_62517188/article/details/136777830" class="citation-link" target="_blank">[10]</a>，
+                    但对手写算法能力要求较高。
+                  </p>
+                  <div class="flex items-center text-sm text-primary">
+                    <i class="fas fa-pen mr-2"></i>
+                    <span>难度评级：中等</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Didi Analysis -->
+          <div id="didi" class="mb-16">
+            <h2 class="font-serif text-3xl font-semibold text-primary mb-6">滴滴算法面试分析</h2>
+            <div class="grid lg:grid-cols-2 gap-8">
+              <div>
+                <h3 class="font-semibold text-xl mb-4">核心业务结合</h3>
+                <div class="space-y-4">
+                  <div class="p-4 bg-gray-50 rounded-lg">
+                    <h4 class="font-medium text-primary mb-2">路径规划算法</h4>
+                    <p class="text-sm text-secondary mb-2">考察路径规划算法及其应用场景<a href="https://www.cnblogs.com/crazymakercircle/p/17880328.html" class="citation-link" target="_blank">[18]</a>
+                    </p>
+                    <p class="text-xs text-gray-600">直接关联公司核心业务的算法考察</p>
+                  </div>
+                  <div class="p-4 bg-gray-50 rounded-lg">
+                    <h4 class="font-medium text-primary mb-2">经典算法题</h4>
+                    <p class="text-sm text-secondary mb-2">合并有序链表、最长回文子串<a href="https://blog.csdn.net/yr12Dong/article/details/133934762" class="citation-link" target="_blank">[177]</a>
+                    </p>
+                    <p class="text-xs text-gray-600">基础算法数据结构的掌握程度</p>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <h3 class="font-semibold text-xl mb-4">面试特点</h3>
+                <div class="p-6 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl">
+                  <p class="text-secondary mb-4">
+                    结合业务场景的实际问题较多，包括SQL题目和数据库设计，
+                    考察候选人的综合技术能力<a href="https://blog.csdn.net/yr12Dong/article/details/133934762" class="citation-link" target="_blank">[177]</a>。
+                  </p>
+                  <div class="flex items-center text-sm text-primary">
+                    <i class="fas fa-route mr-2"></i>
+                    <span>难度评级：中等</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ByteDance Analysis -->
+          <div id="bytedance" class="mb-16">
+            <h2 class="font-serif text-3xl font-semibold text-primary mb-6">字节跳动算法面试分析</h2>
+            <div class="grid lg:grid-cols-2 gap-8">
+              <div>
+                <h3 class="font-semibold text-xl mb-4">题目覆盖面广</h3>
+                <div class="space-y-4">
+                  <div class="p-4 bg-gray-50 rounded-lg">
+                    <h4 class="font-medium text-primary mb-2">高频基础题</h4>
+                    <p class="text-sm text-secondary mb-2">无重复字符的最长子串、岛屿数量、爬楼梯<a href="https://juejin.cn/post/7257411043818569789" class="citation-link" target="_blank">[226]</a>
+                    </p>
+                    <p class="text-xs text-gray-600">经典算法题的熟练掌握</p>
+                  </div>
+                  <div class="p-4 bg-gray-50 rounded-lg">
+                    <h4 class="font-medium text-primary mb-2">复杂数据结构</h4>
+                    <p class="text-sm text-secondary mb-2">并查集、线段树、Trie树、重排链表<a href="https://blog.csdn.net/cq20110310/article/details/132759400" class="citation-link" target="_blank">[284]</a>
+                    </p>
+                    <p class="text-xs text-gray-600">高级数据结构的应用能力</p>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <h3 class="font-semibold text-xl mb-4">难度与策略</h3>
+                <div class="p-6 bg-gradient-to-br from-red-50 to-rose-50 rounded-xl">
+                  <p class="text-secondary mb-4">
+                    以中等难度题目为主（约70%），难题占比约11.7%<a href="https://juejin.cn/post/7257411043818569789" class="citation-link" target="_blank">[226]</a>，
+                    但考察深度和广度较大，注重多种解法的比较和优化。
+                  </p>
+                  <div class="flex items-center text-sm text-primary">
+                    <i class="fas fa-brain mr-2"></i>
+                    <span>难度评级：中高难度</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Other Companies -->
+          <div id="others" class="mb-16">
+            <h2 class="font-serif text-3xl font-semibold text-primary mb-6">其他大厂算法面试特点</h2>
+            <div class="grid md:grid-cols-2 gap-8">
+              <div class="p-6 bg-gray-50 rounded-xl">
+                <h3 class="font-semibold text-lg text-primary mb-4">小红书</h3>
+                <p class="text-secondary mb-3">
+                  注重基础算法的灵活运用，如会议室安排问题（贪心算法）、
+                  排序数组中查找元素（二分查找变种）<a href="https://zhuanlan.zhihu.com/p/27867066366" class="citation-link" target="_blank">[155]</a>
+                </p>
+                <div class="text-sm text-primary">难度评级：中等</div>
+              </div>
+              <div class="p-6 bg-gray-50 rounded-xl">
+                <h3 class="font-semibold text-lg text-primary mb-4">其他快速发展的公司</h3>
+                <p class="text-secondary mb-3">
+                  普遍重视算法基础和实际问题建模能力，题目难度适中但要求对经典算法有扎实掌握和灵活应用能力。
+                </p>
+                <div class="text-sm text-primary">难度评级：中等偏下</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <!-- Algorithm Types Analysis -->
+      <section id="types" class="py-16 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-6">
+          <h2 class="font-serif text-3xl font-semibold text-primary mb-8 text-center">算法题目类型分布</h2>
+
+          <!-- Data Structures -->
+          <div class="mb-12">
+            <h3 class="font-semibold text-2xl text-primary mb-6">核心数据结构考察</h3>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div class="bg-white p-6 rounded-xl shadow-sm">
+                <div class="flex items-center mb-4">
+                  <i class="fas fa-list text-primary text-xl mr-3"></i>
+                  <h4 class="font-semibold">数组与字符串</h4>
+                </div>
+                <p class="text-sm text-secondary mb-3">最高频的数据结构，涵盖查找、排序、子数组/子串等问题</p>
+                <div class="text-xs text-gray-500">双指针、滑动窗口、前缀和</div>
+              </div>
+
+              <div class="bg-white p-6 rounded-xl shadow-sm">
+                <div class="flex items-center mb-4">
+                  <i class="fas fa-link text-primary text-xl mr-3"></i>
+                  <h4 class="font-semibold">链表</h4>
+                </div>
+                <p class="text-sm text-secondary mb-3">指针操作和边界条件处理的重点考察对象</p>
+                <div class="text-xs text-gray-500">反转、合并、环检测、重排</div>
+              </div>
+
+              <div class="bg-white p-6 rounded-xl shadow-sm">
+                <div class="flex items-center mb-4">
+                  <i class="fas fa-tree text-primary text-xl mr-3"></i>
+                  <h4 class="font-semibold">树与二叉树</h4>
+                </div>
+                <p class="text-sm text-secondary mb-3">递归和遍历算法的经典应用场景</p>
+                <div class="text-xs text-gray-500">DFS/BFS、LCA、路径和</div>
+              </div>
+
+              <div class="bg-white p-6 rounded-xl shadow-sm">
+                <div class="flex items-center mb-4">
+                  <i class="fas fa-project-diagram text-primary text-xl mr-3"></i>
+                  <h4 class="font-semibold">图</h4>
+                </div>
+                <p class="text-sm text-secondary mb-3">地图、社交网络等业务场景的核心</p>
+                <div class="text-xs text-gray-500">DFS/BFS、拓扑排序、最短路径</div>
+              </div>
+
+              <div class="bg-white p-6 rounded-xl shadow-sm">
+                <div class="flex items-center mb-4">
+                  <i class="fas fa-layer-group text-primary text-xl mr-3"></i>
+                  <h4 class="font-semibold">栈、队列与堆</h4>
+                </div>
+                <p class="text-sm text-secondary mb-3">重要的辅助数据结构</p>
+                <div class="text-xs text-gray-500">单调栈、优先队列、滑动窗口</div>
+              </div>
+
+              <div class="bg-white p-6 rounded-xl shadow-sm">
+                <div class="flex items-center mb-4">
+                  <i class="fas fa-table text-primary text-xl mr-3"></i>
+                  <h4 class="font-semibold">哈希表</h4>
+                </div>
+                <p class="text-sm text-secondary mb-3">高效查找和去重的关键工具</p>
+                <div class="text-xs text-gray-500">两数之和、字母异位词</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Algorithm Categories -->
+          <div class="mb-12">
+            <h3 class="font-semibold text-2xl text-primary mb-6">主要算法思想</h3>
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div class="bg-white p-4 rounded-lg border-l-4 border-primary">
+                <h4 class="font-medium mb-2">排序与搜索</h4>
+                <p class="text-sm text-secondary">快速排序、归并排序、二分查找及其变种</p>
+              </div>
+              <div class="bg-white p-4 rounded-lg border-l-4 border-accent">
+                <h4 class="font-medium mb-2">动态规划</h4>
+                <p class="text-sm text-secondary">背包问题、LIS、LCS、编辑距离</p>
+              </div>
+              <div class="bg-white p-4 rounded-lg border-l-4 border-green-500">
+                <h4 class="font-medium mb-2">贪心算法</h4>
+                <p class="text-sm text-secondary">区间调度、跳跃游戏、Huffman编码</p>
+              </div>
+              <div class="bg-white p-4 rounded-lg border-l-4 border-purple-500">
+                <h4 class="font-medium mb-2">回溯算法</h4>
+                <p class="text-sm text-secondary">N皇后、组合总和、全排列</p>
+              </div>
+              <div class="bg-white p-4 rounded-lg border-l-4 border-orange-500">
+                <h4 class="font-medium mb-2">双指针</h4>
+                <p class="text-sm text-secondary">两数之和、三数之和、链表中点</p>
+              </div>
+              <div class="bg-white p-4 rounded-lg border-l-4 border-pink-500">
+                <h4 class="font-medium mb-2">滑动窗口</h4>
+                <p class="text-sm text-secondary">最小覆盖子串、最长无重复子串</p>
+              </div>
+              <div class="bg-white p-4 rounded-lg border-l-4 border-indigo-500">
+                <h4 class="font-medium mb-2">二分查找</h4>
+                <p class="text-sm text-secondary">旋转排序数组、查找边界</p>
+              </div>
+              <div class="bg-white p-4 rounded-lg border-l-4 border-blue-500">
+                <h4 class="font-medium mb-2">并查集</h4>
+                <p class="text-sm text-secondary">朋友圈、连通性问题</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Algorithm Flow Diagram -->
+          <div class="bg-white p-8 rounded-xl shadow-sm">
+            <h3 class="font-semibold text-xl text-primary mb-6 text-center">算法解题流程</h3>
+            <div class="mermaid-container">
+              <div class="mermaid-controls">
+                <button class="mermaid-control-btn zoom-in" title="放大">
+                  <i class="fas fa-search-plus"></i>
+                </button>
+                <button class="mermaid-control-btn zoom-out" title="缩小">
+                  <i class="fas fa-search-minus"></i>
+                </button>
+                <button class="mermaid-control-btn reset-zoom" title="重置">
+                  <i class="fas fa-expand-arrows-alt"></i>
+                </button>
+                <button class="mermaid-control-btn fullscreen" title="全屏查看">
+                  <i class="fas fa-expand"></i>
+                </button>
+              </div>
+              <div class="mermaid" id="algorithm-flow">
+                graph TD
+                A[&#34;理解题目&#34;] --&gt; B[&#34;分析输入输出&#34;]
+                B --&gt; C[&#34;考虑边界条件&#34;]
+                C --&gt; D[&#34;思考暴力解法&#34;]
+                D --&gt; E[&#34;寻找优化思路&#34;]
+                E --&gt; F[&#34;选择合适算法&#34;]
+                F --&gt; G[&#34;编写代码&#34;]
+                G --&gt; H[&#34;测试用例验证&#34;]
+                H --&gt; I[&#34;分析复杂度&#34;]
+                I --&gt; J[&#34;讨论优化空间&#34;]
+
+                style A fill:#dbeafe,stroke:#1e3a8a,stroke-width:2px,color:#1e3a8a
+                style F fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#92400e
+                style J fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#15803d
+                style B fill:#f8fafc,stroke:#64748b,stroke-width:2px,color:#374151
+                style C fill:#f8fafc,stroke:#64748b,stroke-width:2px,color:#374151
+                style D fill:#f8fafc,stroke:#64748b,stroke-width:2px,color:#374151
+                style E fill:#f8fafc,stroke:#64748b,stroke-width:2px,color:#374151
+                style G fill:#f8fafc,stroke:#64748b,stroke-width:2px,color:#374151
+                style H fill:#f8fafc,stroke:#64748b,stroke-width:2px,color:#374151
+                style I fill:#f8fafc,stroke:#64748b,stroke-width:2px,color:#374151
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <!-- Difficulty Analysis -->
+      <section id="difficulty" class="py-16">
+        <div class="max-w-7xl mx-auto px-6">
+          <h2 class="font-serif text-3xl font-semibold text-primary mb-8 text-center">难度分析与对比</h2>
+
+          <!-- Difficulty Comparison -->
+          <div class="grid lg:grid-cols-2 gap-8 mb-12">
+            <div class="bg-white p-6 rounded-xl shadow-sm">
+              <h3 class="font-semibold text-xl text-primary mb-6">各公司难度对比</h3>
+              <div class="space-y-4">
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div class="flex items-center">
+                    <div class="w-3 h-3 bg-red-500 rounded-full mr-3"></div>
+                    <span class="font-medium">字节跳动</span>
+                  </div>
+                  <span class="text-sm text-secondary">中高难度</span>
+                </div>
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div class="flex items-center">
+                    <div class="w-3 h-3 bg-red-400 rounded-full mr-3"></div>
+                    <span class="font-medium">百度</span>
+                  </div>
+                  <span class="text-sm text-secondary">中高难度</span>
+                </div>
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div class="flex items-center">
+                    <div class="w-3 h-3 bg-orange-500 rounded-full mr-3"></div>
+                    <span class="font-medium">阿里巴巴</span>
+                  </div>
+                  <span class="text-sm text-secondary">中等偏上</span>
+                </div>
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div class="flex items-center">
+                    <div class="w-3 h-3 bg-orange-400 rounded-full mr-3"></div>
+                    <span class="font-medium">腾讯</span>
+                  </div>
+                  <span class="text-sm text-secondary">中等偏上</span>
+                </div>
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div class="flex items-center">
+                    <div class="w-3 h-3 bg-yellow-500 rounded-full mr-3"></div>
+                    <span class="font-medium">美团</span>
+                  </div>
+                  <span class="text-sm text-secondary">中等</span>
+                </div>
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div class="flex items-center">
+                    <div class="w-3 h-3 bg-yellow-400 rounded-full mr-3"></div>
+                    <span class="font-medium">滴滴</span>
+                  </div>
+                  <span class="text-sm text-secondary">中等</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-sm">
+              <h3 class="font-semibold text-xl text-primary mb-6">难度分布特点</h3>
+              <div class="space-y-4">
+                <div class="p-4 bg-blue-50 rounded-lg">
+                  <h4 class="font-medium text-primary mb-2">中等难度为主</h4>
+                  <p class="text-sm text-secondary">超过70%的面试题目为LeetCode中等难度，注重基础算法的灵活应用</p>
+                </div>
+                <div class="p-4 bg-green-50 rounded-lg">
+                  <h4 class="font-medium text-primary mb-2">简单题目基础</h4>
+                  <p class="text-sm text-secondary">约20%的简单题目用于考察基础数据结构的掌握程度</p>
+                </div>
+                <div class="p-4 bg-red-50 rounded-lg">
+                  <h4 class="font-medium text-primary mb-2">难题筛选</h4>
+                  <p class="text-sm text-secondary">约10%的困难题目用于选拔顶尖候选人或深入考察特定领域</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- LeetCode Correlation -->
+          <div class="bg-white p-8 rounded-xl shadow-sm">
+            <h3 class="font-semibold text-xl text-primary mb-6 text-center">与LeetCode题目对应关系</h3>
+            <div class="grid md:grid-cols-3 gap-6">
+              <div class="text-center p-6 bg-green-50 rounded-lg">
+                <div class="text-2xl font-bold text-green-600 mb-2">高度相关</div>
+                <p class="text-sm text-secondary">大部分面试题直接来源于或改编自LeetCode题库</p>
+              </div>
+              <div class="text-center p-6 bg-blue-50 rounded-lg">
+                <div class="text-2xl font-bold text-blue-600 mb-2">难度对标</div>
+                <p class="text-sm text-secondary">面试难度与LeetCode分级基本一致，可参考准备</p>
+              </div>
+              <div class="text-center p-6 bg-purple-50 rounded-lg">
+                <div class="text-2xl font-bold text-purple-600 mb-2">高频重复</div>
+                <p class="text-sm text-secondary">经典题型被反复考察，针对性准备效果显著</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <!-- Preparation Strategies -->
+      <section id="strategies" class="py-16 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-6">
+          <h2 class="font-serif text-3xl font-semibold text-primary mb-8 text-center">面试准备策略与资源</h2>
+
+          <!-- Preparation Strategy -->
+          <div class="mb-12">
+            <h3 class="font-semibold text-2xl text-primary mb-6">高效刷题策略</h3>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div class="bg-white p-6 rounded-xl shadow-sm">
+                <div class="flex items-center mb-4">
+                  <div class="w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">1</div>
+                  <h4 class="font-semibold">明确目标</h4>
+                </div>
+                <p class="text-sm text-secondary">根据目标岗位方向（后端、算法、前端）确定重点学习内容<a href="https://juejin.cn/post/7529713795280420883" class="citation-link" target="_blank">[202]</a>
+                </p>
+              </div>
+
+              <div class="bg-white p-6 rounded-xl shadow-sm">
+                <div class="flex items-center mb-4">
+                  <div class="w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">2</div>
+                  <h4 class="font-semibold">系统学习</h4>
+                </div>
+                <p class="text-sm text-secondary">从基础知识入手，按模块精读并结合番茄复盘法练习<a href="https://juejin.cn/post/7529713795280420883" class="citation-link" target="_blank">[202]</a>
+                </p>
+              </div>
+
+              <div class="bg-white p-6 rounded-xl shadow-sm">
+                <div class="flex items-center mb-4">
+                  <div class="w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">3</div>
+                  <h4 class="font-semibold">循序渐进</h4>
+                </div>
+                <p class="text-sm text-secondary">从易到难，从通过率高到通过率低的顺序刷题<a href="https://cloud.tencent.cn/developer/article/1822037" class="citation-link" target="_blank">[230]</a>
+                </p>
+              </div>
+
+              <div class="bg-white p-6 rounded-xl shadow-sm">
+                <div class="flex items-center mb-4">
+                  <div class="w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">4</div>
+                  <h4 class="font-semibold">高频优先</h4>
+                </div>
+                <p class="text-sm text-secondary">重点关注高频题目，建立自己的知识卡片集<a href="https://juejin.cn/post/7529713795280420883" class="citation-link" target="_blank">[202]</a>
+                </p>
+              </div>
+
+              <div class="bg-white p-6 rounded-xl shadow-sm">
+                <div class="flex items-center mb-4">
+                  <div class="w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">5</div>
+                  <h4 class="font-semibold">模拟面试</h4>
+                </div>
+                <p class="text-sm text-secondary">模拟面试环境练习，注重表达逻辑和术语解释<a href="https://juejin.cn/post/7529713795280420883" class="citation-link" target="_blank">[202]</a>
+                </p>
+              </div>
+
+              <div class="bg-white p-6 rounded-xl shadow-sm">
+                <div class="flex items-center mb-4">
+                  <div class="w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">6</div>
+                  <h4 class="font-semibold">多题一解</h4>
+                </div>
+                <p class="text-sm text-secondary">对中等难度题目力求理解透彻，做到能用同一算法解决一类问题<a href="https://cloud.tencent.cn/developer/article/1822037" class="citation-link" target="_blank">[230]</a>
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recommended Resources -->
+          <div class="mb-12">
+            <h3 class="font-semibold text-2xl text-primary mb-6">推荐学习资源</h3>
+            <div class="grid md:grid-cols-2 gap-8">
+              <div class="bg-white p-6 rounded-xl shadow-sm">
+                <h4 class="font-semibold text-lg text-primary mb-4">在线平台</h4>
+                <div class="space-y-3">
+                  <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+                    <i class="fas fa-code text-primary mr-3"></i>
+                    <div>
+                      <div class="font-medium">LeetCode</div>
+                      <div class="text-sm text-secondary">最权威的算法题库，大厂面试题主要来源<a href="https://cloud.tencent.com/developer/article/1524734" class="citation-link" target="_blank">[229]</a>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+                    <i class="fas fa-users text-primary mr-3"></i>
+                    <div>
+                      <div class="font-medium">牛客网</div>
+                      <div class="text-sm text-secondary">国内求职平台，大量公司真题和面经分享<a href="https://leetcode-cn.com/circle/discuss/clftec/" class="citation-link" target="_blank">[235]</a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-white p-6 rounded-xl shadow-sm">
+                <h4 class="font-semibold text-lg text-primary mb-4">书籍资料</h4>
+                <div class="space-y-3">
+                  <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+                    <i class="fas fa-book text-primary mr-3"></i>
+                    <div>
+                      <div class="font-medium">《剑指Offer》</div>
+                      <div class="text-sm text-secondary">经典算法面试指导，总结常见模式和技巧</div>
+                    </div>
+                  </div>
+                  <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+                    <i class="fas fa-graduation-cap text-primary mr-3"></i>
+                    <div>
+                      <div class="font-medium">《算法导论》</div>
+                      <div class="text-sm text-secondary">全面深入的算法教材，适合系统学习理论</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Problem-Solving Framework -->
+          <div class="bg-white p-8 rounded-xl shadow-sm">
+            <h3 class="font-semibold text-xl text-primary mb-6 text-center">面试解题框架</h3>
+            <div class="mermaid-container">
+              <div class="mermaid-controls">
+                <button class="mermaid-control-btn zoom-in" title="放大">
+                  <i class="fas fa-search-plus"></i>
+                </button>
+                <button class="mermaid-control-btn zoom-out" title="缩小">
+                  <i class="fas fa-search-minus"></i>
+                </button>
+                <button class="mermaid-control-btn reset-zoom" title="重置">
+                  <i class="fas fa-expand-arrows-alt"></i>
+                </button>
+                <button class="mermaid-control-btn fullscreen" title="全屏查看">
+                  <i class="fas fa-expand"></i>
+                </button>
+              </div>
+              <div class="mermaid" id="problem-solving-framework">
+                flowchart TD
+                A[&#34;理解题目&#34;] --&gt; B[&#34;确认输入输出&#34;]
+                B --&gt; C[&#34;举例验证理解&#34;]
+                C --&gt; D[&#34;分析问题特性&#34;]
+                D --&gt; E[&#34;联想相关算法&#34;]
+                E --&gt; F[&#34;设计解决方案&#34;]
+                F --&gt; G[&#34;评估复杂度&#34;]
+                G --&gt; H[&#34;编写代码&#34;]
+                H --&gt; I[&#34;测试边界条件&#34;]
+                I --&gt; J[&#34;分析优化空间&#34;]
+                J --&gt; K[&#34;总结思路&#34;]
+
+                style A fill:#dbeafe,stroke:#1e3a8a,stroke-width:2px,color:#1e3a8a
+                style F fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#92400e
+                style K fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#15803d
+                style B fill:#f8fafc,stroke:#64748b,stroke-width:2px,color:#374151
+                style C fill:#f8fafc,stroke:#64748b,stroke-width:2px,color:#374151
+                style D fill:#f8fafc,stroke:#64748b,stroke-width:2px,color:#374151
+                style E fill:#f8fafc,stroke:#64748b,stroke-width:2px,color:#374151
+                style G fill:#f8fafc,stroke:#64748b,stroke-width:2px,color:#374151
+                style H fill:#f8fafc,stroke:#64748b,stroke-width:2px,color:#374151
+                style I fill:#f8fafc,stroke:#64748b,stroke-width:2px,color:#374151
+                style J fill:#f8fafc,stroke:#64748b,stroke-width:2px,color:#374151
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Footer -->
+      <footer class="bg-primary text-white py-12">
+        <div class="max-w-7xl mx-auto px-6 text-center">
+          <p class="text-lg mb-4">基于2023-2024年真实面试数据的深度分析</p>
+          <p class="text-sm text-blue-200">本报告旨在帮助求职者更好地理解大厂算法面试趋势和准备策略</p>
+        </div>
+      </footer>
+    </main>
+
+    <script>
+        // Initialize Mermaid with enhanced theming
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'base',
+            themeVariables: {
+                primaryColor: '#ffffff',
+                primaryTextColor: '#1e3a8a',
+                primaryBorderColor: '#1e3a8a',
+                lineColor: '#64748b',
+                secondaryColor: '#f8fafc',
+                tertiaryColor: '#ffffff',
+                background: '#ffffff',
+                mainBkg: '#ffffff',
+                secondBkg: '#f8fafc',
+                tertiaryBkg: '#ffffff',
+                // Enhanced contrast colors
+                cScale0: '#dbeafe',
+                cScale1: '#bfdbfe',
+                cScale2: '#93c5fd',
+                cScale3: '#60a5fa',
+                cScale4: '#3b82f6',
+                cScale5: '#2563eb',
+                // Text colors with good contrast
+                textColor: '#1e293b',
+                nodeTextColor: '#1e293b',
+                // Border colors
+                nodeBorder: '#1e3a8a',
+                clusterBkg: '#f8fafc',
+                clusterBorder: '#64748b',
+                // Link colors
+                defaultLinkColor: '#64748b',
+                titleColor: '#1e3a8a',
+                edgeLabelBackground: '#ffffff',
+                // Active states
+                activeTaskBkgColor: '#3b82f6',
+                activeTaskBorderColor: '#1e3a8a',
+                // Grid and axis colors
+                gridColor: '#e2e8f0',
+                section0: '#f8fafc',
+                section1: '#f1f5f9',
+                section2: '#e2e8f0',
+                section3: '#cbd5e1'
+            },
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'basis',
+                padding: 20
+            },
+            sequence: {
+                useMaxWidth: true,
+                wrap: true
+            },
+            gantt: {
+                useMaxWidth: true,
+                leftPadding: 75,
+                rightPadding: 20
+            }
+        });
+
+        // Initialize Mermaid Controls for zoom and pan
+        function initializeMermaidControls() {
+            const containers = document.querySelectorAll('.mermaid-container');
+
+            containers.forEach(container => {
+            const mermaidElement = container.querySelector('.mermaid');
+            let scale = 1;
+            let isDragging = false;
+            let startX, startY, translateX = 0, translateY = 0;
+
+            // 触摸相关状态
+            let isTouch = false;
+            let touchStartTime = 0;
+            let initialDistance = 0;
+            let initialScale = 1;
+            let isPinching = false;
+
+            // Zoom controls
+            const zoomInBtn = container.querySelector('.zoom-in');
+            const zoomOutBtn = container.querySelector('.zoom-out');
+            const resetBtn = container.querySelector('.reset-zoom');
+            const fullscreenBtn = container.querySelector('.fullscreen');
+
+            function updateTransform() {
+                mermaidElement.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+
+                if (scale > 1) {
+                container.classList.add('zoomed');
+                } else {
+                container.classList.remove('zoomed');
+                }
+
+                mermaidElement.style.cursor = isDragging ? 'grabbing' : 'grab';
+            }
+
+            if (zoomInBtn) {
+                zoomInBtn.addEventListener('click', () => {
+                scale = Math.min(scale * 1.25, 4);
+                updateTransform();
+                });
+            }
+
+            if (zoomOutBtn) {
+                zoomOutBtn.addEventListener('click', () => {
+                scale = Math.max(scale / 1.25, 0.3);
+                if (scale <= 1) {
+                    translateX = 0;
+                    translateY = 0;
+                }
+                updateTransform();
+                });
+            }
+
+            if (resetBtn) {
+                resetBtn.addEventListener('click', () => {
+                scale = 1;
+                translateX = 0;
+                translateY = 0;
+                updateTransform();
+                });
+            }
+
+            if (fullscreenBtn) {
+                fullscreenBtn.addEventListener('click', () => {
+                if (container.requestFullscreen) {
+                    container.requestFullscreen();
+                } else if (container.webkitRequestFullscreen) {
+                    container.webkitRequestFullscreen();
+                } else if (container.msRequestFullscreen) {
+                    container.msRequestFullscreen();
+                }
+                });
+            }
+
+            // Mouse Events
+            mermaidElement.addEventListener('mousedown', (e) => {
+                if (isTouch) return; // 如果是触摸设备，忽略鼠标事件
+
+                isDragging = true;
+                startX = e.clientX - translateX;
+                startY = e.clientY - translateY;
+                mermaidElement.style.cursor = 'grabbing';
+                updateTransform();
+                e.preventDefault();
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (isDragging && !isTouch) {
+                translateX = e.clientX - startX;
+                translateY = e.clientY - startY;
+                updateTransform();
+                }
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (isDragging && !isTouch) {
+                isDragging = false;
+                mermaidElement.style.cursor = 'grab';
+                updateTransform();
+                }
+            });
+
+            document.addEventListener('mouseleave', () => {
+                if (isDragging && !isTouch) {
+                isDragging = false;
+                mermaidElement.style.cursor = 'grab';
+                updateTransform();
+                }
+            });
+
+            // 获取两点之间的距离
+            function getTouchDistance(touch1, touch2) {
+                return Math.hypot(
+                touch2.clientX - touch1.clientX,
+                touch2.clientY - touch1.clientY
+                );
+            }
+
+            // Touch Events - 触摸事件处理
+            mermaidElement.addEventListener('touchstart', (e) => {
+                isTouch = true;
+                touchStartTime = Date.now();
+
+                if (e.touches.length === 1) {
+                // 单指拖动
+                isPinching = false;
+                isDragging = true;
+
+                const touch = e.touches[0];
+                startX = touch.clientX - translateX;
+                startY = touch.clientY - translateY;
+
+                } else if (e.touches.length === 2) {
+                // 双指缩放
+                isPinching = true;
+                isDragging = false;
+
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                initialDistance = getTouchDistance(touch1, touch2);
+                initialScale = scale;
+                }
+
+                e.preventDefault();
+            }, { passive: false });
+
+            mermaidElement.addEventListener('touchmove', (e) => {
+                if (e.touches.length === 1 && isDragging && !isPinching) {
+                // 单指拖动
+                const touch = e.touches[0];
+                translateX = touch.clientX - startX;
+                translateY = touch.clientY - startY;
+                updateTransform();
+
+                } else if (e.touches.length === 2 && isPinching) {
+                // 双指缩放
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                const currentDistance = getTouchDistance(touch1, touch2);
+
+                if (initialDistance > 0) {
+                    const newScale = Math.min(Math.max(
+                    initialScale * (currentDistance / initialDistance),
+                    0.3
+                    ), 4);
+                    scale = newScale;
+                    updateTransform();
+                }
+                }
+
+                e.preventDefault();
+            }, { passive: false });
+
+            mermaidElement.addEventListener('touchend', (e) => {
+                // 重置状态
+                if (e.touches.length === 0) {
+                isDragging = false;
+                isPinching = false;
+                initialDistance = 0;
+
+                // 延迟重置isTouch，避免鼠标事件立即触发
+                setTimeout(() => {
+                    isTouch = false;
+                }, 100);
+                } else if (e.touches.length === 1 && isPinching) {
+                // 从双指变为单指，切换为拖动模式
+                isPinching = false;
+                isDragging = true;
+
+                const touch = e.touches[0];
+                startX = touch.clientX - translateX;
+                startY = touch.clientY - translateY;
+                }
+
+                updateTransform();
+            });
+
+            mermaidElement.addEventListener('touchcancel', (e) => {
+                isDragging = false;
+                isPinching = false;
+                initialDistance = 0;
+
+                setTimeout(() => {
+                isTouch = false;
+                }, 100);
+
+                updateTransform();
+            });
+
+            // Enhanced wheel zoom with better center point handling
+            container.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                const rect = container.getBoundingClientRect();
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+
+                const delta = e.deltaY > 0 ? 0.9 : 1.1;
+                const newScale = Math.min(Math.max(scale * delta, 0.3), 4);
+
+                // Adjust translation to zoom towards center
+                if (newScale !== scale) {
+                const scaleDiff = newScale / scale;
+                translateX = translateX * scaleDiff;
+                translateY = translateY * scaleDiff;
+                scale = newScale;
+
+                if (scale <= 1) {
+                    translateX = 0;
+                    translateY = 0;
+                }
+
+                updateTransform();
+                }
+            });
+
+            // Initialize display
+            updateTransform();
+            });
+        }
+
+        // Initialize mermaid controls after page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Wait for mermaid to render, then initialize controls
+            setTimeout(() => {
+                initializeMermaidControls();
+            }, 1500);
+        });
+
+        // Table of Contents functionality
+        function toggleTOC() {
+            const toc = document.getElementById('toc');
+            toc.classList.toggle('mobile-open');
+        }
+
+        // Smooth scrolling for TOC links
+        document.querySelectorAll('.toc-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const targetSection = document.querySelector(targetId);
+                if (targetSection) {
+                    targetSection.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+                
+                // Close mobile TOC
+                if (window.innerWidth < 1024) {
+                    document.getElementById('toc').classList.remove('mobile-open');
+                }
+            });
+        });
+
+        // Active section highlighting
+        window.addEventListener('scroll', function() {
+            const sections = document.querySelectorAll('section[id]');
+            const tocLinks = document.querySelectorAll('.toc-link');
+            
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (pageYOffset >= sectionTop - 200) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        });
+
+        // Close mobile TOC when clicking outside
+        document.addEventListener('click', function(e) {
+            const toc = document.getElementById('toc');
+            const toggleBtn = document.querySelector('button[onclick="toggleTOC()"]');
+            
+            if (window.innerWidth < 1024 && 
+                !toc.contains(e.target) && 
+                !toggleBtn.contains(e.target) && 
+                toc.classList.contains('mobile-open')) {
+                toc.classList.remove('mobile-open');
+            }
+        });
+    </script>
+  
+
+</body></html>

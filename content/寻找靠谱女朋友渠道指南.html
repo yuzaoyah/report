@@ -1,0 +1,1216 @@
+<!DOCTYPE html><html lang="zh-CN"><head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>寻找靠谱女朋友渠道指南</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;1,400;1,600&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <style>
+        :root {
+            --primary: #8B5A3C;
+            --secondary: #D4B996;
+            --accent: #E8D5C4;
+            --neutral: #F7F3F0;
+            --text-primary: #2C1810;
+            --text-secondary: #6B5B4F;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            color: var(--text-primary);
+            background-color: var(--neutral);
+            line-height: 1.7;
+        }
+        
+        .serif {
+            font-family: 'Crimson Text', serif;
+        }
+        
+        .toc-fixed {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 280px;
+            height: 100vh;
+            background: linear-gradient(135deg, var(--primary) 0%, #6B4423 100%);
+            color: white;
+            overflow-y: auto;
+            z-index: 1000;
+            padding: 2rem 1.5rem;
+            box-shadow: 4px 0 20px rgba(0,0,0,0.1);
+        }
+        
+        .main-content {
+            margin-left: 280px;
+            min-height: 100vh;
+        }
+        
+        .hero-section {
+            background: linear-gradient(135deg, var(--accent) 0%, var(--neutral) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .bento-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            grid-template-rows: auto auto;
+            gap: 2rem;
+            height: 60vh;
+        }
+        
+        .bento-main {
+            grid-row: 1 / -1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 3rem;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .bento-side-top {
+            background: rgba(255,255,255,0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .bento-side-bottom {
+            background: rgba(139,90,60,0.1);
+            border-radius: 16px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 600;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+        }
+        
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            font-style: italic;
+        }
+        
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            color: var(--primary);
+            border-bottom: 3px solid var(--secondary);
+            padding-bottom: 1rem;
+        }
+        
+        .subsection-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin: 2.5rem 0 1.5rem 0;
+            color: var(--text-primary);
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border-left: 4px solid var(--primary);
+        }
+        
+        .highlight-box {
+            background: linear-gradient(135deg, var(--accent) 0%, rgba(212,185,150,0.3) 100%);
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 2rem 0;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 2rem 0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        
+        .citation {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+            border-bottom: 1px dotted var(--primary);
+            transition: all 0.3s ease;
+        }
+        
+        .citation:hover {
+            background: rgba(139,90,60,0.1);
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
+        
+        .toc-link {
+            display: block;
+            padding: 0.75rem 0;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+        }
+        
+        .toc-link:hover, .toc-link.active {
+            color: white;
+            background: rgba(255,255,255,0.1);
+            padding-left: 1rem;
+            border-radius: 8px;
+        }
+        
+        .toc-section {
+            margin-bottom: 2rem;
+        }
+        
+        .toc-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: white;
+            border-bottom: 2px solid rgba(255,255,255,0.2);
+            padding-bottom: 0.5rem;
+        }
+        
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 2rem 0;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        
+        .comparison-table th {
+            background: var(--primary);
+            color: white;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        .comparison-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+            vertical-align: top;
+        }
+        
+        .comparison-table tr:nth-child(even) {
+            background: rgba(139,90,60,0.05);
+        }
+        
+        .platform-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border-top: 4px solid var(--primary);
+            transition: transform 0.3s ease;
+        }
+        
+        .platform-card:hover {
+            transform: translateY(-4px);
+        }
+        
+        .platform-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+        
+        .platform-stats {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        .stat-item {
+            background: var(--accent);
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+        
+        @media (max-width: 1024px) {
+            .toc-fixed {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                z-index: 1000;
+            }
+            
+            .toc-fixed.open {
+                transform: translateX(0);
+                box-shadow: 4px 0 20px rgba(0,0,0,0.2);
+            }
+            
+            .main-content {
+                margin-left: 0;
+                transition: margin-left 0.3s ease;
+            }
+            
+            .toc-fixed.open + .main-content {
+                margin-left: 280px;
+            }
+            
+            .bento-grid {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+            
+            .hero-title {
+                font-size: 2.5rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                overflow-x: hidden;
+            }
+            
+            .hero-title {
+                font-size: 2rem;
+            }
+            
+            .hero-subtitle {
+                font-size: 1.1rem;
+            }
+            
+            .section-title {
+                font-size: 2rem;
+            }
+            
+            .subsection-title {
+                font-size: 1.5rem;
+            }
+            
+            .bento-main {
+                padding: 1.5rem;
+            }
+            
+            .bento-side-top, .bento-side-bottom {
+                padding: 1.5rem;
+            }
+            
+            .bento-side-top img, .bento-side-bottom img {
+                max-width: 100%;
+                height: auto;
+            }
+            
+            .platform-stats {
+                flex-direction: column;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .hero-title {
+                font-size: 1.8rem;
+            }
+            
+            .section-title {
+                font-size: 1.8rem;
+            }
+            
+            .subsection-title {
+                font-size: 1.3rem;
+            }
+            
+            .bento-main {
+                padding: 1rem;
+            }
+            
+            .bento-side-top, .bento-side-bottom {
+                padding: 1rem;
+            }
+            
+            .bento-side-top img {
+                height: 120px;
+            }
+            
+            .bento-side-bottom img {
+                height: 100px;
+            }
+        }
+    </style>
+  </head>
+
+  <body>
+    <!-- Table of Contents -->
+    <nav class="toc-fixed">
+      <div class="mb-8">
+        <h2 class="text-xl font-bold mb-4">目录导航</h2>
+      </div>
+
+      <div class="toc-section">
+        <div class="toc-title">线上专业平台</div>
+        <a href="#section-1" class="toc-link">高学历精英平台</a>
+        <a href="#section-2" class="toc-link">实名认证平台</a>
+        <a href="#section-3" class="toc-link">视频相亲平台</a>
+        <a href="#section-4" class="toc-link">主流婚恋网站</a>
+      </div>
+
+      <div class="toc-section">
+        <div class="toc-title">兴趣社交平台</div>
+        <a href="#section-5" class="toc-link">灵魂匹配平台</a>
+        <a href="#section-6" class="toc-link">微信生态交友</a>
+      </div>
+
+      <div class="toc-section">
+        <div class="toc-title">线下与公益渠道</div>
+        <a href="#section-7" class="toc-link">官方组织活动</a>
+        <a href="#section-8" class="toc-link">地方公益平台</a>
+        <a href="#section-9" class="toc-link">专业红娘机构</a>
+      </div>
+
+      <div class="toc-section">
+        <div class="toc-title">兴趣社交活动</div>
+        <a href="#section-10" class="toc-link">线上兴趣社区</a>
+        <a href="#section-11" class="toc-link">线下兴趣小组</a>
+      </div>
+
+      <div class="toc-section">
+        <div class="toc-title">传统社交方式</div>
+        <a href="#section-12" class="toc-link">微博交友</a>
+        <a href="#section-13" class="toc-link">朋友介绍</a>
+      </div>
+    </nav>
+
+    <!-- Mobile Menu Toggle -->
+    <button id="mobile-menu-toggle" class="lg:hidden fixed top-4 left-4 z-50 bg-primary text-white p-3 rounded-lg shadow-lg">
+      <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Hero Section -->
+      <section class="hero-section">
+        <div class="container mx-auto px-6 py-12">
+          <div class="bento-grid">
+            <div class="bento-main">
+              <h1 class="hero-title serif">寻找靠谱女朋友渠道指南</h1>
+              <p class="hero-subtitle">探索多元化婚恋交友途径，找到真正适合你的另一半</p>
+              <div class="flex flex-wrap gap-4 mt-8">
+                <span class="bg-primary text-white px-4 py-2 rounded-full text-sm font-medium">线上专业平台</span>
+                <span class="bg-secondary text-text-primary px-4 py-2 rounded-full text-sm font-medium">兴趣社交</span>
+                <span class="bg-accent text-text-primary px-4 py-2 rounded-full text-sm font-medium">线下活动</span>
+                <span class="bg-white text-primary px-4 py-2 rounded-full text-sm font-medium border border-primary">传统方式</span>
+              </div>
+            </div>
+
+            <div class="bento-side-top">
+              <img src="https://kimi-web-img.moonshot.cn/img/respic.3d66.com/0d84a0687d497e5196b5a1b6188af2d8d74c1e87.jpg!medium-size-2" alt="现代简约风格的婚恋交友" class="w-full h-full object-cover rounded-lg" size="medium" aspect="wide" style="clipart" query="现代简约婚恋交友" referrerpolicy="no-referrer" data-modified="1" data-score="11480.00"/>
+            </div>
+
+            <div class="bento-side-bottom">
+              <div class="text-center">
+                <div class="text-3xl font-bold text-primary mb-2">15+</div>
+                <div class="text-sm text-text-secondary">主要婚恋平台</div>
+              </div>
+              <div class="mt-4 text-center">
+                <div class="text-3xl font-bold text-primary mb-2">5</div>
+                <div class="text-sm text-text-secondary">主要渠道类型</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Content Sections -->
+      <div class="container mx-auto px-6 py-12 max-w-4xl">
+
+        <!-- Introduction -->
+        <section class="mb-16">
+          <div class="highlight-box">
+            <h2 class="text-2xl font-bold mb-4 text-primary">概览</h2>
+            <p class="text-lg leading-relaxed">
+              寻找靠谱女朋友的渠道多种多样，线上包括专业婚恋平台（如陌上花开HIMMR、一伴婚恋、Only婚恋、相会、伊对、百合网、世纪佳缘、珍爱网）、兴趣社交与灵魂匹配平台（如Soul、二狗单身青年自救平台）；线下则有官方组织的婚恋交友活动、地方性公益婚恋平台、专业红娘机构，以及基于兴趣爱好的社交活动（如通过支付宝&#34;兴趣社区&#34;、豆瓣、活动行等寻找或参与同城活动）。此外，传统社交媒体如微博，以及最传统也相对靠谱的朋友介绍也是重要途径。选择时需注意各渠道特点，谨慎辨别信息，保护个人安全。
+            </p>
+          </div>
+        </section>
+
+        <!-- Section 1: 线上专业婚恋平台 -->
+        <section id="section-1" class="mb-16">
+          <h2 class="section-title serif">1. 线上专业婚恋平台</h2>
+
+          <p class="text-lg mb-8">
+            线上专业婚恋平台是寻找伴侣的重要途径之一，它们通常提供较为系统的匹配机制和用户筛选。根据平台定位和功能特点，可以细分为高学历精英平台、实名认证与兴趣匹配平台、视频相亲平台以及主流婚恋网站等。
+          </p>
+
+          <!-- 高学历精英婚恋平台 -->
+          <div id="section-1-1" class="mb-12">
+            <h3 class="subsection-title serif">1.1 高学历精英婚恋平台：陌上花开HIMMR</h3>
+
+            <div class="platform-card">
+              <div class="platform-title">陌上花开HIMMR</div>
+              <p class="mb-4">
+                <strong>陌上花开HIMMR（How I Met Mr./Ms. Right）</strong> 是一家专注于服务高学历优秀青年的相亲交友平台，由两位清华大学经管学院的校友于2015年创立<a href="https://baike.baidu.com/item/%E9%99%8C%E4%B8%8A%E8%8A%B1%E5%BC%80HIMMR/63564398" class="citation">[77]</a>。该平台致力于通过严格的资料审核认证和精准的用户群体定位，为不愿将就的用户提供真实、优质、高效的脱单恋爱服务<a href="#" class="citation">[73]</a>。
+              </p>
+
+              <div class="platform-stats">
+                <div class="stat-item">
+                  <i class="fas fa-graduation-cap mr-2"></i>
+                  73%+ 985/海外名校用户
+                </div>
+                <div class="stat-item">
+                  <i class="fas fa-users mr-2"></i>
+                  50万+ 高学历用户
+                </div>
+                <div class="stat-item">
+                  <i class="fas fa-heart mr-2"></i>
+                  35% 三个月内恋爱率
+                </div>
+              </div>
+
+              <div class="mt-6 p-4 bg-gray-50 rounded-lg">
+                <h4 class="font-semibold mb-2">核心服务：</h4>
+                <ul class="list-disc list-inside space-y-2">
+                  <li>线上征友：每日精准推荐10位优质异性嘉宾</li>
+                  <li>线下活动：每年举办超过500场活动，累计参与人数超过10万</li>
+                  <li>1对1红娘服务：收费约1.5万元/季度</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- 实名认证与兴趣匹配平台 -->
+          <div id="section-2" class="mb-12">
+            <h3 class="subsection-title serif">1.2 实名认证与兴趣匹配平台：一伴婚恋、Only婚恋</h3>
+
+            <p class="mb-6">
+              在众多线上专业婚恋平台中，<strong>一伴婚恋（Yiban）</strong> 和 <strong>Only婚恋</strong> 因其对用户真实性的严格把控和对兴趣匹配的重视而受到关注。
+            </p>
+
+            <div class="overflow-x-auto">
+              <table class="comparison-table">
+                <thead>
+                  <tr>
+                    <th>特点</th>
+                    <th>一伴婚恋 (Yiban)</th>
+                    <th>Only婚恋</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>核心定位</strong></td>
+                    <td>为有明确结婚目的的用户提供真实、高品质交友环境</td>
+                    <td>严肃、真诚、高质量的婚恋交友</td>
+                  </tr>
+                  <tr>
+                    <td><strong>认证机制</strong></td>
+                    <td>严格实名认证，多种认证方式（学历、职业、资产、视频等）</td>
+                    <td>实名制注册</td>
+                  </tr>
+                  <tr>
+                    <td><strong>匹配方式</strong></td>
+                    <td>基于三观、兴趣爱好等精准匹配；条件筛选</td>
+                    <td>根据用户条件和兴趣标签进行个性化推荐</td>
+                  </tr>
+                  <tr>
+                    <td><strong>特色功能</strong></td>
+                    <td>&#34;小纸条聊天&#34;；&#34;动态发布&#34;；支持微信添加好友；多种专区</td>
+                    <td>&#34;发送小纸条&#34;聊天功能；支持微信添加好友</td>
+                  </tr>
+                  <tr>
+                    <td><strong>用户反馈</strong></td>
+                    <td>上线7天有用户牵手成功，下载量达5819万次</td>
+                    <td>用户资料较为详细，有助于全面了解对方</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- 视频相亲平台 -->
+          <div id="section-3" class="mb-12">
+            <h3 class="subsection-title serif">1.3 视频相亲平台：相会、伊对</h3>
+
+            <p class="mb-6">
+              随着技术的发展，视频相亲逐渐成为一种新兴且高效的脱单方式。<strong>相会</strong>和<strong>伊对</strong>是两款在这一领域具有一定代表性的应用。
+            </p>
+
+            <div class="overflow-x-auto">
+              <table class="comparison-table">
+                <thead>
+                  <tr>
+                    <th>特点</th>
+                    <th>相会</th>
+                    <th>伊对</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>核心定位</strong></td>
+                    <td>一对一视频相亲，强调真实性和安全性</td>
+                    <td>集相亲、交友、恋爱、社交于一体的综合性软件</td>
+                  </tr>
+                  <tr>
+                    <td><strong>认证机制</strong></td>
+                    <td>头像必须通过人脸识别认证</td>
+                    <td>真人三方视频相亲</td>
+                  </tr>
+                  <tr>
+                    <td><strong>主要功能</strong></td>
+                    <td>一对一视频聊天；用户信息卡片；智能配对</td>
+                    <td>真人三方视频相亲（有红娘引导）；多种社交功能</td>
+                  </tr>
+                  <tr>
+                    <td><strong>互动特色</strong></td>
+                    <td>直接一对一视频，强调用户资料的真实可靠</td>
+                    <td>红娘引导下的三方视频，降低社交压力</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- 主流婚恋网站 -->
+          <div id="section-4" class="mb-12">
+            <h3 class="subsection-title serif">1.4 主流婚恋网站：百合网、世纪佳缘、珍爱网（需谨慎选择）</h3>
+
+            <div class="card">
+              <div class="flex items-start space-x-4">
+                <div class="flex-shrink-0">
+                  <i class="fas fa-exclamation-triangle text-yellow-500 text-2xl"></i>
+                </div>
+                <div>
+                  <p class="mb-4">
+                    <strong>百合网、世纪佳缘和珍爱网</strong>是中国婚恋交友市场中历史较为悠久、用户规模较大的主流平台。百合网宣称是实名婚恋网的开创者，拥有累计<strong>1.2亿会员</strong>。
+                  </p>
+                  <div class="bg-red-50 border-l-4 border-red-400 p-4 mb-4">
+                    <div class="flex">
+                      <div class="flex-shrink-0">
+                        <i class="fas fa-exclamation-circle text-red-400"></i>
+                      </div>
+                      <div class="ml-3">
+                        <p class="text-sm text-red-700">
+                          <strong>使用警告：</strong>这些平台曾被曝光存在利用焦虑收割消费者、捏造&#34;虚拟人&#34;、退费规则不明确等问题。用户需保持警惕，仔细辨别信息真伪。
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 2: 兴趣社交与灵魂匹配平台 -->
+        <section id="section-5" class="mb-16">
+          <h2 class="section-title serif">2. 兴趣社交与灵魂匹配平台</h2>
+
+          <p class="text-lg mb-8">
+            这类平台更侧重于通过共同的兴趣爱好或内在特质的契合来连接用户，为寻找有共同语言和灵魂共鸣的伴侣提供了可能。
+          </p>
+
+          <!-- Soul -->
+          <div id="section-5-1" class="mb-12">
+            <h3 class="subsection-title serif">2.1 兴趣元宇宙社交：Soul</h3>
+
+            <div class="platform-card">
+              <div class="platform-title">Soul</div>
+              <p class="mb-4">
+                <strong>Soul</strong>是一款主打&#34;灵魂社交&#34;的应用程序，其核心理念是<strong>不以貌取人，而是通过用户的兴趣、三观等内在特质来进行匹配和连接</strong>。平台通过其&#34;灵魂鉴定&#34;算法，为用户推荐可能三观契合的对象<a href="https://finance.sina.cn/2025-07-25/detail-infhsmtt1819571.d.html" class="citation">[104]</a>。
+              </p>
+
+              <div class="platform-stats">
+                <div class="stat-item">
+                  <i class="fas fa-users mr-2"></i>
+                  2亿年轻用户
+                </div>
+                <div class="stat-item">
+                  <i class="fas fa-heart mr-2"></i>
+                  灵魂匹配
+                </div>
+                <div class="stat-item">
+                  <i class="fas fa-gamepad mr-2"></i>
+                  3D虚拟形象
+                </div>
+              </div>
+
+              <div class="mt-6 p-4 bg-gray-50 rounded-lg">
+                <h4 class="font-semibold mb-2">主要功能：</h4>
+                <ul class="list-disc list-inside space-y-2">
+                  <li><strong>瞬间广场：</strong>发表文字、图片、视频和语音，记录和分享生活</li>
+                  <li><strong>灵魂匹配：</strong>根据性格测试和兴趣标签，一键连接可能聊得来的人</li>
+                  <li><strong>群聊派对：</strong>主题式的多人语音群聊功能</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- 二狗单身青年自救平台 -->
+          <div id="section-6" class="mb-12">
+            <h3 class="subsection-title serif">2.2 基于微信生态的交友小程序：二狗单身青年自救平台</h3>
+
+            <div class="platform-card">
+              <div class="platform-title">二狗单身青年自救平台</div>
+              <p class="mb-4">
+                <strong>&#34;二狗单身青年自救平台&#34;（简称&#34;二狗&#34;）</strong>是一款源自腾讯（鹅厂）的实名制交友平台，主要通过微信小程序和APP运营，定位为汇聚互联网BAT等名企、金融投行、公务员及高校优秀青年的社交圈<a href="https://blog.sina.com.cn/s/blog_5f7692460102yshl.html" class="citation">[57]</a>。
+              </p>
+
+              <div class="platform-stats">
+                <div class="stat-item">
+                  <i class="fas fa-shield-alt mr-2"></i>
+                  三重认证
+                </div>
+                <div class="stat-item">
+                  <i class="fas fa-users mr-2"></i>
+                  100万+用户
+                </div>
+                <div class="stat-item">
+                  <i class="fas fa-calendar mr-2"></i>
+                  限量匹配
+                </div>
+              </div>
+
+              <div class="mt-6 p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded-lg">
+                <h4 class="font-semibold mb-2 text-yellow-800">
+                  <i class="fas fa-info-circle mr-2"></i>用户反馈两面性：
+                </h4>
+                <ul class="list-disc list-inside space-y-2 text-yellow-700">
+                  <li>正面：有用户通过平台成功脱单，建立稳定恋爱关系</li>
+                  <li>负面：部分用户存在&#34;包装过度&#34;或信息造假情况</li>
+                  <li>注意：平台持续推荐可能影响关系稳定性</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 3: 线下与官方公益渠道 -->
+        <section id="section-7" class="mb-16">
+          <h2 class="section-title serif">3. 线下与官方公益渠道</h2>
+
+          <p class="text-lg mb-8">
+            线下渠道和官方组织的公益活动，因其真实性和公益性，是寻找靠谱伴侣的重要补充。
+          </p>
+
+          <!-- 官方组织的婚恋交友活动 -->
+          <div id="section-7-1" class="mb-12">
+            <h3 class="subsection-title serif">3.1 官方组织的婚恋交友活动：妇联、共青团等机构</h3>
+
+            <div class="card">
+              <div class="flex items-start space-x-4">
+                <div class="flex-shrink-0">
+                  <i class="fas fa-handshake text-primary text-2xl"></i>
+                </div>
+                <div class="flex-1">
+                  <h4 class="text-xl font-semibold mb-3 text-primary">官方背景，安全可靠</h4>
+                  <p class="mb-4">
+                    <strong>各级妇联、共青团等官方机构</strong>经常会组织公益性的婚恋交友活动，旨在为单身青年提供相识相知的平台。这些活动通常具有较高的<strong>可信度和安全性</strong>，因为主办方是政府背景的机构，对参与者的身份和信息审核相对严格。
+                  </p>
+
+                  <div class="grid md:grid-cols-2 gap-4 mt-6">
+                    <div class="p-4 bg-green-50 rounded-lg">
+                      <h5 class="font-semibold text-green-800 mb-2">
+                        <i class="fas fa-check-circle mr-2"></i>活动优势
+                      </h5>
+                      <ul class="text-sm text-green-700 space-y-1">
+                        <li>• 经过筛选的真实用户</li>
+                        <li>• 费用较低或免费</li>
+                        <li>• 无商业营销压力</li>
+                        <li>• 多样化的活动形式</li>
+                      </ul>
+                    </div>
+                    <div class="p-4 bg-blue-50 rounded-lg">
+                      <h5 class="font-semibold text-blue-800 mb-2">
+                        <i class="fas fa-info-circle mr-2"></i>获取方式
+                      </h5>
+                      <ul class="text-sm text-blue-700 space-y-1">
+                        <li>• 关注官方微信公众号</li>
+                        <li>• 查看官方网站公告</li>
+                        <li>• 社区公告栏</li>
+                        <li>• 工会组织通知</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 地方性公益婚恋平台 -->
+          <div id="section-8" class="mb-12">
+            <h3 class="subsection-title serif">3.2 地方性公益婚恋平台</h3>
+
+            <div class="grid md:grid-cols-3 gap-6">
+              <div class="platform-card">
+                <div class="platform-title">青春&#34;爱情数&#34;</div>
+                <div class="text-sm text-text-secondary mb-3">贵州</div>
+                <p class="text-sm">由地方团委、工会等组织牵头，专门为贵州本地单身青年服务的公益婚恋平台。</p>
+              </div>
+
+              <div class="platform-card">
+                <div class="platform-title">亲青恋</div>
+                <div class="text-sm text-text-secondary mb-3">浙江</div>
+                <p class="text-sm">浙江省公益婚恋服务项目，结合本地实际情况开展线上线下婚恋交友服务。</p>
+              </div>
+
+              <div class="platform-card">
+                <div class="platform-title">青春益友爱情总局</div>
+                <div class="text-sm text-text-secondary mb-3">上海</div>
+                <p class="text-sm">上海市公益婚恋平台，强调公益性和服务性，不以盈利为首要目标。</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 专业红娘机构 -->
+          <div id="section-9" class="mb-12">
+            <h3 class="subsection-title serif">3.3 专业红娘机构与婚恋服务中心</h3>
+
+            <div class="card">
+              <div class="flex items-start space-x-4">
+                <div class="flex-shrink-0">
+                  <i class="fas fa-heart text-pink-500 text-2xl"></i>
+                </div>
+                <div class="flex-1">
+                  <h4 class="text-xl font-semibold mb-3 text-primary">个性化服务，专业指导</h4>
+                  <p class="mb-4">
+                    专业的红娘机构和婚恋服务中心是传统的线下婚恋服务提供者，例如<strong>上海的梅园婚恋交友中心</strong>就是一家历史较为悠久的机构。这类机构通常提供一对一的红娘服务，通过深入了解客户的需求和条件，进行人工匹配和牵线搭桥。
+                  </p>
+
+                  <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 my-4">
+                    <div class="flex">
+                      <div class="flex-shrink-0">
+                        <i class="fas fa-exclamation-triangle text-yellow-400"></i>
+                      </div>
+                      <div class="ml-3">
+                        <p class="text-sm text-yellow-700">
+                          <strong>选择建议：</strong>务必注意辨别机构资质和信誉，查看营业执照和相关资质证明，明确服务内容和收费标准，签订正规合同。
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="grid md:grid-cols-2 gap-4">
+                    <div class="p-4 bg-green-50 rounded-lg">
+                      <h5 class="font-semibold text-green-800 mb-2">服务优势</h5>
+                      <ul class="text-sm text-green-700 space-y-1">
+                        <li>• 个性化服务定制</li>
+                        <li>• 专业红娘指导</li>
+                        <li>• 人工精准匹配</li>
+                        <li>• 定期线下活动</li>
+                      </ul>
+                    </div>
+                    <div class="p-4 bg-red-50 rounded-lg">
+                      <h5 class="font-semibold text-red-800 mb-2">注意事项</h5>
+                      <ul class="text-sm text-red-700 space-y-1">
+                        <li>• 警惕虚假承诺</li>
+                        <li>• 避免高额收费</li>
+                        <li>• 谨防&#34;婚托&#34;陷阱</li>
+                        <li>• 保留服务凭证</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 4: 基于兴趣爱好的社交与活动 -->
+        <section id="section-10" class="mb-16">
+          <h2 class="section-title serif">4. 基于兴趣爱好的社交与活动</h2>
+
+          <p class="text-lg mb-8">
+            通过共同的兴趣爱好结识朋友并发展恋情，是一种更为自然和深入的方式。线上兴趣社区和线下兴趣小组为此提供了丰富的选择。
+          </p>
+
+          <!-- 线上兴趣社区 -->
+          <div id="section-10-1" class="mb-12">
+            <h3 class="subsection-title serif">4.1 线上兴趣社区与活动平台</h3>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div class="platform-card">
+                <div class="platform-title">支付宝&#34;兴趣社区&#34;</div>
+                <div class="text-sm text-text-secondary mb-3">内测中</div>
+                <p class="text-sm mb-4">定位&#34;发现有趣找到玩伴&#34;，用户可根据爱好加入不同兴趣小组，查看和报名线下活动。</p>
+                <div class="flex flex-wrap gap-2">
+                  <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">徒步</span>
+                  <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">骑行</span>
+                  <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">兴趣小组</span>
+                </div>
+              </div>
+
+              <div class="platform-card">
+                <div class="platform-title">豆瓣</div>
+                <div class="text-sm text-text-secondary mb-3">老牌社区</div>
+                <p class="text-sm mb-4">豆瓣小组功能允许用户根据各种兴趣标签创建或加入小组，进行交流和分享。</p>
+                <div class="flex flex-wrap gap-2">
+                  <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">兴趣标签</span>
+                  <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">相亲小组</span>
+                  <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">交流分享</span>
+                </div>
+              </div>
+
+              <div class="platform-card">
+                <div class="platform-title">活动行</div>
+                <div class="text-sm text-text-secondary mb-3">活动平台</div>
+                <p class="text-sm mb-4">提供各类沙龙、聚会、课程等活动信息，可按兴趣和地理位置查找同城活动。</p>
+                <div class="flex flex-wrap gap-2">
+                  <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs">同城活动</span>
+                  <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs">沙龙聚会</span>
+                  <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs">课程培训</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 线下兴趣小组 -->
+          <div id="section-11" class="mb-12">
+            <h3 class="subsection-title serif">4.2 线下兴趣小组与俱乐部</h3>
+
+            <div class="card">
+              <div class="flex items-start space-x-4">
+                <div class="flex-shrink-0">
+                  <i class="fas fa-users-cog text-primary text-2xl"></i>
+                </div>
+                <div class="flex-1">
+                  <h4 class="text-xl font-semibold mb-3 text-primary">真实互动，自然交流</h4>
+                  <p class="mb-4">
+                    <strong>线下兴趣小组与俱乐部是结识有共同爱好人士的传统且有效的方式</strong>。在当今数字化时代，许多线下兴趣小组的招募和组织也依赖于线上平台。用户可以通过在搜索引擎、社交媒体、专门的兴趣社区App上搜索关键词，如&#34;城市名 + 兴趣关键词 + 小组/俱乐部/活动&#34;，来找到本地的相关组织。
+                  </p>
+
+                  <div class="grid md:grid-cols-2 gap-6 mt-6">
+                    <div>
+                      <h5 class="font-semibold mb-3 text-primary">活动类型示例</h5>
+                      <div class="space-y-2">
+                        <div class="flex items-center space-x-2">
+                          <i class="fas fa-hiking text-green-500"></i>
+                          <span class="text-sm">徒步、骑行等户外活动</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                          <i class="fas fa-book text-blue-500"></i>
+                          <span class="text-sm">读书会、文学沙龙</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                          <i class="fas fa-palette text-purple-500"></i>
+                          <span class="text-sm">手工制作、艺术创作</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                          <i class="fas fa-basketball-ball text-orange-500"></i>
+                          <span class="text-sm">球类运动、健身</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                          <i class="fas fa-music text-red-500"></i>
+                          <span class="text-sm">舞蹈班、音乐欣赏</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <h5 class="font-semibold mb-3 text-primary">成功案例</h5>
+                      <div class="space-y-3">
+                        <div class="p-3 bg-gray-50 rounded-lg">
+                          <div class="font-medium text-sm">重庆建筑科技职业学院</div>
+                          <div class="text-xs text-text-secondary">&#34;活力无限&#34;文体活动兴趣小组</div>
+                        </div>
+                        <div class="p-3 bg-gray-50 rounded-lg">
+                          <div class="font-medium text-sm">中汽信科</div>
+                          <div class="text-xs text-text-secondary">篮球、乒乓球等兴趣小组</div>
+                        </div>
+                        <div class="p-3 bg-gray-50 rounded-lg">
+                          <div class="font-medium text-sm">复旦大学计算机学院</div>
+                          <div class="text-xs text-text-secondary">退休教师摄影兴趣小组</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 5: 传统社交媒体与方式 -->
+        <section id="section-12" class="mb-16">
+          <h2 class="section-title serif">5. 传统社交媒体与方式</h2>
+
+          <p class="text-lg mb-8">
+            除了专门的婚恋平台和兴趣社区，一些传统的社交媒体和方式依然在寻找伴侣中扮演着重要角色。
+          </p>
+
+          <!-- 微博交友 -->
+          <div id="section-12-1" class="mb-12">
+            <h3 class="subsection-title serif">5.1 微博交友（需注意技巧与成功率）</h3>
+
+            <div class="card">
+              <div class="flex items-start space-x-4">
+                <div class="flex-shrink-0">
+                  <i class="fab fa-weibo text-red-500 text-2xl"></i>
+                </div>
+                <div class="flex-1">
+                  <h4 class="text-xl font-semibold mb-3 text-primary">开放社交，灵活互动</h4>
+                  <p class="mb-4">
+                    <strong>微博</strong>作为中国主流的社交媒体平台之一，虽然并非专为婚恋交友设计，但其庞大的用户基础和开放性的社交环境，为寻找有共同兴趣爱好或特定价值观的潜在伴侣提供了一定的可能性。
+                  </p>
+
+                  <div class="grid md:grid-cols-2 gap-6 mt-6">
+                    <div>
+                      <h5 class="font-semibold mb-3 text-green-800">
+                        <i class="fas fa-lightbulb mr-2"></i>交友技巧
+                      </h5>
+                      <ul class="space-y-2 text-sm">
+                        <li class="flex items-start space-x-2">
+                          <i class="fas fa-check text-green-500 mt-1"></i>
+                          <span>精心打造个人主页（真实头像、特色签名）</span>
+                        </li>
+                        <li class="flex items-start space-x-2">
+                          <i class="fas fa-check text-green-500 mt-1"></i>
+                          <span>发布高质量原创内容增加吸引力</span>
+                        </li>
+                        <li class="flex items-start space-x-2">
+                          <i class="fas fa-check text-green-500 mt-1"></i>
+                          <span>通过关键词搜索寻找潜在对象</span>
+                        </li>
+                        <li class="flex items-start space-x-2">
+                          <i class="fas fa-check text-green-500 mt-1"></i>
+                          <span>参与热门话题和兴趣标签互动</span>
+                        </li>
+                      </ul>
+                    </div>
+
+                    <div>
+                      <h5 class="font-semibold mb-3 text-red-800">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>注意事项
+                      </h5>
+                      <ul class="space-y-2 text-sm">
+                        <li class="flex items-start space-x-2">
+                          <i class="fas fa-times text-red-500 mt-1"></i>
+                          <span>信息不对称，难以了解对方真实情况</span>
+                        </li>
+                        <li class="flex items-start space-x-2">
+                          <i class="fas fa-times text-red-500 mt-1"></i>
+                          <span>需要保持警惕，逐步建立信任</span>
+                        </li>
+                        <li class="flex items-start space-x-2">
+                          <i class="fas fa-times text-red-500 mt-1"></i>
+                          <span>成功案例存在但非普遍现象</span>
+                        </li>
+                        <li class="flex items-start space-x-2">
+                          <i class="fas fa-times text-red-500 mt-1"></i>
+                          <span>需要有理性的预期</span>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 朋友介绍 -->
+          <div id="section-13" class="mb-12">
+            <h3 class="subsection-title serif">5.2 朋友介绍（最传统也相对靠谱的方式之一）</h3>
+
+            <div class="highlight-box">
+              <h4 class="text-xl font-semibold mb-4 text-primary">
+                <i class="fas fa-users mr-2"></i>基于信任的熟人社交
+              </h4>
+              <p class="mb-4">
+                <strong>朋友介绍</strong>可以说是寻找女朋友<strong>最传统也相对靠谱的方式之一</strong>。这种方式基于熟人社会的信任背书，介绍人通常对双方都有一定的了解，能够根据双方的性格、爱好、条件等进行初步匹配，从而提高成功率并降低风险。
+              </p>
+
+              <div class="grid md:grid-cols-3 gap-6 mt-6">
+                <div class="text-center">
+                  <div class="bg-primary text-white rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-shield-alt text-xl"></i>
+                  </div>
+                  <h5 class="font-semibold mb-2">信息真实可靠</h5>
+                  <p class="text-sm text-text-secondary">介绍人作为中间桥梁，通常会传递较为准确的信息</p>
+                </div>
+
+                <div class="text-center">
+                  <div class="bg-primary text-white rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-lock text-xl"></i>
+                  </div>
+                  <h5 class="font-semibold mb-2">安全性较高</h5>
+                  <p class="text-sm text-text-secondary">双方有共同的朋友，减少了遇到骗子的可能性</p>
+                </div>
+
+                <div class="text-center">
+                  <div class="bg-primary text-white rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-heart text-xl"></i>
+                  </div>
+                  <h5 class="font-semibold mb-2">易于建立信任</h5>
+                  <p class="text-sm text-text-secondary">有共同熟人的存在，交往初期更容易建立信任</p>
+                </div>
+              </div>
+
+              <div class="mt-8 p-4 bg-white rounded-lg">
+                <h5 class="font-semibold mb-3 text-primary">
+                  <i class="fas fa-lightbulb mr-2"></i>充分利用朋友介绍的策略
+                </h5>
+                <div class="grid md:grid-cols-2 gap-4">
+                  <ul class="space-y-2 text-sm">
+                    <li>• <strong>保持开放心态：</strong>不要排斥亲友的好意</li>
+                    <li>• <strong>主动表达意愿：</strong>向靠谱的朋友、同事、长辈表达寻找伴侣的意愿</li>
+                  </ul>
+                  <ul class="space-y-2 text-sm">
+                    <li>• <strong>扩大社交圈：</strong>认识更多的人，增加介绍机会</li>
+                    <li>• <strong>用心了解判断：</strong>不能完全依赖介绍，需自己用心了解</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Conclusion -->
+        <section class="mb-16">
+          <div class="card">
+            <h2 class="text-2xl font-bold mb-6 text-primary serif">总结与建议</h2>
+            <div class="prose max-w-none">
+              <p class="text-lg mb-4">
+                通过本指南的详细分析，我们可以看到寻找靠谱女朋友的渠道多种多样，每种渠道都有其独特的优势和适用场景。关键在于根据自己的实际情况和需求，选择最适合的渠道组合。
+              </p>
+
+              <div class="grid md:grid-cols-2 gap-8 mt-8">
+                <div>
+                  <h3 class="text-xl font-semibold mb-4 text-primary">选择建议</h3>
+                  <ul class="space-y-3">
+                    <li class="flex items-start space-x-3">
+                      <i class="fas fa-check-circle text-green-500 mt-1"></i>
+                      <span>优先考虑有严格认证机制的平台</span>
+                    </li>
+                    <li class="flex items-start space-x-3">
+                      <i class="fas fa-check-circle text-green-500 mt-1"></i>
+                      <span>结合线上和线下渠道，提高成功率</span>
+                    </li>
+                    <li class="flex items-start space-x-3">
+                      <i class="fas fa-check-circle text-green-500 mt-1"></i>
+                      <span>通过兴趣爱好寻找，更容易建立深层连接</span>
+                    </li>
+                    <li class="flex items-start space-x-3">
+                      <i class="fas fa-check-circle text-green-500 mt-1"></i>
+                      <span>重视朋友介绍等传统可靠方式</span>
+                    </li>
+                  </ul>
+                </div>
+
+                <div>
+                  <h3 class="text-xl font-semibold mb-4 text-primary">安全提醒</h3>
+                  <ul class="space-y-3">
+                    <li class="flex items-start space-x-3">
+                      <i class="fas fa-exclamation-triangle text-yellow-500 mt-1"></i>
+                      <span>始终保持警惕，谨慎辨别信息真伪</span>
+                    </li>
+                    <li class="flex items-start space-x-3">
+                      <i class="fas fa-exclamation-triangle text-yellow-500 mt-1"></i>
+                      <span>保护个人隐私，避免过早透露敏感信息</span>
+                    </li>
+                    <li class="flex items-start space-x-3">
+                      <i class="fas fa-exclamation-triangle text-yellow-500 mt-1"></i>
+                      <span>警惕各种营销套路和高额消费陷阱</span>
+                    </li>
+                    <li class="flex items-start space-x-3">
+                      <i class="fas fa-exclamation-triangle text-yellow-500 mt-1"></i>
+                      <span>线下见面选择公共场所，确保安全</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="mt-8 p-6 bg-gradient-to-r from-primary to-secondary text-white rounded-lg">
+                <h3 class="text-xl font-semibold mb-4">
+                  <i class="fas fa-star mr-2"></i>最终建议
+                </h3>
+                <p class="text-lg">
+                  寻找靠谱的女朋友不仅需要选择合适的渠道，更需要保持真诚、开放的心态。无论通过哪种方式认识，最重要的是在交往过程中用心去了解对方，建立基于相互尊重和理解的健康关系。记住，最好的关系往往是在不经意间自然发展的。
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <script>
+        // Mobile menu toggle
+        const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+        const tocFixed = document.querySelector('.toc-fixed');
+        
+        mobileMenuToggle.addEventListener('click', () => {
+            tocFixed.classList.toggle('open');
+        });
+        
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!tocFixed.contains(e.target) && !mobileMenuToggle.contains(e.target)) {
+                tocFixed.classList.remove('open');
+            }
+        });
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                    // Close mobile menu if open
+                    if (window.innerWidth < 1024) {
+                        tocFixed.classList.remove('open');
+                    }
+                }
+            });
+        });
+
+        // Active link highlighting
+        const sections = document.querySelectorAll('section[id], div[id]');
+        const tocLinks = document.querySelectorAll('.toc-link');
+
+        function updateActiveLink() {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop - 100;
+                if (scrollY >= sectionTop) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+
+        window.addEventListener('scroll', updateActiveLink);
+        updateActiveLink(); // Initial call
+
+        // Close mobile menu when resizing to desktop
+        window.addEventListener('resize', () => {
+            if (window.innerWidth >= 1024) {
+                tocFixed.classList.remove('open');
+            }
+        });
+    </script>
+  
+
+</body></html>

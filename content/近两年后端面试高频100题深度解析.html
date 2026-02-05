@@ -1,0 +1,1991 @@
+<!DOCTYPE html><html lang="zh-CN"><head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>近两年后端面试高频100题深度解析</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=Playfair+Display:ital,wght@0,400;0,600;1,400&amp;display=swap" rel="stylesheet"/>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1e3a8a',
+                        secondary: '#64748b',
+                        accent: '#3b82f6',
+                        neutral: '#f8fafc',
+                        muted: '#94a3b8'
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif'],
+                        'serif': ['Playfair Display', 'serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .hero-gradient {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+        }
+        .text-shadow {
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .glass-effect {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.9);
+        }
+        .toc-fixed {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 280px;
+            overflow-y: auto;
+            z-index: 1000;
+            background: rgba(248, 250, 252, 0.95);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid #e2e8f0;
+        }
+        .main-content {
+            margin-left: 280px;
+        }
+        @media (max-width: 1024px) {
+            .toc-fixed {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            .toc-fixed.active {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0;
+            }
+        }
+        .mermaid-container {
+            display: flex;
+            justify-content: center;
+            min-height: 300px;
+            max-height: 800px;
+            background: #ffffff;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 30px;
+            margin: 30px 0;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mermaid-container .mermaid {
+            width: 100%;
+            max-width: 100%;
+            height: 100%;
+            cursor: grab;
+            transition: transform 0.3s ease;
+            transform-origin: center center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            touch-action: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        .mermaid-container .mermaid svg {
+            max-width: 100%;
+            height: 100%;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .mermaid-container .mermaid:active {
+            cursor: grabbing;
+        }
+
+        .mermaid-container.zoomed .mermaid {
+            height: 100%;
+            width: 100%;
+            cursor: grab;
+        }
+
+        .mermaid-controls {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            display: flex;
+            gap: 10px;
+            z-index: 20;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 8px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .mermaid-control-btn {
+            background: #ffffff;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #374151;
+            font-size: 14px;
+            min-width: 36px;
+            height: 36px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mermaid-control-btn:hover {
+            background: #f8fafc;
+            border-color: #3b82f6;
+            color: #3b82f6;
+            transform: translateY(-1px);
+        }
+
+        .mermaid-control-btn:active {
+            transform: scale(0.95);
+        }
+
+        @media (max-width: 1024px) {
+            .mermaid-control-btn:not(.reset-zoom) {
+                display: none;
+            }
+            .mermaid-controls {
+                top: auto;
+                bottom: 15px;
+                right: 15px;
+            }
+        }
+    </style>
+  </head>
+
+  <body class="bg-neutral font-sans text-gray-800 leading-relaxed">
+    <!-- Table of Contents -->
+    <nav class="toc-fixed" id="toc">
+      <div class="p-6">
+        <h2 class="text-lg font-semibold text-primary mb-4">目录</h2>
+        <ul class="space-y-2 text-sm">
+          <li>
+            <a href="#introduction" class="block py-2 px-3 rounded-lg hover:bg-blue-50 text-secondary hover:text-primary transition-colors">引言</a>
+          </li>
+          <li>
+            <a href="#http-network" class="block py-2 px-3 rounded-lg hover:bg-blue-50 text-secondary hover:text-primary transition-colors">HTTP协议与网络基础</a>
+          </li>
+          <li>
+            <a href="#database-storage" class="block py-2 px-3 rounded-lg hover:bg-blue-50 text-secondary hover:text-primary transition-colors">数据库与数据存储</a>
+          </li>
+          <li>
+            <a href="#distributed-systems" class="block py-2 px-3 rounded-lg hover:bg-blue-50 text-secondary hover:text-primary transition-colors">分布式系统与微服务</a>
+          </li>
+          <li>
+            <a href="#caching-systems" class="block py-2 px-3 rounded-lg hover:bg-blue-50 text-secondary hover:text-primary transition-colors">缓存系统设计</a>
+          </li>
+          <li>
+            <a href="#concurrent-programming" class="block py-2 px-3 rounded-lg hover:bg-blue-50 text-secondary hover:text-primary transition-colors">并发编程与多线程</a>
+          </li>
+          <li>
+            <a href="#message-queues" class="block py-2 px-3 rounded-lg hover:bg-blue-50 text-secondary hover:text-primary transition-colors">消息队列与异步处理</a>
+          </li>
+          <li>
+            <a href="#design-patterns" class="block py-2 px-3 rounded-lg hover:bg-blue-50 text-secondary hover:text-primary transition-colors">设计模式与软件工程</a>
+          </li>
+          <li>
+            <a href="#memory-management" class="block py-2 px-3 rounded-lg hover:bg-blue-50 text-secondary hover:text-primary transition-colors">内存管理与垃圾回收</a>
+          </li>
+          <li>
+            <a href="#system-design" class="block py-2 px-3 rounded-lg hover:bg-blue-50 text-secondary hover:text-primary transition-colors">系统设计与架构</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- Mobile Menu Toggle -->
+    <button id="mobile-menu-toggle" class="lg:hidden fixed top-4 left-4 z-50 bg-primary text-white p-3 rounded-full shadow-lg">
+      <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Hero Section -->
+      <section class="hero-gradient text-white min-h-screen flex items-center relative overflow-hidden">
+        <div class="absolute inset-0 opacity-20">
+          <img src="https://kimi-web-img.moonshot.cn/img/cdn.pixabay.com/6ec0daa8ebb026fabaf3c5f0e603d0f6d1893dc8.jpg" alt="抽象的数字网络背景" class="w-full h-full object-cover" size="wallpaper" aspect="wide" query="数字网络背景 抽象" referrerpolicy="no-referrer" data-modified="1" data-score="0.00"/>
+        </div>
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div class="grid lg:grid-cols-12 gap-12 items-center">
+            <!-- Main Title -->
+            <div class="lg:col-span-7">
+              <div class="max-w-4xl">
+                <h1 class="text-4xl sm:text-5xl lg:text-7xl font-serif italic mb-6 text-shadow leading-tight">
+                  近两年后端面试
+                  <br/>
+                  <span class="text-blue-300">高频100题</span>
+                  <br/>
+                  深度解析
+                </h1>
+                <p class="text-lg sm:text-xl lg:text-2xl text-blue-100 mb-8 leading-relaxed">
+                  Java、Go、Python技术栈全覆盖
+                  <br/>
+                  从底层原理到最佳实践的完整指南
+                </p>
+                <div class="flex flex-wrap gap-4">
+                  <span class="inline-flex items-center px-4 py-2 bg-blue-600/20 rounded-full text-blue-200 border border-blue-400/30">
+                    <i class="fas fa-code mr-2"></i>
+                    技术深度解析
+                  </span>
+                  <span class="inline-flex items-center px-4 py-2 bg-blue-600/20 rounded-full text-blue-200 border border-blue-400/30">
+                    <i class="fas fa-chart-line mr-2"></i>
+                    面试趋势分析
+                  </span>
+                  <span class="inline-flex items-center px-4 py-2 bg-blue-600/20 rounded-full text-blue-200 border border-blue-400/30">
+                    <i class="fas fa-lightbulb mr-2"></i>
+                    实战解决方案
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Key Highlights Grid -->
+            <div class="lg:col-span-5">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="glass-effect p-6 rounded-2xl border border-white/10">
+                  <div class="text-3xl font-bold text-primary mb-2">100+</div>
+                  <div class="text-sm text-gray-600">核心面试题</div>
+                </div>
+                <div class="glass-effect p-6 rounded-2xl border border-white/10">
+                  <div class="text-3xl font-bold text-primary mb-2">3</div>
+                  <div class="text-sm text-gray-600">主流技术栈</div>
+                </div>
+                <div class="glass-effect p-6 rounded-2xl border border-white/10">
+                  <div class="text-3xl font-bold text-primary mb-2">10</div>
+                  <div class="text-sm text-gray-600">核心技术领域</div>
+                </div>
+                <div class="glass-effect p-6 rounded-2xl border border-white/10">
+                  <div class="text-3xl font-bold text-primary mb-2">2024</div>
+                  <div class="text-sm text-gray-600">最新面试趋势</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Introduction -->
+      <section id="introduction" class="py-20 bg-white">
+        <div class="container mx-auto px-6 lg:px-8">
+          <div class="max-w-4xl mx-auto">
+            <h2 class="text-4xl font-serif text-primary mb-8">引言</h2>
+            <div class="prose prose-lg max-w-none">
+              <p class="text-xl text-secondary leading-relaxed mb-8">
+                近两年后端面试的高频题目主要集中在<strong>分布式系统设计、高并发处理、数据存储与一致性、以及主流技术栈（Java、Go、Python）的底层原理与最佳实践</strong>。核心考点包括：<strong>CAP定理与BASE理论</strong>在系统设计中的应用、<strong>缓存穿透/击穿/雪崩</strong>的解决方案、<strong>数据库索引与事务</strong>的优化、<strong>消息队列</strong>在解耦和削峰中的作用，以及<strong>Java并发编程</strong>（如synchronized与ReentrantLock）、<strong>Go并发模型</strong>（Goroutine与Channel）和<strong>Python GIL机制</strong>等语言的并发特性。
+              </p>
+              <p class="text-lg text-secondary leading-relaxed">
+                深入理解这些问题的原理、场景和解决方案，是成功通过技术面试的关键。本指南将为您提供全面的技术解析和实战指导。
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- HTTP &amp; Network -->
+      <section id="http-network" class="py-20 bg-gray-50">
+        <div class="container mx-auto px-6 lg:px-8">
+          <div class="max-w-6xl mx-auto">
+            <h2 class="text-4xl font-serif text-primary mb-12">HTTP协议与网络基础</h2>
+
+            <div class="grid lg:grid-cols-2 gap-12 mb-16">
+              <div class="bg-white p-8 rounded-2xl shadow-lg">
+                <h3 class="text-2xl font-semibold text-primary mb-6">HTTP/HTTPS工作原理与区别</h3>
+                <div class="space-y-4">
+                  <p class="text-secondary">
+                    HTTP（HyperText Transfer Protocol）是互联网上应用最为广泛的一种网络协议，它定义了客户端与服务器之间通信的规则。然而，HTTP协议是明文传输的，存在严重的安全隐患。
+                  </p>
+                  <p class="text-secondary">
+                    HTTPS在HTTP的基础上加入了SSL/TLS协议层，通过加密、认证和完整性保护机制，确保了数据传输的安全性。
+                  </p>
+                  <div class="bg-blue-50 p-4 rounded-lg">
+                    <h4 class="font-semibold text-primary mb-2">HTTPS工作流程：</h4>
+                    <ol class="list-decimal list-inside space-y-2 text-sm text-secondary">
+                      <li>客户端发起HTTPS请求，请求建立SSL连接</li>
+                      <li>服务器发送包含公钥的数字证书给客户端</li>
+                      <li>客户端验证证书有效性</li>
+                      <li>客户端生成随机对称密钥，用服务器公钥加密后发送</li>
+                      <li>服务器用私钥解密获取对称密钥</li>
+                      <li>双方使用对称密钥进行加密通信</li>
+                    </ol>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-white p-8 rounded-2xl shadow-lg">
+                <h3 class="text-2xl font-semibold text-primary mb-6">HTTP状态码详解</h3>
+                <div class="space-y-4">
+                  <div class="grid grid-cols-3 gap-2 text-sm">
+                    <div class="bg-green-100 p-2 rounded text-center">
+                      <div class="font-semibold text-green-800">2xx 成功</div>
+                    </div>
+                    <div class="bg-blue-100 p-2 rounded text-center">
+                      <div class="font-semibold text-blue-800">3xx 重定向</div>
+                    </div>
+                    <div class="bg-red-100 p-2 rounded text-center">
+                      <div class="font-semibold text-red-800">4xx 客户端错误</div>
+                    </div>
+                  </div>
+                  <div class="space-y-3 text-sm">
+                    <div class="flex justify-between items-center p-2 bg-gray-50 rounded">
+                      <code class="font-mono">200 OK</code>
+                      <span class="text-secondary">请求成功</span>
+                    </div>
+                    <div class="flex justify-between items-center p-2 bg-gray-50 rounded">
+                      <code class="font-mono">404 Not Found</code>
+                      <span class="text-secondary">资源不存在</span>
+                    </div>
+                    <div class="flex justify-between items-center p-2 bg-gray-50 rounded">
+                      <code class="font-mono">500 Internal Server Error</code>
+                      <span class="text-secondary">服务器内部错误</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white p-8 rounded-2xl shadow-lg mb-12">
+              <h3 class="text-2xl font-semibold text-primary mb-6">RESTful API设计原则</h3>
+              <div class="grid md:grid-cols-2 gap-8">
+                <div>
+                  <h4 class="font-semibold text-primary mb-4">核心原则</h4>
+                  <ul class="space-y-2 text-secondary">
+                    <li class="flex items-start">
+                      <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                      <span><strong>资源（Resources）</strong>：所有事物都被抽象为资源，通过URI唯一标识</span>
+                    </li>
+                    <li class="flex items-start">
+                      <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                      <span><strong>统一接口</strong>：使用HTTP动词（GET, POST, PUT, DELETE等）操作资源</span>
+                    </li>
+                    <li class="flex items-start">
+                      <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                      <span><strong>无状态（Stateless）</strong>：每次请求必须包含所有必要信息</span>
+                    </li>
+                  </ul>
+                </div>
+                <div>
+                  <h4 class="font-semibold text-primary mb-4">最佳实践</h4>
+                  <ul class="space-y-2 text-secondary">
+                    <li class="flex items-start">
+                      <i class="fas fa-lightbulb text-yellow-500 mt-1 mr-2"></i>
+                      <span>使用名词而非动词（
+                        <code>/users</code> 而非
+                        <code>/getUsers</code>）
+                      </span>
+                    </li>
+                    <li class="flex items-start">
+                      <i class="fas fa-lightbulb text-yellow-500 mt-1 mr-2"></i>
+                      <span>正确使用HTTP状态码表示请求结果</span>
+                    </li>
+                    <li class="flex items-start">
+                      <i class="fas fa-lightbulb text-yellow-500 mt-1 mr-2"></i>
+                      <span>提供清晰的错误信息和API版本控制</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white p-8 rounded-2xl shadow-lg">
+              <h3 class="text-2xl font-semibold text-primary mb-6">RESTful vs GraphQL</h3>
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                  <thead>
+                    <tr class="border-b border-gray-200">
+                      <th class="text-left py-3 px-4 font-semibold text-primary">特性</th>
+                      <th class="text-left py-3 px-4 font-semibold text-primary">RESTful API</th>
+                      <th class="text-left py-3 px-4 font-semibold text-primary">GraphQL</th>
+                    </tr>
+                  </thead>
+                  <tbody class="text-secondary">
+                    <tr class="border-b border-gray-100">
+                      <td class="py-3 px-4 font-medium">数据获取</td>
+                      <td class="py-3 px-4">由服务器定义，可能过度获取或获取不足</td>
+                      <td class="py-3 px-4">客户端精确指定所需字段</td>
+                    </tr>
+                    <tr class="border-b border-gray-100">
+                      <td class="py-3 px-4 font-medium">请求数量</td>
+                      <td class="py-3 px-4">获取关联资源通常需要多次请求</td>
+                      <td class="py-3 px-4">单次请求可获取多个关联资源</td>
+                    </tr>
+                    <tr class="border-b border-gray-100">
+                      <td class="py-3 px-4 font-medium">灵活性</td>
+                      <td class="py-3 px-4">数据结构相对固定</td>
+                      <td class="py-3 px-4">高度灵活，客户端自由组合字段</td>
+                    </tr>
+                    <tr>
+                      <td class="py-3 px-4 font-medium">适用场景</td>
+                      <td class="py-3 px-4">简单CRUD操作，结构稳定</td>
+                      <td class="py-3 px-4">移动端/SPA，数据结构复杂</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Database &amp; Storage -->
+      <section id="database-storage" class="py-20 bg-white">
+        <div class="container mx-auto px-6 lg:px-8">
+          <div class="max-w-6xl mx-auto">
+            <h2 class="text-4xl font-serif text-primary mb-12">数据库与数据存储</h2>
+
+            <div class="grid lg:grid-cols-2 gap-8 mb-12">
+              <div class="bg-gray-50 p-8 rounded-2xl">
+                <h3 class="text-2xl font-semibold text-primary mb-6">数据库范式与反范式</h3>
+                <div class="space-y-6">
+                  <div>
+                    <h4 class="font-semibold text-primary mb-3">范式（Normalization）</h4>
+                    <div class="space-y-2 text-sm text-secondary">
+                      <div class="flex items-center">
+                        <span class="inline-block w-6 h-6 bg-blue-500 text-white rounded-full text-xs flex items-center justify-center mr-2">1</span>
+                        <span><strong>第一范式</strong>：消除重复列，确保每列都是原子值</span>
+                      </div>
+                      <div class="flex items-center">
+                        <span class="inline-block w-6 h-6 bg-blue-500 text-white rounded-full text-xs flex items-center justify-center mr-2">2</span>
+                        <span><strong>第二范式</strong>：非主键字段必须完全依赖于整个主键</span>
+                      </div>
+                      <div class="flex items-center">
+                        <span class="inline-block w-6 h-6 bg-blue-500 text-white rounded-full text-xs flex items-center justify-center mr-2">3</span>
+                        <span><strong>第三范式</strong>：非主键字段不能传递依赖于主键</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <h4 class="font-semibold text-primary mb-3">反范式（Denormalization）</h4>
+                    <p class="text-sm text-secondary">
+                      有意引入数据冗余，以牺牲部分数据一致性为代价，换取查询性能的提升。通过减少JOIN操作来加快查询速度。
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-gray-50 p-8 rounded-2xl">
+                <h3 class="text-2xl font-semibold text-primary mb-6">数据库性能优化</h3>
+                <div class="space-y-4">
+                  <div class="bg-white p-4 rounded-lg border-l-4 border-blue-500">
+                    <h4 class="font-semibold text-primary mb-2">索引优化</h4>
+                    <p class="text-sm text-secondary mb-2">
+                      <strong>问题：</strong>&#34;
+                      <code>SELECT * FROM table LIMIT 1000000, 10</code>&#34; 的性能问题
+                    </p>
+                    <p class="text-sm text-secondary">
+                      <strong>解决方案：</strong>使用基于主键的分页，避免大量无效扫描
+                    </p>
+                  </div>
+                  <div class="bg-white p-4 rounded-lg border-l-4 border-green-500">
+                    <h4 class="font-semibold text-primary mb-2">B+树索引</h4>
+                    <p class="text-sm text-secondary">
+                      InnoDB选择B+树作为索引结构，因为所有数据都存储在叶子节点，叶子节点通过指针相连形成有序链表，非常适合范围查询，且树高度更低，减少磁盘I/O。
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-gray-50 p-8 rounded-2xl mb-12">
+              <h3 class="text-2xl font-semibold text-primary mb-6">事务的ACID特性</h3>
+              <div class="grid md:grid-cols-4 gap-6">
+                <div class="text-center">
+                  <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-atom text-blue-600 text-xl"></i>
+                  </div>
+                  <h4 class="font-semibold text-primary mb-2">原子性</h4>
+                  <p class="text-sm text-secondary">事务是不可分割的工作单元，要么全部执行，要么全部不执行</p>
+                </div>
+                <div class="text-center">
+                  <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-balance-scale text-green-600 text-xl"></i>
+                  </div>
+                  <h4 class="font-semibold text-primary mb-2">一致性</h4>
+                  <p class="text-sm text-secondary">事务执行必须使数据库从一个一致性状态转变到另一个一致性状态</p>
+                </div>
+                <div class="text-center">
+                  <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-shield-alt text-yellow-600 text-xl"></i>
+                  </div>
+                  <h4 class="font-semibold text-primary mb-2">隔离性</h4>
+                  <p class="text-sm text-secondary">并发执行的多个事务之间互不干扰</p>
+                </div>
+                <div class="text-center">
+                  <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-database text-purple-600 text-xl"></i>
+                  </div>
+                  <h4 class="font-semibold text-primary mb-2">持久性</h4>
+                  <p class="text-sm text-secondary">事务一旦提交，其对数据库的修改就是永久性的</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white p-8 rounded-2xl shadow-lg">
+              <h3 class="text-2xl font-semibold text-primary mb-6">SQL vs NoSQL</h3>
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                  <thead>
+                    <tr class="border-b border-gray-200">
+                      <th class="text-left py-3 px-4 font-semibold text-primary">特性</th>
+                      <th class="text-left py-3 px-4 font-semibold text-primary">SQL (关系型数据库)</th>
+                      <th class="text-left py-3 px-4 font-semibold text-primary">NoSQL (非关系型数据库)</th>
+                    </tr>
+                  </thead>
+                  <tbody class="text-secondary">
+                    <tr class="border-b border-gray-100">
+                      <td class="py-3 px-4 font-medium">数据模型</td>
+                      <td class="py-3 px-4">基于表格的固定模式（Schema）</td>
+                      <td class="py-3 px-4">灵活的数据模型（键值、文档、列族、图）</td>
+                    </tr>
+                    <tr class="border-b border-gray-100">
+                      <td class="py-3 px-4 font-medium">事务支持</td>
+                      <td class="py-3 px-4">强大的ACID事务支持</td>
+                      <td class="py-3 px-4">通常只提供最终一致性或有限的事务支持</td>
+                    </tr>
+                    <tr class="border-b border-gray-100">
+                      <td class="py-3 px-4 font-medium">扩展性</td>
+                      <td class="py-3 px-4">主要通过垂直扩展（提升单机性能）</td>
+                      <td class="py-3 px-4">主要通过水平扩展（增加更多服务器）</td>
+                    </tr>
+                    <tr>
+                      <td class="py-3 px-4 font-medium">适用场景</td>
+                      <td class="py-3 px-4">数据结构固定、关系复杂、强一致性要求</td>
+                      <td class="py-3 px-4">数据结构多变、高并发读写、海量数据存储</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Distributed Systems -->
+      <section id="distributed-systems" class="py-20 bg-gray-50">
+        <div class="container mx-auto px-6 lg:px-8">
+          <div class="max-w-6xl mx-auto">
+            <h2 class="text-4xl font-serif text-primary mb-12">分布式系统与微服务</h2>
+
+            <div class="grid lg:grid-cols-2 gap-8 mb-12">
+              <div class="bg-white p-8 rounded-2xl shadow-lg">
+                <h3 class="text-2xl font-semibold text-primary mb-6">CAP定理与BASE理论</h3>
+                <div class="space-y-6">
+                  <div class="bg-red-50 p-4 rounded-lg border-l-4 border-red-500">
+                    <h4 class="font-semibold text-red-800 mb-2">CAP定理</h4>
+                    <p class="text-sm text-red-700">
+                      分布式系统最多只能同时满足一致性（Consistency）、可用性（Availability）和分区容错性（Partition Tolerance）中的两个。
+                    </p>
+                  </div>
+                  <div class="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
+                    <h4 class="font-semibold text-blue-800 mb-2">BASE理论</h4>
+                    <ul class="text-sm text-blue-700 space-y-1">
+                      <li><strong>基本可用（Basically Available）</strong>：允许损失部分可用性</li>
+                      <li><strong>软状态（Soft state）</strong>：允许数据存在中间状态</li>
+                      <li><strong>最终一致性（Eventually consistent）</strong>：数据最终会达到一致状态</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-white p-8 rounded-2xl shadow-lg">
+                <h3 class="text-2xl font-semibold text-primary mb-6">分布式一致性解决方案</h3>
+                <div class="space-y-4">
+                  <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="font-semibold text-primary mb-2">Raft算法</h4>
+                    <p class="text-sm text-secondary mb-2">
+                      将一致性问题分解为：领导选举、日志复制和安全性三个子问题。
+                    </p>
+                    <div class="text-xs text-muted space-y-1">
+                      <div>• 节点角色：领导者（Leader）、跟随者（Follower）、候选人（Candidate）</div>
+                      <div>• 应用：etcd、Consul等</div>
+                    </div>
+                  </div>
+                  <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="font-semibold text-primary mb-2">Paxos算法</h4>
+                    <p class="text-sm text-secondary">
+                      更复杂但更强大的分布式一致性算法，是Raft算法的基础。
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white p-8 rounded-2xl shadow-lg mb-12">
+              <h3 class="text-2xl font-semibold text-primary mb-6">微服务架构</h3>
+              <div class="grid md:grid-cols-2 gap-8">
+                <div>
+                  <h4 class="font-semibold text-green-700 mb-4 flex items-center">
+                    <i class="fas fa-plus-circle mr-2"></i>
+                    优点
+                  </h4>
+                  <ul class="space-y-2 text-sm text-secondary">
+                    <li class="flex items-start">
+                      <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                      <span>技术异构性：不同服务可选择最适合的技术栈</span>
+                    </li>
+                    <li class="flex items-start">
+                      <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                      <span>独立部署：每个服务可独立开发、测试和部署</span>
+                    </li>
+                    <li class="flex items-start">
+                      <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                      <span>可扩展性：可根据服务负载独立扩展</span>
+                    </li>
+                    <li class="flex items-start">
+                      <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                      <span>容错性：一个服务故障不会影响整个系统</span>
+                    </li>
+                  </ul>
+                </div>
+                <div>
+                  <h4 class="font-semibold text-red-700 mb-4 flex items-center">
+                    <i class="fas fa-minus-circle mr-2"></i>
+                    挑战
+                  </h4>
+                  <ul class="space-y-2 text-sm text-secondary">
+                    <li class="flex items-start">
+                      <i class="fas fa-exclamation-triangle text-red-500 mt-1 mr-2"></i>
+                      <span>分布式系统复杂性增加</span>
+                    </li>
+                    <li class="flex items-start">
+                      <i class="fas fa-exclamation-triangle text-red-500 mt-1 mr-2"></i>
+                      <span>运维成本增加</span>
+                    </li>
+                    <li class="flex items-start">
+                      <i class="fas fa-exclamation-triangle text-red-500 mt-1 mr-2"></i>
+                      <span>测试更加复杂</span>
+                    </li>
+                    <li class="flex items-start">
+                      <i class="fas fa-exclamation-triangle text-red-500 mt-1 mr-2"></i>
+                      <span>数据一致性问题</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white p-8 rounded-2xl shadow-lg">
+              <h3 class="text-2xl font-semibold text-primary mb-6">服务注册与发现</h3>
+              <div class="grid md:grid-cols-3 gap-6">
+                <div class="text-center">
+                  <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-plus text-blue-600 text-xl"></i>
+                  </div>
+                  <h4 class="font-semibold text-primary mb-2">服务注册</h4>
+                  <p class="text-sm text-secondary">服务实例启动时，将自己的网络地址注册到服务注册中心</p>
+                </div>
+                <div class="text-center">
+                  <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-search text-green-600 text-xl"></i>
+                  </div>
+                  <h4 class="font-semibold text-primary mb-2">服务发现</h4>
+                  <p class="text-sm text-secondary">消费者向注册中心查询服务实例列表，根据负载均衡策略选择实例</p>
+                </div>
+                <div class="text-center">
+                  <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-heartbeat text-yellow-600 text-xl"></i>
+                  </div>
+                  <h4 class="font-semibold text-primary mb-2">健康检查</h4>
+                  <p class="text-sm text-secondary">注册中心定期检查服务实例健康状态，移除不健康实例</p>
+                </div>
+              </div>
+              <div class="mt-8 grid md:grid-cols-2 gap-6">
+                <div class="bg-gray-50 p-4 rounded-lg">
+                  <h4 class="font-semibold text-primary mb-2">客户端负载均衡</h4>
+                  <p class="text-sm text-secondary">消费者自己根据负载均衡算法选择实例，如Ribbon</p>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                  <h4 class="font-semibold text-primary mb-2">服务端负载均衡</h4>
+                  <p class="text-sm text-secondary">在服务入口处设置负载均衡器分发请求，如Nginx</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Caching Systems -->
+      <section id="caching-systems" class="py-20 bg-white">
+        <div class="container mx-auto px-6 lg:px-8">
+          <div class="max-w-6xl mx-auto">
+            <h2 class="text-4xl font-serif text-primary mb-12">缓存系统设计</h2>
+
+            <div class="grid lg:grid-cols-3 gap-8 mb-12">
+              <div class="bg-red-50 p-6 rounded-2xl border-l-4 border-red-500">
+                <h3 class="text-xl font-semibold text-red-800 mb-4">缓存穿透</h3>
+                <p class="text-sm text-red-700 mb-4">
+                  查询一个不存在的数据，每次请求都直接访问数据库，对数据库造成巨大压力。
+                </p>
+                <div class="bg-white p-3 rounded-lg">
+                  <h4 class="font-semibold text-red-800 text-xs mb-2">解决方案：</h4>
+                  <ul class="text-xs text-red-700 space-y-1">
+                    <li>• 对空值进行缓存</li>
+                    <li>• 使用布隆过滤器</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="bg-yellow-50 p-6 rounded-2xl border-l-4 border-yellow-500">
+                <h3 class="text-xl font-semibold text-yellow-800 mb-4">缓存击穿</h3>
+                <p class="text-sm text-yellow-700 mb-4">
+                  热点数据过期的一瞬间，大量并发请求同时访问，导致数据库压力骤增。
+                </p>
+                <div class="bg-white p-3 rounded-lg">
+                  <h4 class="font-semibold text-yellow-800 text-xs mb-2">解决方案：</h4>
+                  <ul class="text-xs text-yellow-700 space-y-1">
+                    <li>• 使用互斥锁</li>
+                    <li>• 热点数据永不过期</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="bg-purple-50 p-6 rounded-2xl border-l-4 border-purple-500">
+                <h3 class="text-xl font-semibold text-purple-800 mb-4">缓存雪崩</h3>
+                <p class="text-sm text-purple-700 mb-4">
+                  大量缓存数据同时过期或缓存服务器宕机，所有请求都直接访问数据库。
+                </p>
+                <div class="bg-white p-3 rounded-lg">
+                  <h4 class="font-semibold text-purple-800 text-xs mb-2">解决方案：</h4>
+                  <ul class="text-xs text-purple-700 space-y-1">
+                    <li>• 设置随机过期时间</li>
+                    <li>• 实现缓存高可用</li>
+                    <li>• 进行缓存预热</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-gray-50 p-8 rounded-2xl mb-12">
+              <h3 class="text-2xl font-semibold text-primary mb-6">多级缓存架构</h3>
+              <div class="space-y-6">
+                <div class="grid md:grid-cols-3 gap-6">
+                  <div class="bg-white p-6 rounded-xl text-center">
+                    <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <span class="text-blue-600 font-bold">L1</span>
+                    </div>
+                    <h4 class="font-semibold text-primary mb-2">本地缓存</h4>
+                    <p class="text-sm text-secondary">应用服务器内存中，访问速度最快</p>
+                  </div>
+                  <div class="bg-white p-6 rounded-xl text-center">
+                    <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <span class="text-green-600 font-bold">L2</span>
+                    </div>
+                    <h4 class="font-semibold text-primary mb-2">分布式缓存</h4>
+                    <p class="text-sm text-secondary">如Redis，多个应用服务器共享</p>
+                  </div>
+                  <div class="bg-white p-6 rounded-xl text-center">
+                    <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <span class="text-purple-600 font-bold">L3</span>
+                    </div>
+                    <h4 class="font-semibold text-primary mb-2">持久化存储</h4>
+                    <p class="text-sm text-secondary">数据库，最终的兜底存储</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white p-8 rounded-2xl shadow-lg">
+              <h3 class="text-2xl font-semibold text-primary mb-6">缓存更新策略</h3>
+              <div class="grid md:grid-cols-2 gap-8">
+                <div>
+                  <h4 class="font-semibold text-primary mb-4">Cache-Aside（旁路缓存）</h4>
+                  <div class="space-y-3 text-sm text-secondary">
+                    <div class="bg-blue-50 p-3 rounded-lg">
+                      <strong class="text-blue-800">读操作：</strong>
+                      <ol class="list-decimal list-inside mt-1 space-y-1">
+                        <li>先读缓存</li>
+                        <li>缓存未命中则读数据库</li>
+                        <li>将数据写入缓存</li>
+                      </ol>
+                    </div>
+                    <div class="bg-green-50 p-3 rounded-lg">
+                      <strong class="text-green-800">写操作：</strong>
+                      <ol class="list-decimal list-inside mt-1 space-y-1">
+                        <li>先更新数据库</li>
+                        <li>然后删除缓存</li>
+                      </ol>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <h4 class="font-semibold text-primary mb-4">其他策略</h4>
+                  <div class="space-y-3 text-sm text-secondary">
+                    <div class="bg-gray-50 p-3 rounded-lg">
+                      <strong>Write-Through（直写）：</strong>先更新缓存，然后缓存同步更新数据库
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-lg">
+                      <strong>Write-Behind（写回）：</strong>只更新缓存，异步批量更新数据库
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-lg">
+                      <strong>Write-Around（绕写）：</strong>只更新数据库，不更新缓存
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Concurrent Programming -->
+      <section id="concurrent-programming" class="py-20 bg-gray-50">
+        <div class="container mx-auto px-6 lg:px-8">
+          <div class="max-w-6xl mx-auto">
+            <h2 class="text-4xl font-serif text-primary mb-12">并发编程与多线程</h2>
+
+            <div class="grid lg:grid-cols-2 gap-8 mb-12">
+              <div class="bg-white p-8 rounded-2xl shadow-lg">
+                <h3 class="text-2xl font-semibold text-primary mb-6">数据竞争与线程安全</h3>
+                <div class="space-y-6">
+                  <div class="bg-red-50 p-4 rounded-lg border-l-4 border-red-500">
+                    <h4 class="font-semibold text-red-800 mb-2">数据竞争（Data Race）</h4>
+                    <p class="text-sm text-red-700">
+                      当多个线程同时访问和修改共享数据，且至少有一个是写操作，访问顺序不可预期，导致程序行为不确定。
+                    </p>
+                  </div>
+                  <div>
+                    <h4 class="font-semibold text-primary mb-3">解决方案</h4>
+                    <ul class="space-y-2 text-sm text-secondary">
+                      <li class="flex items-start">
+                        <i class="fas fa-lock text-blue-500 mt-1 mr-2"></i>
+                        <span><strong>同步机制</strong>：互斥锁、读写锁、信号量</span>
+                      </li>
+                      <li class="flex items-start">
+                        <i class="fas fa-atom text-green-500 mt-1 mr-2"></i>
+                        <span><strong>原子操作</strong>：保证简单操作的不可分割性</span>
+                      </li>
+                      <li class="flex items-start">
+                        <i class="fas fa-user-friends text-purple-500 mt-1 mr-2"></i>
+                        <span><strong>线程局部存储</strong>：每个线程有自己的数据副本</span>
+                      </li>
+                      <li class="flex items-start">
+                        <i class="fas fa-shield-alt text-yellow-500 mt-1 mr-2"></i>
+                        <span><strong>不可变对象</strong>：创建后状态不能被修改</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-white p-8 rounded-2xl shadow-lg">
+                <h3 class="text-2xl font-semibold text-primary mb-6">Java并发编程</h3>
+                <div class="space-y-4">
+                  <div class="bg-blue-50 p-4 rounded-lg">
+                    <h4 class="font-semibold text-blue-800 mb-2">synchronized vs ReentrantLock</h4>
+                    <div class="text-sm text-blue-700 space-y-2">
+                      <div><strong>synchronized：</strong>JVM关键字，依赖监视器锁，JDK 1.6后优化</div>
+                      <div><strong>ReentrantLock：</strong>类，提供更多功能：可中断、超时、公平锁</div>
+                    </div>
+                  </div>
+                  <div class="bg-green-50 p-4 rounded-lg">
+                    <h4 class="font-semibold text-green-800 mb-2">ConcurrentHashMap</h4>
+                    <div class="text-sm text-green-700 space-y-1">
+                      <div>• JDK 1.7：分段锁（Segment）机制</div>
+                      <div>• JDK 1.8：CAS + synchronized，锁粒度更细</div>
+                      <div>• 引入红黑树优化哈希冲突</div>
+                    </div>
+                  </div>
+                  <div class="bg-yellow-50 p-4 rounded-lg">
+                    <h4 class="font-semibold text-yellow-800 mb-2">并发工具类</h4>
+                    <div class="text-sm text-yellow-700 space-y-1">
+                      <div>• <strong>CountDownLatch：</strong>等待多个线程完成</div>
+                      <div>• <strong>CyclicBarrier：</strong>线程互相等待到屏障点</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid lg:grid-cols-2 gap-8 mb-12">
+              <div class="bg-white p-8 rounded-2xl shadow-lg">
+                <h3 class="text-2xl font-semibold text-primary mb-6">Go语言并发模型</h3>
+                <div class="space-y-6">
+                  <div class="bg-blue-50 p-4 rounded-lg">
+                    <h4 class="font-semibold text-blue-800 mb-2">核心哲学</h4>
+                    <p class="text-sm text-blue-700 italic">
+                      &#34;不要通过共享内存来通信，而应通过通信来共享内存&#34;
+                    </p>
+                  </div>
+                  <div>
+                    <h4 class="font-semibold text-primary mb-3">Goroutine</h4>
+                    <ul class="text-sm text-secondary space-y-1">
+                      <li>• 轻量级线程，由Go运行时管理</li>
+                      <li>• 创建和销毁开销远小于操作系统线程</li>
+                      <li>• GMP调度模型：G(Goroutine)、M(Machine)、P(Processor)</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <h4 class="font-semibold text-primary mb-3">Channel</h4>
+                    <ul class="text-sm text-secondary space-y-1">
+                      <li>• Goroutine间通信的管道</li>
+                      <li>• 可带缓冲或不带缓冲</li>
+                      <li>• 底层实现：循环队列 + 互斥锁 + 等待队列</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-white p-8 rounded-2xl shadow-lg">
+                <h3 class="text-2xl font-semibold text-primary mb-6">Python的GIL机制</h3>
+                <div class="space-y-6">
+                  <div class="bg-red-50 p-4 rounded-lg border-l-4 border-red-500">
+                    <h4 class="font-semibold text-red-800 mb-2">全局解释器锁（GIL）</h4>
+                    <p class="text-sm text-red-700">
+                      确保任何时刻只有一个线程执行Python字节码，简化CPython内存管理，但影响多核CPU的并行性能。
+                    </p>
+                  </div>
+                  <div>
+                    <h4 class="font-semibold text-primary mb-3">影响与解决方案</h4>
+                    <div class="space-y-3 text-sm text-secondary">
+                      <div class="bg-yellow-50 p-3 rounded-lg">
+                        <strong class="text-yellow-800">CPU密集型任务：</strong>
+                        <ul class="mt-1 space-y-1">
+                          <li>• 使用
+                            <code>multiprocessing</code>模块创建多个进程
+                          </li>
+                          <li>• 每个进程有独立的Python解释器</li>
+                        </ul>
+                      </div>
+                      <div class="bg-green-50 p-3 rounded-lg">
+                        <strong class="text-green-800">I/O密集型任务：</strong>
+                        <ul class="mt-1 space-y-1">
+                          <li>• I/O操作会释放GIL，多线程仍有效</li>
+                          <li>• 使用
+                            <code>asyncio</code>实现异步I/O
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white p-8 rounded-2xl shadow-lg">
+              <h3 class="text-2xl font-semibold text-primary mb-6">并发编程最佳实践</h3>
+              <div class="grid md:grid-cols-2 gap-8">
+                <div>
+                  <h4 class="font-semibold text-primary mb-4">设计原则</h4>
+                  <ul class="space-y-2 text-sm text-secondary">
+                    <li class="flex items-start">
+                      <span class="inline-block w-4 h-4 bg-green-100 text-green-600 rounded-full text-xs flex items-center justify-center mr-2 mt-0.5">1</span>
+                      <span>优先使用不可变对象</span>
+                    </li>
+                    <li class="flex items-start">
+                      <span class="inline-block w-4 h-4 bg-green-100 text-green-600 rounded-full text-xs flex items-center justify-center mr-2 mt-0.5">2</span>
+                      <span>其次考虑线程局部存储</span>
+                    </li>
+                    <li class="flex items-start">
+                      <span class="inline-block w-4 h-4 bg-green-100 text-green-600 rounded-full text-xs flex items-center justify-center mr-2 mt-0.5">3</span>
+                      <span>最后再使用同步机制</span>
+                    </li>
+                  </ul>
+                </div>
+                <div>
+                  <h4 class="font-semibold text-primary mb-4">性能考量</h4>
+                  <ul class="space-y-2 text-sm text-secondary">
+                    <li class="flex items-start">
+                      <i class="fas fa-clock text-blue-500 mt-1 mr-2"></i>
+                      <span>减少锁的持有时间</span>
+                    </li>
+                    <li class="flex items-start">
+                      <i class="fas fa-expand-arrows-alt text-blue-500 mt-1 mr-2"></i>
+                      <span>使用更细粒度的锁</span>
+                    </li>
+                    <li class="flex items-start">
+                      <i class="fas fa-users text-blue-500 mt-1 mr-2"></i>
+                      <span>读写分离，使用读写锁</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Message Queues -->
+      <section id="message-queues" class="py-20 bg-white">
+        <div class="container mx-auto px-6 lg:px-8">
+          <div class="max-w-6xl mx-auto">
+            <h2 class="text-4xl font-serif text-primary mb-12">消息队列与异步处理</h2>
+
+            <div class="bg-gray-50 p-8 rounded-2xl mb-12">
+              <h3 class="text-2xl font-semibold text-primary mb-6">消息队列的核心作用</h3>
+              <div class="grid md:grid-cols-4 gap-6">
+                <div class="text-center">
+                  <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-unlink text-blue-600 text-xl"></i>
+                  </div>
+                  <h4 class="font-semibold text-primary mb-2">解耦</h4>
+                  <p class="text-sm text-secondary">生产者和消费者不直接依赖，可独立演化</p>
+                </div>
+                <div class="text-center">
+                  <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-clock text-green-600 text-xl"></i>
+                  </div>
+                  <h4 class="font-semibold text-primary mb-2">异步处理</h4>
+                  <p class="text-sm text-secondary">耗时操作异步化，提升系统响应速度</p>
+                </div>
+                <div class="text-center">
+                  <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-chart-line text-yellow-600 text-xl"></i>
+                  </div>
+                  <h4 class="font-semibold text-primary mb-2">削峰填谷</h4>
+                  <p class="text-sm text-secondary">缓冲突发流量，保护后端系统</p>
+                </div>
+                <div class="text-center">
+                  <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-broadcast-tower text-purple-600 text-xl"></i>
+                  </div>
+                  <h4 class="font-semibold text-primary mb-2">数据分发</h4>
+                  <p class="text-sm text-secondary">一份数据广播给多个消费者</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid lg:grid-cols-2 gap-8 mb-12">
+              <div class="bg-white p-8 rounded-2xl shadow-lg">
+                <h3 class="text-2xl font-semibold text-primary mb-6">Kafka vs RabbitMQ</h3>
+                <div class="space-y-6">
+                  <div class="bg-blue-50 p-4 rounded-lg">
+                    <h4 class="font-semibold text-blue-800 mb-3">Kafka</h4>
+                    <ul class="text-sm text-blue-700 space-y-2">
+                      <li><strong>设计理念：</strong>发布-订阅模型，主题（Topic）为核心</li>
+                      <li><strong>性能特点：</strong>极高吞吐量，适合大数据场景</li>
+                      <li><strong>数据持久化：</strong>默认持久化到磁盘，支持消息回溯</li>
+                      <li><strong>适用场景：</strong>日志收集、流处理、网站活动追踪</li>
+                    </ul>
+                  </div>
+                  <div class="bg-green-50 p-4 rounded-lg">
+                    <h4 class="font-semibold text-green-800 mb-3">RabbitMQ</h4>
+                    <ul class="text-sm text-green-700 space-y-2">
+                      <li><strong>设计理念：</strong>AMQP协议，交换器（Exchange）为核心</li>
+                      <li><strong>性能特点：</strong>低延迟，适合实时消息</li>
+                      <li><strong>数据持久化：</strong>可选，需手动配置</li>
+                      <li><strong>适用场景：</strong>实时通知、订单处理、复杂路由</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-white p-8 rounded-2xl shadow-lg">
+                <h3 class="text-2xl font-semibold text-primary mb-6">消息可靠性与顺序性</h3>
+                <div class="space-y-6">
+                  <div>
+                    <h4 class="font-semibold text-primary mb-3">可靠传输</h4>
+                    <div class="space-y-3 text-sm text-secondary">
+                      <div class="bg-yellow-50 p-3 rounded-lg">
+                        <strong class="text-yellow-800">生产者端：</strong>
+                        <ul class="mt-1 space-y-1">
+                          <li>• 事务消息</li>
+                          <li>• 消息确认机制</li>
+                        </ul>
+                      </div>
+                      <div class="bg-blue-50 p-3 rounded-lg">
+                        <strong class="text-blue-800">消息队列端：</strong>
+                        <ul class="mt-1 space-y-1">
+                          <li>• 消息持久化</li>
+                          <li>• 副本机制</li>
+                        </ul>
+                      </div>
+                      <div class="bg-green-50 p-3 rounded-lg">
+                        <strong class="text-green-800">消费者端：</strong>
+                        <ul class="mt-1 space-y-1">
+                          <li>• 手动消息确认</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <h4 class="font-semibold text-primary mb-3">保证顺序性</h4>
+                    <ul class="text-sm text-secondary space-y-2">
+                      <li class="flex items-start">
+                        <i class="fas fa-user text-blue-500 mt-1 mr-2"></i>
+                        <span>单线程消费（简单但性能低）</span>
+                      </li>
+                      <li class="flex items-start">
+                        <i class="fas fa-layer-group text-green-500 mt-1 mr-2"></i>
+                        <span>分区有序（Kafka同一分区内有序）</span>
+                      </li>
+                      <li class="flex items-start">
+                        <i class="fas fa-users text-purple-500 mt-1 mr-2"></i>
+                        <span>消息分组（同一分组由同一消费者处理）</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white p-8 rounded-2xl shadow-lg">
+              <h3 class="text-2xl font-semibold text-primary mb-6">分布式事务中的应用</h3>
+              <div class="grid md:grid-cols-3 gap-6">
+                <div class="bg-blue-50 p-6 rounded-xl">
+                  <h4 class="font-semibold text-blue-800 mb-3">Saga模式</h4>
+                  <p class="text-sm text-blue-700 mb-3">
+                    将分布式事务拆分成一系列本地事务，每个都有对应的补偿事务。
+                  </p>
+                  <div class="text-xs text-blue-600 space-y-1">
+                    <div>• 编排式（Orchestration）</div>
+                    <div>• 协同式（Choreography）</div>
+                  </div>
+                </div>
+                <div class="bg-green-50 p-6 rounded-xl">
+                  <h4 class="font-semibold text-green-800 mb-3">TCC模式</h4>
+                  <p class="text-sm text-green-700 mb-3">
+                    Try-Confirm-Cancel，补偿型事务模式。
+                  </p>
+                  <div class="text-xs text-green-600 space-y-1">
+                    <div>• Try：预留资源</div>
+                    <div>• Confirm：确认提交</div>
+                    <div>• Cancel：取消释放</div>
+                  </div>
+                </div>
+                <div class="bg-yellow-50 p-6 rounded-xl">
+                  <h4 class="font-semibold text-yellow-800 mb-3">最终一致性</h4>
+                  <p class="text-sm text-yellow-700 mb-3">
+                    基于消息队列的最终一致性方案。
+                  </p>
+                  <div class="text-xs text-yellow-600 space-y-1">
+                    <div>• 可靠消息最终一致性</div>
+                    <div>• 最大努力通知</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Design Patterns -->
+      <section id="design-patterns" class="py-20 bg-gray-50">
+        <div class="container mx-auto px-6 lg:px-8">
+          <div class="max-w-6xl mx-auto">
+            <h2 class="text-4xl font-serif text-primary mb-12">设计模式与软件工程</h2>
+
+            <div class="grid lg:grid-cols-2 gap-8 mb-12">
+              <div class="bg-white p-8 rounded-2xl shadow-lg">
+                <h3 class="text-2xl font-semibold text-primary mb-6">常见设计模式</h3>
+                <div class="space-y-4">
+                  <div class="border-l-4 border-blue-500 pl-4">
+                    <h4 class="font-semibold text-primary">单例模式（Singleton）</h4>
+                    <p class="text-sm text-secondary">确保一个类只有一个实例，如数据库连接池、配置管理器</p>
+                  </div>
+                  <div class="border-l-4 border-green-500 pl-4">
+                    <h4 class="font-semibold text-primary">工厂模式（Factory）</h4>
+                    <p class="text-sm text-secondary">封装对象创建过程，实现解耦，如创建不同类型数据库连接</p>
+                  </div>
+                  <div class="border-l-4 border-yellow-500 pl-4">
+                    <h4 class="font-semibold text-primary">观察者模式（Observer）</h4>
+                    <p class="text-sm text-secondary">一对多依赖关系，一个对象状态改变通知所有依赖对象，如事件监听</p>
+                  </div>
+                  <div class="border-l-4 border-purple-500 pl-4">
+                    <h4 class="font-semibold text-primary">策略模式（Strategy）</h4>
+                    <p class="text-sm text-secondary">定义算法族，封装起来使它们可以互相替换，如支付方式选择</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-white p-8 rounded-2xl shadow-lg">
+                <h3 class="text-2xl font-semibold text-primary mb-6">SOLID原则</h3>
+                <div class="space-y-4">
+                  <div class="bg-blue-50 p-4 rounded-lg">
+                    <h4 class="font-semibold text-blue-800">S - 单一职责原则</h4>
+                    <p class="text-sm text-blue-700">一个类应该只有一个引起它变化的原因</p>
+                  </div>
+                  <div class="bg-green-50 p-4 rounded-lg">
+                    <h4 class="font-semibold text-green-800">O - 开闭原则</h4>
+                    <p class="text-sm text-green-700">对扩展开放，对修改关闭</p>
+                  </div>
+                  <div class="bg-yellow-50 p-4 rounded-lg">
+                    <h4 class="font-semibold text-yellow-800">L - 里氏替换原则</h4>
+                    <p class="text-sm text-yellow-700">子类应该能够替换父类并且程序行为不变</p>
+                  </div>
+                  <div class="bg-purple-50 p-4 rounded-lg">
+                    <h4 class="font-semibold text-purple-800">I - 接口隔离原则</h4>
+                    <p class="text-sm text-purple-700">客户端不应该被迫依赖它不使用的接口</p>
+                  </div>
+                  <div class="bg-red-50 p-4 rounded-lg">
+                    <h4 class="font-semibold text-red-800">D - 依赖倒置原则</h4>
+                    <p class="text-sm text-red-700">高层模块不应该依赖低层模块，都应依赖抽象</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white p-8 rounded-2xl shadow-lg">
+              <h3 class="text-2xl font-semibold text-primary mb-6">领域驱动设计（DDD）</h3>
+              <div class="grid md:grid-cols-2 gap-8 mb-8">
+                <div>
+                  <h4 class="font-semibold text-primary mb-4">核心概念</h4>
+                  <div class="space-y-3 text-sm text-secondary">
+                    <div class="flex items-start">
+                      <span class="inline-block w-6 h-6 bg-blue-100 text-blue-600 rounded-full text-xs flex items-center justify-center mr-2 mt-0.5">域</span>
+                      <span><strong>领域（Domain）</strong>：软件系统要解决的业务问题范围</span>
+                    </div>
+                    <div class="flex items-start">
+                      <span class="inline-block w-6 h-6 bg-green-100 text-green-600 rounded-full text-xs flex items-center justify-center mr-2 mt-0.5">语</span>
+                      <span><strong>通用语言</strong>：开发团队和业务专家间的统一语言</span>
+                    </div>
+                    <div class="flex items-start">
+                      <span class="inline-block w-6 h-6 bg-yellow-100 text-yellow-600 rounded-full text-xs flex items-center justify-center mr-2 mt-0.5">界</span>
+                      <span><strong>限界上下文</strong>：划分领域边界，避免概念混淆</span>
+                    </div>
+                    <div class="flex items-start">
+                      <span class="inline-block w-6 h-6 bg-purple-100 text-purple-600 rounded-full text-xs flex items-center justify-center mr-2 mt-0.5">体</span>
+                      <span><strong>实体（Entity）</strong>：具有唯一标识的对象</span>
+                    </div>
+                    <div class="flex items-start">
+                      <span class="inline-block w-6 h-6 bg-red-100 text-red-600 rounded-full text-xs flex items-center justify-center mr-2 mt-0.5">值</span>
+                      <span><strong>值对象（Value Object）</strong>：通过属性值区分的对象</span>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <h4 class="font-semibold text-primary mb-4">架构元素</h4>
+                  <div class="space-y-3 text-sm text-secondary">
+                    <div class="bg-gray-50 p-3 rounded-lg">
+                      <strong>聚合（Aggregate）</strong>：一组相关对象的集合，有根实体，保证数据一致性
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-lg">
+                      <strong>领域服务（Domain Service）</strong>：封装不属于任何对象的业务逻辑
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-lg">
+                      <strong>仓储（Repository）</strong>：提供聚合的持久化和检索功能
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-lg">
+                      <strong>工厂（Factory）</strong>：封装复杂对象的创建逻辑
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-blue-50 p-6 rounded-xl">
+                <h4 class="font-semibold text-blue-800 mb-4">DDD的优势</h4>
+                <div class="grid md:grid-cols-2 gap-4 text-sm text-blue-700">
+                  <div class="flex items-center">
+                    <i class="fas fa-lightbulb mr-2"></i>
+                    <span>提高业务理解，深入理解需求</span>
+                  </div>
+                  <div class="flex items-center">
+                    <i class="fas fa-puzzle-piece mr-2"></i>
+                    <span>降低复杂性，划分限界上下文</span>
+                  </div>
+                  <div class="flex items-center">
+                    <i class="fas fa-code mr-2"></i>
+                    <span>提高代码质量，模型指导实现</span>
+                  </div>
+                  <div class="flex items-center">
+                    <i class="fas fa-sync-alt mr-2"></i>
+                    <span>增强业务适应性，易于调整</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Memory Management -->
+      <section id="memory-management" class="py-20 bg-white">
+        <div class="container mx-auto px-6 lg:px-8">
+          <div class="max-w-6xl mx-auto">
+            <h2 class="text-4xl font-serif text-primary mb-12">内存管理与垃圾回收</h2>
+
+            <div class="grid lg:grid-cols-3 gap-8 mb-12">
+              <div class="bg-gray-50 p-8 rounded-2xl">
+                <h3 class="text-2xl font-semibold text-primary mb-6">Java (JVM)</h3>
+                <div class="space-y-6">
+                  <div>
+                    <h4 class="font-semibold text-primary mb-3">内存区域</h4>
+                    <div class="space-y-2 text-sm text-secondary">
+                      <div class="flex items-center">
+                        <div class="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
+                        <span>程序计数器</span>
+                      </div>
+                      <div class="flex items-center">
+                        <div class="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
+                        <span>虚拟机栈</span>
+                      </div>
+                      <div class="flex items-center">
+                        <div class="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+                        <span>堆（GC堆）</span>
+                      </div>
+                      <div class="flex items-center">
+                        <div class="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
+                        <span>方法区/元空间</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <h4 class="font-semibold text-primary mb-3">垃圾回收器</h4>
+                    <div class="space-y-2 text-xs text-secondary">
+                      <div>• Serial收集器（单线程）</div>
+                      <div>• CMS收集器（并发标记清除）</div>
+                      <div>• G1收集器（Garbage-First）</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-gray-50 p-8 rounded-2xl">
+                <h3 class="text-2xl font-semibold text-primary mb-6">Go语言</h3>
+                <div class="space-y-6">
+                  <div>
+                    <h4 class="font-semibold text-primary mb-3">内存分配器</h4>
+                    <ul class="text-sm text-secondary space-y-1">
+                      <li>• 类似TCMalloc算法</li>
+                      <li>• 分层设计：mcache → mcentral → mheap</li>
+                      <li>• 每个P有本地mcache，避免锁竞争</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <h4 class="font-semibold text-primary mb-3">垃圾回收器</h4>
+                    <ul class="text-sm text-secondary space-y-1">
+                      <li>• 并发三色标记-清除算法</li>
+                      <li>• 混合写屏障技术</li>
+                      <li>• 减少STW时间</li>
+                    </ul>
+                  </div>
+                  <div class="bg-yellow-50 p-3 rounded-lg">
+                    <h4 class="font-semibold text-yellow-800 text-xs mb-2">常见内存泄漏</h4>
+                    <div class="text-xs text-yellow-700 space-y-1">
+                      <div>• Goroutine泄漏</div>
+                      <div>• 未关闭的资源</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-gray-50 p-8 rounded-2xl">
+                <h3 class="text-2xl font-semibold text-primary mb-6">Python</h3>
+                <div class="space-y-6">
+                  <div>
+                    <h4 class="font-semibold text-primary mb-3">引用计数</h4>
+                    <p class="text-sm text-secondary">
+                      主要内存管理机制，对象引用计数为0时立即释放内存。优点：简单、实时性好；缺点：无法处理循环引用。
+                    </p>
+                  </div>
+                  <div>
+                    <h4 class="font-semibold text-primary mb-3">垃圾回收</h4>
+                    <ul class="text-sm text-secondary space-y-1">
+                      <li>• 解决循环引用问题</li>
+                      <li>• 分代回收策略（0代、1代、2代）</li>
+                      <li>• 根据&#34;分代假设&#34;优化回收频率</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <h4 class="font-semibold text-primary mb-3">内存池</h4>
+                    <p class="text-sm text-secondary">
+                      预先申请大块内存形成内存池，减少系统调用开销，提高性能。
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white p-8 rounded-2xl shadow-lg">
+              <h3 class="text-2xl font-semibold text-primary mb-6">垃圾回收算法比较</h3>
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                  <thead>
+                    <tr class="border-b border-gray-200">
+                      <th class="text-left py-3 px-4 font-semibold text-primary">算法</th>
+                      <th class="text-left py-3 px-4 font-semibold text-primary">原理</th>
+                      <th class="text-left py-3 px-4 font-semibold text-primary">优点</th>
+                      <th class="text-left py-3 px-4 font-semibold text-primary">缺点</th>
+                    </tr>
+                  </thead>
+                  <tbody class="text-secondary">
+                    <tr class="border-b border-gray-100">
+                      <td class="py-3 px-4 font-medium">标记-清除</td>
+                      <td class="py-3 px-4">标记需要回收的对象，然后统一回收</td>
+                      <td class="py-3 px-4">实现简单</td>
+                      <td class="py-3 px-4">产生内存碎片</td>
+                    </tr>
+                    <tr class="border-b border-gray-100">
+                      <td class="py-3 px-4 font-medium">复制</td>
+                      <td class="py-3 px-4">将内存分为两块，存活对象复制到另一块</td>
+                      <td class="py-3 px-4">无内存碎片</td>
+                      <td class="py-3 px-4">内存利用率低</td>
+                    </tr>
+                    <tr class="border-b border-gray-100">
+                      <td class="py-3 px-4 font-medium">标记-整理</td>
+                      <td class="py-3 px-4">标记后让存活对象向一端移动</td>
+                      <td class="py-3 px-4">无内存碎片，利用率高</td>
+                      <td class="py-3 px-4">效率较低</td>
+                    </tr>
+                    <tr>
+                      <td class="py-3 px-4 font-medium">分代收集</td>
+                      <td class="py-3 px-4">根据对象存活周期分为不同代</td>
+                      <td class="py-3 px-4">针对性强，效率高</td>
+                      <td class="py-3 px-4">实现复杂</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- System Design -->
+      <section id="system-design" class="py-20 bg-gray-50">
+        <div class="container mx-auto px-6 lg:px-8">
+          <div class="max-w-6xl mx-auto">
+            <h2 class="text-4xl font-serif text-primary mb-12">系统设计与架构</h2>
+
+            <div class="bg-white p-8 rounded-2xl shadow-lg mb-12">
+              <h3 class="text-2xl font-semibold text-primary mb-6">高可用设计原则</h3>
+              <div class="grid md:grid-cols-2 gap-8">
+                <div>
+                  <h4 class="font-semibold text-primary mb-4">消除单点故障</h4>
+                  <ul class="space-y-2 text-sm text-secondary">
+                    <li class="flex items-start">
+                      <i class="fas fa-server text-blue-500 mt-1 mr-2"></i>
+                      <span>Web服务器集群</span>
+                    </li>
+                    <li class="flex items-start">
+                      <i class="fas fa-database text-green-500 mt-1 mr-2"></i>
+                      <span>数据库主从复制/集群</span>
+                    </li>
+                    <li class="flex items-start">
+                      <i class="fas fa-network-wired text-purple-500 mt-1 mr-2"></i>
+                      <span>负载均衡器冗余</span>
+                    </li>
+                  </ul>
+                </div>
+                <div>
+                  <h4 class="font-semibold text-primary mb-4">故障转移机制</h4>
+                  <ul class="space-y-2 text-sm text-secondary">
+                    <li class="flex items-start">
+                      <i class="fas fa-heartbeat text-red-500 mt-1 mr-2"></i>
+                      <span>健康检查与监控</span>
+                    </li>
+                    <li class="flex items-start">
+                      <i class="fas fa-exchange-alt text-yellow-500 mt-1 mr-2"></i>
+                      <span>自动故障检测与切换</span>
+                    </li>
+                    <li class="flex items-start">
+                      <i class="fas fa-undo text-blue-500 mt-1 mr-2"></i>
+                      <span>数据备份与恢复</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid lg:grid-cols-2 gap-8 mb-12">
+              <div class="bg-white p-8 rounded-2xl shadow-lg">
+                <h3 class="text-2xl font-semibold text-primary mb-6">高扩展性设计</h3>
+                <div class="space-y-6">
+                  <div class="bg-blue-50 p-4 rounded-lg">
+                    <h4 class="font-semibold text-blue-800 mb-2">水平扩展</h4>
+                    <p class="text-sm text-blue-700">
+                      通过增加服务器数量来提升系统性能，适合无状态服务。
+                    </p>
+                  </div>
+                  <div class="bg-green-50 p-4 rounded-lg">
+                    <h4 class="font-semibold text-green-800 mb-2">垂直扩展</h4>
+                    <p class="text-sm text-green-700">
+                      通过提升单台服务器的配置来提升性能，适合有状态服务。
+                    </p>
+                  </div>
+                  <div class="bg-yellow-50 p-4 rounded-lg">
+                    <h4 class="font-semibold text-yellow-800 mb-2">微服务架构</h4>
+                    <p class="text-sm text-yellow-700">
+                      将系统拆分为多个小型服务，可以独立部署和扩展。
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-white p-8 rounded-2xl shadow-lg">
+                <h3 class="text-2xl font-semibold text-primary mb-6">分布式系统挑战</h3>
+                <div class="space-y-4">
+                  <div class="border-l-4 border-red-500 pl-4">
+                    <h4 class="font-semibold text-red-800">网络延迟</h4>
+                    <p class="text-sm text-red-700">跨网络调用引入的延迟问题</p>
+                  </div>
+                  <div class="border-l-4 border-yellow-500 pl-4">
+                    <h4 class="font-semibold text-yellow-800">数据一致性</h4>
+                    <p class="text-sm text-yellow-700">分布式环境下保证数据一致性的挑战</p>
+                  </div>
+                  <div class="border-l-4 border-blue-500 pl-4">
+                    <h4 class="font-semibold text-blue-800">服务发现</h4>
+                    <p class="text-sm text-blue-700">动态环境中服务的注册与发现</p>
+                  </div>
+                  <div class="border-l-4 border-green-500 pl-4">
+                    <h4 class="font-semibold text-green-800">故障处理</h4>
+                    <p class="text-sm text-green-700">部分故障时的系统行为控制</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white p-8 rounded-2xl shadow-lg">
+              <h3 class="text-2xl font-semibold text-primary mb-6">系统设计方法论</h3>
+              <div class="grid md:grid-cols-3 gap-6">
+                <div class="text-center">
+                  <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-search text-blue-600 text-xl"></i>
+                  </div>
+                  <h4 class="font-semibold text-primary mb-2">需求分析</h4>
+                  <p class="text-sm text-secondary">明确功能需求、非功能需求、约束条件</p>
+                </div>
+                <div class="text-center">
+                  <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-drafting-compass text-green-600 text-xl"></i>
+                  </div>
+                  <h4 class="font-semibold text-primary mb-2">架构设计</h4>
+                  <p class="text-sm text-secondary">选择合适的架构风格和组件</p>
+                </div>
+                <div class="text-center">
+                  <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-cogs text-purple-600 text-xl"></i>
+                  </div>
+                  <h4 class="font-semibold text-primary mb-2">详细设计</h4>
+                  <p class="text-sm text-secondary">设计数据模型、API、算法等</p>
+                </div>
+              </div>
+              <div class="mt-8 bg-gray-50 p-6 rounded-xl">
+                <h4 class="font-semibold text-primary mb-4 text-center">系统设计检查清单</h4>
+                <div class="grid md:grid-cols-2 gap-4 text-sm text-secondary">
+                  <div class="space-y-2">
+                    <div class="flex items-center">
+                      <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                      <span>是否考虑了可扩展性？</span>
+                    </div>
+                    <div class="flex items-center">
+                      <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                      <span>是否考虑了高可用性？</span>
+                    </div>
+                    <div class="flex items-center">
+                      <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                      <span>是否考虑了安全性？</span>
+                    </div>
+                  </div>
+                  <div class="space-y-2">
+                    <div class="flex items-center">
+                      <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                      <span>是否考虑了性能？</span>
+                    </div>
+                    <div class="flex items-center">
+                      <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                      <span>是否考虑了成本？</span>
+                    </div>
+                    <div class="flex items-center">
+                      <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                      <span>是否考虑了运维复杂度？</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Footer -->
+      <footer class="bg-primary text-white py-12">
+        <div class="container mx-auto px-6 lg:px-8">
+          <div class="text-center">
+            <h3 class="text-2xl font-serif mb-4">近两年后端面试高频100题深度解析</h3>
+            <p class="text-blue-200 mb-6">Java、Go、Python技术栈全覆盖 | 从底层原理到最佳实践</p>
+            <div class="flex justify-center space-x-6 text-sm text-blue-200">
+              <span>分布式系统</span>
+              <span>•</span>
+              <span>高并发</span>
+              <span>•</span>
+              <span>数据存储</span>
+              <span>•</span>
+              <span>缓存设计</span>
+              <span>•</span>
+              <span>消息队列</span>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </main>
+
+    <script>
+        // Initialize Mermaid
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'base',
+            themeVariables: {
+                primaryColor: '#1e3a8a',
+                primaryTextColor: '#ffffff',
+                primaryBorderColor: '#3b82f6',
+                lineColor: '#64748b',
+                secondaryColor: '#f1f5f9',
+                tertiaryColor: '#e2e8f0',
+                background: '#ffffff',
+                mainBkg: '#1e3a8a',
+                secondBkg: '#3b82f6',
+                tertiaryBkg: '#64748b',
+                // Enhanced contrast for different node colors
+                cScale0: '#1e3a8a',
+                cScale1: '#3b82f6', 
+                cScale2: '#64748b',
+                cScale3: '#1f2937',
+                cScale4: '#111827',
+                cScale5: '#0f172a',
+                // Text colors for better contrast
+                cScaleLabel0: '#ffffff',
+                cScaleLabel1: '#ffffff',
+                cScaleLabel2: '#ffffff',
+                cScaleLabel3: '#ffffff',
+                cScaleLabel4: '#ffffff',
+                cScaleLabel5: '#ffffff'
+            },
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'basis',
+                padding: 20
+            },
+            sequence: {
+                useMaxWidth: true,
+                wrap: true,
+                padding: 20
+            },
+            gantt: {
+                useMaxWidth: true,
+                padding: 20
+            }
+        });
+
+        // Initialize Mermaid Controls for zoom and pan
+        function initializeMermaidControls() {
+            const containers = document.querySelectorAll('.mermaid-container');
+
+            containers.forEach(container => {
+            const mermaidElement = container.querySelector('.mermaid');
+            let scale = 1;
+            let isDragging = false;
+            let startX, startY, translateX = 0, translateY = 0;
+
+            // 触摸相关状态
+            let isTouch = false;
+            let touchStartTime = 0;
+            let initialDistance = 0;
+            let initialScale = 1;
+            let isPinching = false;
+
+            // Zoom controls
+            const zoomInBtn = container.querySelector('.zoom-in');
+            const zoomOutBtn = container.querySelector('.zoom-out');
+            const resetBtn = container.querySelector('.reset-zoom');
+            const fullscreenBtn = container.querySelector('.fullscreen');
+
+            function updateTransform() {
+                mermaidElement.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+
+                if (scale > 1) {
+                container.classList.add('zoomed');
+                } else {
+                container.classList.remove('zoomed');
+                }
+
+                mermaidElement.style.cursor = isDragging ? 'grabbing' : 'grab';
+            }
+
+            if (zoomInBtn) {
+                zoomInBtn.addEventListener('click', () => {
+                scale = Math.min(scale * 1.25, 4);
+                updateTransform();
+                });
+            }
+
+            if (zoomOutBtn) {
+                zoomOutBtn.addEventListener('click', () => {
+                scale = Math.max(scale / 1.25, 0.3);
+                if (scale <= 1) {
+                    translateX = 0;
+                    translateY = 0;
+                }
+                updateTransform();
+                });
+            }
+
+            if (resetBtn) {
+                resetBtn.addEventListener('click', () => {
+                scale = 1;
+                translateX = 0;
+                translateY = 0;
+                updateTransform();
+                });
+            }
+
+            if (fullscreenBtn) {
+                fullscreenBtn.addEventListener('click', () => {
+                if (container.requestFullscreen) {
+                    container.requestFullscreen();
+                } else if (container.webkitRequestFullscreen) {
+                    container.webkitRequestFullscreen();
+                } else if (container.msRequestFullscreen) {
+                    container.msRequestFullscreen();
+                }
+                });
+            }
+
+            // Mouse Events
+            mermaidElement.addEventListener('mousedown', (e) => {
+                if (isTouch) return; // 如果是触摸设备，忽略鼠标事件
+
+                isDragging = true;
+                startX = e.clientX - translateX;
+                startY = e.clientY - translateY;
+                mermaidElement.style.cursor = 'grabbing';
+                updateTransform();
+                e.preventDefault();
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (isDragging && !isTouch) {
+                translateX = e.clientX - startX;
+                translateY = e.clientY - startY;
+                updateTransform();
+                }
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (isDragging && !isTouch) {
+                isDragging = false;
+                mermaidElement.style.cursor = 'grab';
+                updateTransform();
+                }
+            });
+
+            document.addEventListener('mouseleave', () => {
+                if (isDragging && !isTouch) {
+                isDragging = false;
+                mermaidElement.style.cursor = 'grab';
+                updateTransform();
+                }
+            });
+
+            // 获取两点之间的距离
+            function getTouchDistance(touch1, touch2) {
+                return Math.hypot(
+                touch2.clientX - touch1.clientX,
+                touch2.clientY - touch1.clientY
+                );
+            }
+
+            // Touch Events - 触摸事件处理
+            mermaidElement.addEventListener('touchstart', (e) => {
+                isTouch = true;
+                touchStartTime = Date.now();
+
+                if (e.touches.length === 1) {
+                // 单指拖动
+                isPinching = false;
+                isDragging = true;
+
+                const touch = e.touches[0];
+                startX = touch.clientX - translateX;
+                startY = touch.clientY - translateY;
+
+                } else if (e.touches.length === 2) {
+                // 双指缩放
+                isPinching = true;
+                isDragging = false;
+
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                initialDistance = getTouchDistance(touch1, touch2);
+                initialScale = scale;
+                }
+
+                e.preventDefault();
+            }, { passive: false });
+
+            mermaidElement.addEventListener('touchmove', (e) => {
+                if (e.touches.length === 1 && isDragging && !isPinching) {
+                // 单指拖动
+                const touch = e.touches[0];
+                translateX = touch.clientX - startX;
+                translateY = touch.clientY - startY;
+                updateTransform();
+
+                } else if (e.touches.length === 2 && isPinching) {
+                // 双指缩放
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                const currentDistance = getTouchDistance(touch1, touch2);
+
+                if (initialDistance > 0) {
+                    const newScale = Math.min(Math.max(
+                    initialScale * (currentDistance / initialDistance),
+                    0.3
+                    ), 4);
+                    scale = newScale;
+                    updateTransform();
+                }
+                }
+
+                e.preventDefault();
+            }, { passive: false });
+
+            mermaidElement.addEventListener('touchend', (e) => {
+                // 重置状态
+                if (e.touches.length === 0) {
+                isDragging = false;
+                isPinching = false;
+                initialDistance = 0;
+
+                // 延迟重置isTouch，避免鼠标事件立即触发
+                setTimeout(() => {
+                    isTouch = false;
+                }, 100);
+                } else if (e.touches.length === 1 && isPinching) {
+                // 从双指变为单指，切换为拖动模式
+                isPinching = false;
+                isDragging = true;
+
+                const touch = e.touches[0];
+                startX = touch.clientX - translateX;
+                startY = touch.clientY - translateY;
+                }
+
+                updateTransform();
+            });
+
+            mermaidElement.addEventListener('touchcancel', (e) => {
+                isDragging = false;
+                isPinching = false;
+                initialDistance = 0;
+
+                setTimeout(() => {
+                isTouch = false;
+                }, 100);
+
+                updateTransform();
+            });
+
+            // Enhanced wheel zoom with better center point handling
+            container.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                const rect = container.getBoundingClientRect();
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+
+                const delta = e.deltaY > 0 ? 0.9 : 1.1;
+                const newScale = Math.min(Math.max(scale * delta, 0.3), 4);
+
+                // Adjust translation to zoom towards center
+                if (newScale !== scale) {
+                const scaleDiff = newScale / scale;
+                translateX = translateX * scaleDiff;
+                translateY = translateY * scaleDiff;
+                scale = newScale;
+
+                if (scale <= 1) {
+                    translateX = 0;
+                    translateY = 0;
+                }
+
+                updateTransform();
+                }
+            });
+
+            // Initialize display
+            updateTransform();
+            });
+        }
+
+        // Initialize the controls when the DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeMermaidControls();
+        });
+
+        // Mobile menu toggle
+        document.getElementById('mobile-menu-toggle').addEventListener('click', function() {
+            const toc = document.getElementById('toc');
+            toc.classList.toggle('active');
+        });
+
+        // Close TOC when clicking outside on mobile
+        document.addEventListener('click', function(event) {
+            const toc = document.getElementById('toc');
+            const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+            
+            // Only close if TOC is active and click is outside TOC and not on toggle button
+            if (toc.classList.contains('active') && 
+                !toc.contains(event.target) && 
+                event.target !== mobileMenuToggle && 
+                !mobileMenuToggle.contains(event.target)) {
+                toc.classList.remove('active');
+            }
+        });
+
+        // Remove active class on large screens
+        window.addEventListener('resize', function() {
+            const toc = document.getElementById('toc');
+            if (window.innerWidth >= 1024) {
+                toc.classList.remove('active');
+            }
+        });
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                    // Close mobile menu if open
+                    if (window.innerWidth < 1024) {
+                        document.getElementById('toc').classList.remove('active');
+                    }
+                }
+            });
+        });
+
+        // Highlight active section in TOC
+        const sections = document.querySelectorAll('section[id]');
+        const tocLinks = document.querySelectorAll('.toc-fixed a[href^="#"]');
+
+        function highlightActiveSection() {
+            let current = '';
+            sections.forEach(section => {
+                const rect = section.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            tocLinks.forEach(link => {
+                link.classList.remove('bg-blue-100', 'text-blue-700', 'font-medium');
+                if (link.getAttribute('href') === `#${current}`) {
+                    link.classList.add('bg-blue-100', 'text-blue-700', 'font-medium');
+                }
+            });
+        }
+
+        window.addEventListener('scroll', highlightActiveSection);
+        highlightActiveSection(); // Initial call
+    </script>
+  
+
+</body></html>
